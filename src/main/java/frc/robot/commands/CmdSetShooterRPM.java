@@ -10,34 +10,41 @@ import frc.robot.subsystems.ShooterSubsystem;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CmdSetShooterRPM extends Command {
 
-  private final ShooterSubsystem shooterSubsystem;
-  private final double shooterRPM;
-  /** Creates a new CmdSetShooterRPM. */
-  public CmdSetShooterRPM(ShooterSubsystem shooterSubsystem, double shooterRPM) {
-    // Use addRequirements() here to declare subsystem dependencies.
+    public final ShooterSubsystem shooter;
+    public final double targetRPM;
 
-    // maps the inputs to the local variables
-    this.shooterSubsystem = shooterSubsystem;
-    this.shooterRPM = shooterRPM;
+    /** Creates a new CmdSetShooterRPM. */
+    public CmdSetShooterRPM(ShooterSubsystem shooter, double targetRPM) {
+        // Use addRequirements() here to declare subsystem dependencies.
+        this.shooter = shooter;
+        this.targetRPM = targetRPM;
 
-    //can't call this system once it is running
-    addRequirements(shooterSubsystem);
-  }
+        addRequirements(shooter);
+    }
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {}
+    // Called when the command is initially scheduled.
+    @Override
+    public void initialize() {
+        System.out.println("CmdSetShooterRPM INIT");
+        shooter.setTargetRPM(targetRPM);
+    }
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-    //set shooter RPM
-    shooterSubsystem.setTargetRPM(shooterRPM);
-  }
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+        shooter.setTargetRPM(targetRPM);
+    }
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return true;
-  }
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+        System.out.println("CmdSetShooterRPM END interrupted=" + interrupted);
+        shooter.setTargetRPM(0);
+    }
+
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }
