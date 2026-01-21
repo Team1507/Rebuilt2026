@@ -138,11 +138,12 @@ public class RobotContainer {
     joystick.start().and(joystick.x())
         .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    joystick.a().whileTrue(
-      new CmdSetShooterRPM(shooterSubsystem, shooterRPM)
-    );
-    joystick.b().whileTrue(
-      new CmdSetShooterRPM(shooterSubsystem, 0)
+    joystick.a().toggleOnTrue(
+        Commands.startEnd(
+            () -> shooterSubsystem.setTargetRPM(800),
+            () -> shooterSubsystem.setTargetRPM(0),
+            shooterSubsystem
+        )
     );
 
     // PID Tuner
