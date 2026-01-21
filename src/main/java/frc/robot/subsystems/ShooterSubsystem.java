@@ -76,7 +76,6 @@ public class ShooterSubsystem extends SubsystemBase {
     // ------------------------------------------------------------
 
     private final GearRatio ratio;
-    private final FlywheelModel flywheel;
 
     // ------------------------------------------------------------
     // Model-driven shooter fields
@@ -115,7 +114,6 @@ public class ShooterSubsystem extends SubsystemBase {
         this(
             shooterMotor,
             DEFAULT_RATIO,
-            DEFAULT_FLYWHEEL,
             DEFAULT_MODEL,
             DEFAULT_POSE_SUPPLIER,
             DEFAULT_TARGET_POSE,
@@ -145,7 +143,6 @@ public class ShooterSubsystem extends SubsystemBase {
         this(
             shooterMotor,
             DEFAULT_RATIO,
-            DEFAULT_FLYWHEEL,
             model,
             poseSupplier,
             targetPose,
@@ -174,55 +171,12 @@ public class ShooterSubsystem extends SubsystemBase {
         Pose2d targetPose,
         Transform2d shooterOffset
     ) {
-        this(
-            shooterMotor,
-            ratio,
-            DEFAULT_FLYWHEEL,
-            model,
-            poseSupplier,
-            targetPose,
-            shooterOffset
-        );
-    }
-
-    // ------------------------------------------------------------
-    // Constructor Tier 4 — Full physics simulation
-    // ------------------------------------------------------------
-
-    /**
-     * Creates a fully featured shooter subsystem with:
-     * <ul>
-     *     <li>GearRatio for motor↔wheel conversion</li>
-     *     <li>FlywheelModel for physics-based simulation</li>
-     *     <li>ShooterModel for model-driven RPM prediction</li>
-     *     <li>PoseSupplier for dynamic targeting</li>
-     * </ul>
-     *
-     * @param shooterMotor the TalonFX controlling the shooter
-     * @param ratio        gearbox ratio for motor↔wheel conversion
-     * @param flywheel     physics model for simulation
-     * @param model        shooter model (may be null)
-     * @param poseSupplier supplier for robot pose
-     * @param targetPose   target pose used by the shooter model
-     */
-    public ShooterSubsystem(
-        TalonFX shooterMotor,
-        GearRatio ratio,
-        FlywheelModel flywheel,
-        ShooterModel model,
-        PoseSupplier poseSupplier,
-        Pose2d targetPose,
-        Transform2d shooterOffset
-    ) {
         this.shooterMotor = shooterMotor;
         this.ratio = ratio;
-        this.flywheel = flywheel;
         this.model = model;
         this.poseSupplier = poseSupplier;
         this.targetPose = targetPose;
         this.shooterOffset = shooterOffset;
-
-        configurePID();
     }
 
     // ------------------------------------------------------------
@@ -464,9 +418,5 @@ public class ShooterSubsystem extends SubsystemBase {
         // Clamp to battery
         simVoltage = Math.max(-Shooter.Sim.MAX_VOLTAGE,
                               Math.min(Shooter.Sim.MAX_VOLTAGE, simVoltage));
-
-        // 5. Step flywheel physics
-        if (flywheel != null)
-            simWheelRPM = flywheel.stepRPM(simWheelRPM, simVoltage, dt);
     }
 }
