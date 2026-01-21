@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CmdSetShooterRPM;
+import frc.robot.commands.CmdShooterPIDTuner;
 import frc.robot.generated.TunerConstants;
 import frc.robot.mechanics.FlywheelModel;
 import frc.robot.mechanics.GearRatio;
@@ -142,6 +143,12 @@ public class RobotContainer {
     );
     joystick.b().onTrue(
       Commands.runOnce(() -> shooterSubsystem.setTargetRPM(0.0))
+    );
+
+    // PID Tuner
+    SmartDashboard.putData( 
+        "Run Shooter PID Tuner",
+        new CmdShooterPIDTuner(shooterSubsystem, MAX_RPM) // max RPM here
     );
   }
 
