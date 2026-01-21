@@ -138,10 +138,10 @@ public class RobotContainer {
     joystick.start().and(joystick.x())
         .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    joystick.a().onTrue(
+    joystick.a().whileTrue(
       new CmdSetShooterRPM(shooterSubsystem, shooterRPM)
     );
-    joystick.b().onTrue(
+    joystick.b().whileTrue(
       new CmdSetShooterRPM(shooterSubsystem, 0)
     );
 
