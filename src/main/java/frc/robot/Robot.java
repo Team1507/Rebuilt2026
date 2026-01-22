@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -54,7 +55,16 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    // Publish data to NT
+    SmartDashboard.putNumber("Shooter/TargetRPM", m_robotContainer.shooterSubsystem.getTargetRPM());
+    SmartDashboard.putNumber("Shooter/ActualRPM", m_robotContainer.shooterSubsystem.getShooterRPM());
+    SmartDashboard.putNumber("Shooter/TargetRPM", m_robotContainer.shooterRPM);
+    SmartDashboard.putNumber("Shooter/Voltage", m_robotContainer.shooterSubsystem.getShooterVoltage());
+    SmartDashboard.putNumber("Shooter/StatorCurrent", m_robotContainer.shooterSubsystem.getStatorCurrent());
+    SmartDashboard.putNumber("Shooter/SupplyCurrent", m_robotContainer.shooterSubsystem.getSupplyCurrent());
+    SmartDashboard.putNumber("Shooter/ClosedLoopError", m_robotContainer.shooterSubsystem.getClosedLoopError());
+  }
 
   @Override
   public void teleopExit() {}

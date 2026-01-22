@@ -2,6 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+//reorganize imports later
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,7 +19,16 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.CmdSetShooterRPM;
 import frc.robot.generated.TunerConstants;
+import frc.robot.mechanics.FlywheelModel;
+import frc.robot.mechanics.GearRatio;
+import frc.robot.navigation.Nodes.AllianceZoneBlue;
+import frc.robot.navigation.Nodes.Hub;
+import frc.robot.shooter.data.PoseSupplier;
+import frc.robot.shooter.data.ShotTrainer;
+import frc.robot.shooter.model.ModelLoader;
+import frc.robot.shooter.model.ShooterModel;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utilities.Telemetry;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -42,11 +52,13 @@ import edu.wpi.first.math.util.Units;
 import static edu.wpi.first.units.Units.*;
 
 import static frc.robot.Constants.Speed.*;
+import static frc.robot.Constants.Shooter.*;
 
 import frc.robot.generated.TunerConstants;
 
 //Subsytem Imports
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ShooterSubsystem;
 
 //Robot Extra
 import frc.robot.utilities.Telemetry;
@@ -63,26 +75,57 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(getMaxSpeed());
     private final CommandXboxController joystick = new CommandXboxController(1);
 
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
- 
+    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    // -----------------------------
+    // Shooter + Model
+    // -----------------------------
+        private final GearRatio ratio = GearRatio.gearBox(2, 1);
+    
+    private final PoseSupplier poseSupplier = () -> drivetrain.getState().Pose;
+
+    // Load model.json from deploy directory
+    private final ShooterModel shooterModelConfig =
+        ModelLoader.load("model.json", poseSupplier);
+
+    public final ShooterSubsystem shooterSubsystem =
+        new ShooterSubsystem(
+            new TalonFX(SHOOTER_CAN_ID),
+            ratio,
+            shooterModelConfig,
+            poseSupplier,
+            Hub.CENTER, // default target
+            SHOOTER_OFFSET
+        );
+
+    //declare shooter RPM variable
+    public double shooterRPM = 800.0;
+
+    public final ShotTrainer shotTrainer =
+        new ShotTrainer(
+            shooterSubsystem.getShooterMotor(),
+            poseSupplier,
+            Hub.CENTER.getTranslation()
+        );    
+
   private void configureBindings() 
   {
     drivetrain.setDefaultCommand(
-    drivetrain.applyRequest(() -> {
+      drivetrain.applyRequest(() -> {
 
-      double xInput = applyDeadband(-joystick.getLeftY(), 0.15);
-      double yInput = applyDeadband(-joystick.getLeftX(), 0.15);
-      double rotInput = applyDeadband(-joystick.getRightX(), 0.15);
+        double xInput = applyDeadband(-joystick.getLeftY(), 0.15);
+        double yInput = applyDeadband(-joystick.getLeftX(), 0.15);
+        double rotInput = applyDeadband(-joystick.getRightX(), 0.15);
 
-      return drive
-      .withDeadband(getMaxSpeed() * 0.1)
-      .withRotationalDeadband(getMaxAngularSpeed() * 0.1)
-      .withVelocityX(xInput * getTranslationScale() * getMaxSpeed())
-      .withVelocityY(yInput * getTranslationScale() * getMaxSpeed())
-      .withRotationalRate(rotInput * getRotationScale() * getMaxAngularSpeed());
-    })
-  );
+        return drive
+        .withDeadband(getMaxSpeed() * 0.1)
+        .withRotationalDeadband(getMaxAngularSpeed() * 0.1)
+        .withVelocityX(xInput * getTranslationScale() * getMaxSpeed())
+        .withVelocityY(yInput * getTranslationScale() * getMaxSpeed())
+        .withRotationalRate(rotInput * getRotationScale() * getMaxAngularSpeed());
+        
+      })
+    );
 
     // SysId routines
     joystick.back().and(joystick.y())
@@ -93,6 +136,13 @@ public class RobotContainer {
         .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     joystick.start().and(joystick.x())
         .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+    joystick.a().onTrue(
+      Commands.runOnce(() -> shooterSubsystem.setTargetRPM(800.0))
+    );
+    joystick.b().onTrue(
+      Commands.runOnce(() -> shooterSubsystem.setTargetRPM(0.0))
+    );
   }
 
   public Command getAutonomousCommand() {

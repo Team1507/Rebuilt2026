@@ -163,10 +163,10 @@ public class Constants {
         // Maximum wheel RPM (for UI, clamping, etc.)
         public static final double MAX_RPM = 2000.0;
 
-        // Shooter Offset from center of robot
+        // Shooter Offset from center of robot (change later)
         public static final Transform2d SHOOTER_OFFSET = new Transform2d(
-            new Translation2d(0.25, 0.0), // X=2m, Y=0m
-            Rotation2d.fromDegrees(90)
+            new Translation2d(0.0, 0.0), // X=2m, Y=0m
+            Rotation2d.fromDegrees(0)
         );
 
         // ============================================================

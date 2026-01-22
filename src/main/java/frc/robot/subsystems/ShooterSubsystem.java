@@ -177,6 +177,8 @@ public class ShooterSubsystem extends SubsystemBase {
         this.poseSupplier = poseSupplier;
         this.targetPose = targetPose;
         this.shooterOffset = shooterOffset;
+
+        configurePID();
     }
 
     // ------------------------------------------------------------
