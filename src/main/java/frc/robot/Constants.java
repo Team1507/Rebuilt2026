@@ -179,7 +179,7 @@ public class Constants {
             public static final double KD = 0.0;
 
             // Feedforward
-            public static final double KV = 0.1;  // volts per motor RPS  0.1353
+            public static final double KV = 0.0001;  // volts per motor RPS  0.1353
             public static final double KS = 0.0;
             public static final double KA = 0.0;
         }

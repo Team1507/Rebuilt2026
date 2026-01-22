@@ -436,8 +436,8 @@ public class ShooterSubsystem extends SubsystemBase {
     public void periodic() {
 
         // Debug: see what the subsystem thinks it's doing 
-        SmartDashboard.putNumber("Shooter/Target/MotorRPS", targetMotorRPS);
-        SmartDashboard.putNumber("Shooter/Target/MotorRPM", targetMotorRPS * 60); 
+        SmartDashboard.putNumber("Shooter/Target/Motor (RPS)", ratio.toOutput(targetMotorRPS));
+        SmartDashboard.putNumber("Shooter/Target/Motor (RPM)", ratio.toOutput(targetMotorRPS * 60)); 
         SmartDashboard.putNumber("Shooter/MeasuredRPM", getShooterRPM());
 
         if (RobotBase.isReal()) {

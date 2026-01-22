@@ -65,27 +65,8 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.utilities.Telemetry;
 
 public class RobotContainer {
-  public RobotContainer() {
-        configureBindings();
-        configureShooterDefault();
-    }
-
-    /**
-     * Shooter default behavior: use the trained model.json
-     */
-    private void configureShooterDefault() {
-
-        shooterSubsystem.setDefaultCommand(
-            Commands.run(
-                () -> {
-                    //shooterSubsystem.setTargetRPM(1000.0);
-                },
-                shooterSubsystem
-            )
-        );
-    }
-
-  private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+    
+    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     private final Telemetry logger = new Telemetry(getMaxSpeed());
@@ -96,7 +77,7 @@ public class RobotContainer {
     // -----------------------------
     // Shooter + Model
     // -----------------------------
-        private final GearRatio ratio = GearRatio.gearBox(1, 2);
+    private final GearRatio ratio = GearRatio.gearBox(1, 2);
     
     private final PoseSupplier poseSupplier = () -> drivetrain.getState().Pose;
 
@@ -115,57 +96,90 @@ public class RobotContainer {
         );
 
     //declare shooter RPM variable
-    public double shooterRPM = 800.0;
+    public double shooterRPM;
 
     public final ShotTrainer shotTrainer =
         new ShotTrainer(
             shooterSubsystem.getShooterMotor(),
             poseSupplier,
             Hub.CENTER.getTranslation()
-        );    
+        );
 
-  private void configureBindings() 
-  {
-    drivetrain.setDefaultCommand(
-      drivetrain.applyRequest(() -> {
+    public RobotContainer() {
+        configureBindings();
+        configureShooterDefault();
+    }
 
-        double xInput = applyDeadband(-joystick.getLeftY(), 0.15);
-        double yInput = applyDeadband(-joystick.getLeftX(), 0.15);
-        double rotInput = applyDeadband(-joystick.getRightX(), 0.15);
+    /**
+     * Shooter default behavior: use the trained model.json
+     */
+    private void configureShooterDefault() {
 
-        return drive
-        .withDeadband(getMaxSpeed() * 0.1)
-        .withRotationalDeadband(getMaxAngularSpeed() * 0.1)
-        .withVelocityX(xInput * getTranslationScale() * getMaxSpeed())
-        .withVelocityY(yInput * getTranslationScale() * getMaxSpeed())
-        .withRotationalRate(rotInput * getRotationScale() * getMaxAngularSpeed());
-        
-      })
-    );
+        shooterSubsystem.setDefaultCommand(
+            Commands.run(
+                () -> {
+                    // Build telemetry → ask model → set RPM
+                    //shooterSubsystem.updateShooterFromModel();
+                    shooterSubsystem.setTargetRPM(shooterRPM);
+                },
+                shooterSubsystem
+            )
+        );
+    }
+    
 
-    // SysId routines
-    joystick.back().and(joystick.y())
-        .whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-    joystick.back().and(joystick.x())
-        .whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    joystick.start().and(joystick.y())
-        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-    joystick.start().and(joystick.x())
-        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    private void configureBindings() 
+    {
+        drivetrain.setDefaultCommand(
+        drivetrain.applyRequest(() -> {
 
-    // PID Tuner
-    SmartDashboard.putData( 
-        "Run Shooter PID Tuner",
-        new CmdShooterPIDTuner(shooterSubsystem, MAX_RPM) // max RPM here
-    );
-  }
+            double xInput = applyDeadband(-joystick.getLeftY(), 0.15);
+            double yInput = applyDeadband(-joystick.getLeftX(), 0.15);
+            double rotInput = applyDeadband(-joystick.getRightX(), 0.15);
 
-  public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
-  }
+            return drive
+            .withDeadband(getMaxSpeed() * 0.1)
+            .withRotationalDeadband(getMaxAngularSpeed() * 0.1)
+            .withVelocityX(xInput * getTranslationScale() * getMaxSpeed())
+            .withVelocityY(yInput * getTranslationScale() * getMaxSpeed())
+            .withRotationalRate(rotInput * getRotationScale() * getMaxAngularSpeed());
+            
+        })
+        );
 
-  private double applyDeadband(double value, double deadband) {
+        // SysId routines
+        joystick.back().and(joystick.y())
+            .whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        joystick.back().and(joystick.x())
+            .whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        joystick.start().and(joystick.y())
+            .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        joystick.start().and(joystick.x())
+            .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+        // ---------------------------------
+        // Shooter
+        // ---------------------------------
+
+        SmartDashboard.putNumber("Shooter RPM", shooterRPM);
+
+        // PID Tuner
+        SmartDashboard.putData( 
+            "Run Shooter PID Tuner",
+            new CmdShooterPIDTuner(shooterSubsystem, MAX_RPM) // max RPM here
+        );
+    }
+
+    public Command getAutonomousCommand() {
+        return Commands.print("No autonomous command configured");
+    }
+
+    private double applyDeadband(double value, double deadband) {
         return (Math.abs(value) < deadband) ? 0.0 : value;
+    }
+
+    public void updateDashboardInputs(){
+        shooterRPM = SmartDashboard.getNumber("Shooter RPM", shooterRPM);
     }
 }
 
