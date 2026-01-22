@@ -161,7 +161,7 @@ public class Constants {
         public static final int SHOOTER_CAN_ID = 0;
 
         // Maximum wheel RPM (for UI, clamping, etc.)
-        public static final double MAX_RPM = 2000.0;
+        public static final double MAX_RPM = 1000.0;
 
         // Shooter Offset from center of robot (change later)
         public static final Transform2d SHOOTER_OFFSET = new Transform2d(
@@ -174,12 +174,12 @@ public class Constants {
         // ============================================================
         public static final class Gains {
             // PID
-            public static final double KP = 0.013;  // 0.013
+            public static final double KP = 0.0;  // 0.013
             public static final double KI = 0.0;
             public static final double KD = 0.0;
 
             // Feedforward
-            public static final double KV = 0.1353;  // volts per motor RPS  0.1353
+            public static final double KV = 0.1;  // volts per motor RPS  0.1353
             public static final double KS = 0.0;
             public static final double KA = 0.0;
         }

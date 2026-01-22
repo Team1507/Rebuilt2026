@@ -66,9 +66,24 @@ import frc.robot.utilities.Telemetry;
 
 public class RobotContainer {
   public RobotContainer() {
-    configureBindings();
+        configureBindings();
+        configureShooterDefault();
+    }
 
-  }
+    /**
+     * Shooter default behavior: use the trained model.json
+     */
+    private void configureShooterDefault() {
+
+        shooterSubsystem.setDefaultCommand(
+            Commands.run(
+                () -> {
+                    //shooterSubsystem.setTargetRPM(1000.0);
+                },
+                shooterSubsystem
+            )
+        );
+    }
 
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
@@ -81,7 +96,7 @@ public class RobotContainer {
     // -----------------------------
     // Shooter + Model
     // -----------------------------
-        private final GearRatio ratio = GearRatio.gearBox(2, 1);
+        private final GearRatio ratio = GearRatio.gearBox(1, 2);
     
     private final PoseSupplier poseSupplier = () -> drivetrain.getState().Pose;
 
@@ -137,14 +152,6 @@ public class RobotContainer {
         .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     joystick.start().and(joystick.x())
         .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-    joystick.a().toggleOnTrue(
-        Commands.startEnd(
-            () -> shooterSubsystem.setTargetRPM(800),
-            () -> shooterSubsystem.setTargetRPM(0),
-            shooterSubsystem
-        )
-    );
 
     // PID Tuner
     SmartDashboard.putData( 

@@ -283,7 +283,7 @@ public class ShooterSubsystem extends SubsystemBase {
         if (RobotBase.isSimulation()) return simWheelRPM;
 
         double motorRPS = shooterMotor.getVelocity().getValueAsDouble();
-        return ratio.toOutput(motorRPS) * 60.0;
+        return ratio.toOutput(motorRPS);
     }
 
     /**
@@ -378,7 +378,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @param wheelRPM desired wheel RPM
      */
     public void setTargetRPM(double wheelRPM) {
-        double wheelRPS = wheelRPM / 60.0;
+        double wheelRPS = wheelRPM;
         targetMotorRPS = ratio.toMotor(wheelRPS);
     }
 
@@ -386,7 +386,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return current target wheel RPM
      */
     public double getTargetRPM() {
-        return ratio.toOutput(targetMotorRPS) * 60.0;
+        return ratio.toOutput(targetMotorRPS);
     }
 
     /**
@@ -435,11 +435,10 @@ public class ShooterSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
 
-        // Debug: see what the subsystem thinks it's doing 
-        SmartDashboard.putNumber("Shooter/TargetMotorRPS", targetMotorRPS); 
-        SmartDashboard.putNumber("Shooter/MeasuredRPM", getShooterRPM());
-
         if (RobotBase.isReal()) {
+            // Debug: see what the subsystem thinks it's doing 
+            SmartDashboard.putNumber("ShooterSubsystem/TargetMotorRPS", targetMotorRPS); 
+            SmartDashboard.putNumber("ShooterSubsystem/MeasuredRPM", getShooterRPM());
             shooterMotor.setControl(velocityRequest.withVelocity(targetMotorRPS));
             return;
         }
@@ -449,7 +448,7 @@ public class ShooterSubsystem extends SubsystemBase {
         // -----------------------------
         double dt = 0.02;
 
-        double wheelRPS = simWheelRPM / 60.0;
+        double wheelRPS = simWheelRPM;
         double motorRPS = ratio.toMotor(wheelRPS);
 
         // 1. Sensor filtering
