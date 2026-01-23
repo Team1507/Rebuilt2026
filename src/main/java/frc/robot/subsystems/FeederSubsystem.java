@@ -9,6 +9,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.StatusSignal;
 
@@ -16,6 +17,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
+import frc.robot.Constants.Feeder.Gains;
+import frc.robot.Constants.Shooter;
 // Mechanics
 import frc.robot.mechanics.GearRatio;
 
@@ -24,17 +27,15 @@ import frc.robot.subsystems.lib.Subsystems1507;
 
 
 public class FeederSubsystem extends Subsystems1507 {
+
     private final TalonFXS feedermotor;
     private final GearRatio ratio; 
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
-    private StatusSignal<Angle> m_quadPosSignal;
-    private StatusSignal<AngularVelocity> m_quadVelSignal;
-    private StatusSignal<Angle> m_pwmPosSignal;
-    private StatusSignal<AngularVelocity> m_pwmVelSignal;
+
     public FeederSubsystem(TalonFXS feedermotor, GearRatio ratio) {
         this.feedermotor = feedermotor;
         this.ratio = ratio;
-        configurePID();
+        configureMotor();
     }
 
    // ------------------------------------------------------------
@@ -45,10 +46,11 @@ public class FeederSubsystem extends Subsystems1507 {
      * Applies PID and feedforward gains from {@link Shooter.Gains}
      * to the TalonFX Slot0 configuration.
      */
-    private void configurePID() {
+    private void configureMotor() {
+        
         TalonFXSConfiguration cfg = new TalonFXSConfiguration();
         cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
-        cfg.ExternalFeedback.ExternalFeedbackSensorSource = ExternalFeedbackSensorSourceValue.Quadrature;
+
         cfg.Slot0.kP = Gains.KP;
         cfg.Slot0.kI = Gains.KI;
         cfg.Slot0.kD = Gains.KD;
@@ -60,22 +62,7 @@ public class FeederSubsystem extends Subsystems1507 {
          // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
                       .withPeakReverseVoltage(Volts.of(-8));
-
-
-        feedermotor.getConfigurator().apply(cfg);
-        m_quadPosSignal = feedermotor.getRawQuadraturePosition();
-        m_quadVelSignal = feedermotor.getRawQuadratureVelocity();
-        m_pwmPosSignal = feedermotor.getRawPulseWidthPosition();
-        m_pwmVelSignal = feedermotor.getRawPulseWidthVelocity();
-
-        StatusSignal.setUpdateFrequencyForAll(
-            Hertz.of(50),
-            m_quadPosSignal,
-            m_quadVelSignal,
-            m_pwmPosSignal,
-            m_pwmVelSignal);
-
-        }
+    }
 
     public void setVelocityRPM(double rpm) {
         double motorRPM = ratio.toMotor(rpm);

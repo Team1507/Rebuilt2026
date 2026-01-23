@@ -114,7 +114,7 @@ public class RobotContainer {
             new TalonFXS(Feeder.FEEDER_CAN_ID),
             GearRatio.gearBox(1, 1)
         );
-        private double feederTargetRPM = 100.0;
+    private double feederTargetRPM = 500.0;
 
     public RobotContainer() {
         configureBindings();
@@ -167,7 +167,12 @@ public class RobotContainer {
             .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x())
             .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-            SmartDashboard.putNumber("Feeder/Target RPM", feederTargetRPM);
+
+        // ---------------------------------
+        // Feeder
+        // ---------------------------------
+
+        SmartDashboard.putNumber("Feeder/Target RPM", feederTargetRPM);
         joystick.b()
             .whileTrue(new CmdFeederFeed(feederTargetRPM, feederSubsystem));
 
