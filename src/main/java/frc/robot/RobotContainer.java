@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.hardware.TalonFXS;
 
 // WPI libraries
 import edu.wpi.first.wpilibj2.command.Command;
@@ -110,9 +111,10 @@ public class RobotContainer {
     // -----------------------------
     public final FeederSubsystem feederSubsystem =
         new FeederSubsystem(
-            new TalonFX(Feeder.FEEDER_CAN_ID),
+            new TalonFXS(Feeder.FEEDER_CAN_ID),
             GearRatio.gearBox(1, 1)
         );
+        private double feederTargetRPM = 100.0;
 
     public RobotContainer() {
         configureBindings();
@@ -165,8 +167,10 @@ public class RobotContainer {
             .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x())
             .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+            SmartDashboard.putNumber("Feeder/Target RPM", feederTargetRPM);
         joystick.b()
-            .whileTrue(new CmdFeederFeed(60, feederSubsystem));
+            .whileTrue(new CmdFeederFeed(feederTargetRPM, feederSubsystem));
+
         // ---------------------------------
         // Shooter
         // ---------------------------------
@@ -189,9 +193,9 @@ public class RobotContainer {
         return (Math.abs(value) < deadband) ? 0.0 : value;
     }
 
-    public void updateDashboardInputs(){
-        shooterRPM = SmartDashboard.getNumber("Shooter RPM", shooterRPM);
-
+    public void updateDashboard(){
+        shooterRPM = SmartDashboard.getNumber("Shooter/Shooter RPM", shooterRPM);
+        SmartDashboard.putNumber("Feeder/Feeder RPM", feederSubsystem.getVelocityRPM());
     }
 }
 

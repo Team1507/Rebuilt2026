@@ -221,7 +221,7 @@ public class Constants {
         // ============================================================
         public static final class Gains {
             // PID
-            public static final double KP = 0.0;  // 0.013
+            public static final double KP = 0.11;  // 0.013
             public static final double KI = 0.0;
             public static final double KD = 0.0;
 

@@ -83,6 +83,6 @@ public class Robot extends TimedRobot {
 
     public void WriteToSmartDashboard()
     {
-        m_robotContainer.updateDashboardInputs();
+        m_robotContainer.updateDashboard();
     }
 }

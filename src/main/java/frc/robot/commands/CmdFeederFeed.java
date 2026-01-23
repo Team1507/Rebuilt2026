@@ -21,8 +21,6 @@ public class CmdFeederFeed extends Command {
     this.targetRPM = RPM;
 
     addRequirements(feederSubsystem);
-    
-  
   }
 
   // Called when the command is initially scheduled.
@@ -33,16 +31,12 @@ public class CmdFeederFeed extends Command {
   @Override
   public void execute() {
     feederSubsystem.setVelocityRPM(targetRPM);
-    SmartDashboard.putNumber("Feeder RPM", feederSubsystem.getVelocityRPM());
-    SmartDashboard.putBoolean("FeederFeeding", FeederFeeding);
-  
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    feederSubsystem.setVelocityRPM(0);
-    SmartDashboard.putBoolean("FeederFeeding", false);
+  feederSubsystem.stopMotor();
   }
 
   // Returns true when the command should end.
