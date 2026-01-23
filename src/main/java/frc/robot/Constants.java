@@ -174,13 +174,13 @@ public class Constants {
         // ============================================================
         public static final class Gains {
             // PID
-            public static final double KP = 0.05;  // 0.013
+            public static final double KP = 0.02;  // 0.013
             public static final double KI = 0.0;
             public static final double KD = 0.0;
 
             // Feedforward
-            public static final double KV = 0.130;  // volts per motor RPS  0.1353
-            public static final double KS = 0.130;
+            public static final double KV = 0.1052631579;  // volts per motor RPS  0.1353
+            public static final double KS = 0.2;
             public static final double KA = 0.0;
         }
 

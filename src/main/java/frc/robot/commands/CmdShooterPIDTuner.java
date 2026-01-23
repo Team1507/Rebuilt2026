@@ -926,7 +926,7 @@ public class CmdShooterPIDTuner extends Command {
             .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
     
         String filePath = edu.wpi.first.wpilibj.RobotBase.isReal()
-            ? "/home/lvuser/shooter_pid_report_" + timestamp + ".txt"
+            ? "/u/shooter_pid_report_" + timestamp + ".txt"
             : "shooter_pid_report_" + timestamp + ".txt";
     
         System.out.println("Writing PID report to: " + filePath);
