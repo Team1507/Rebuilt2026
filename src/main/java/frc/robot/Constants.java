@@ -168,7 +168,7 @@ public class Constants {
             new Translation2d(0.0, 0.0), // X=2m, Y=0m
             Rotation2d.fromDegrees(0)
         );
-
+        
         // ============================================================
         // Control Gains (Phoenix Slot0)
         // ============================================================
@@ -210,7 +210,29 @@ public class Constants {
             public static final double MAX_VOLTAGE = 12.0;
         }
     }
+    public static final class Feeder {
+        // ============================================================
+        // Hardware
+        // ============================================================
+        public static final int FEEDER_CAN_ID = 7;
 
+            // ============================================================
+        // Control Gains (Phoenix Slot0)
+        // ============================================================
+        public static final class Gains {
+            // PID
+            public static final double KP = 0.0;  // 0.013
+            public static final double KI = 0.0;
+            public static final double KD = 0.0;
+
+            // Feedforward
+            public static final double KV = 0.09375;  // volts per motor RPS  0.1353
+            public static final double KS = 0.245;
+            public static final double KA = 0.0;
+        }
+       
+        
+    }
     public static final class RobotGeometry {
         public static final double HALF_LENGTH_METERS = 0.35; // half of robot length
         public static final double HALF_WIDTH_METERS  = 0.35; // half of robot width

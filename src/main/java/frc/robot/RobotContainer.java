@@ -16,10 +16,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 // WPI libraries
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Commands; 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.CmdSetShooterRPM;
+import frc.robot.Constants.Feeder;
+import frc.robot.commands.CmdFeederFeed;
 import frc.robot.commands.CmdShooterPIDTuner;
 import frc.robot.generated.TunerConstants;
 import frc.robot.mechanics.FlywheelModel;
@@ -60,7 +61,7 @@ import frc.robot.generated.TunerConstants;
 //Subsytem Imports
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
-
+import frc.robot.subsystems.FeederSubsystem;
 //Robot Extra
 import frc.robot.utilities.Telemetry;
 
@@ -103,6 +104,14 @@ public class RobotContainer {
             shooterSubsystem.getShooterMotor(),
             poseSupplier,
             Hub.CENTER.getTranslation()
+        );
+    // -----------------------------
+    //      feeder
+    // -----------------------------
+    public final FeederSubsystem feederSubsystem =
+        new FeederSubsystem(
+            new TalonFX(Feeder.FEEDER_CAN_ID),
+            GearRatio.gearBox(1, 1)
         );
 
     public RobotContainer() {
@@ -156,7 +165,8 @@ public class RobotContainer {
             .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x())
             .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
+        joystick.b()
+            .whileTrue(new CmdFeederFeed(60, feederSubsystem));
         // ---------------------------------
         // Shooter
         // ---------------------------------
@@ -167,6 +177,7 @@ public class RobotContainer {
         SmartDashboard.putData( 
             "Run Shooter PID Tuner",
             new CmdShooterPIDTuner(shooterSubsystem, MAX_RPM) // max RPM here
+            
         );
     }
 
@@ -180,6 +191,7 @@ public class RobotContainer {
 
     public void updateDashboardInputs(){
         shooterRPM = SmartDashboard.getNumber("Shooter RPM", shooterRPM);
+
     }
 }
 
