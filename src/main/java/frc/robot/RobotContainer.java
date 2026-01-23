@@ -130,8 +130,7 @@ public class RobotContainer {
     // -----------------------------
     public final IntakeSubsystem intakeSubsystem =
         new IntakeSubsystem(
-            new TalonFX(Intake.INTAKE_ROLLER_CAN_ID),
-            GearRatio.gearBox(1, 1)
+            new TalonFX(Intake.INTAKE_ROLLER_CAN_ID)
         );
 
     public final IntakeArmSubsystem intakeArmSubsystem =
