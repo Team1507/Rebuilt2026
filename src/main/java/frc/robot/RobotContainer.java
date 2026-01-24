@@ -159,20 +159,20 @@ public class RobotContainer {
     private void configureBindings() 
     {
         drivetrain.setDefaultCommand(
-        drivetrain.applyRequest(() -> {
+            drivetrain.applyRequest(() -> {
 
-            double xInput = applyDeadband(-joystick.getLeftY(), 0.15);
-            double yInput = applyDeadband(-joystick.getLeftX(), 0.15);
-            double rotInput = applyDeadband(-joystick.getRightX(), 0.15);
+                double xInput = applyDeadband(-joystick.getLeftY(), 0.15);
+                double yInput = applyDeadband(-joystick.getLeftX(), 0.15);
+                double rotInput = applyDeadband(-joystick.getRightX(), 0.15);
 
-            return drive
-            .withDeadband(getMaxSpeed() * 0.1)
-            .withRotationalDeadband(getMaxAngularSpeed() * 0.1)
-            .withVelocityX(xInput * getTranslationScale() * getMaxSpeed())
-            .withVelocityY(yInput * getTranslationScale() * getMaxSpeed())
-            .withRotationalRate(rotInput * getRotationScale() * getMaxAngularSpeed());
-            
-        })
+                return drive
+                .withDeadband(getMaxSpeed() * 0.1)
+                .withRotationalDeadband(getMaxAngularSpeed() * 0.1)
+                .withVelocityX(xInput * getTranslationScale() * getMaxSpeed())
+                .withVelocityY(yInput * getTranslationScale() * getMaxSpeed())
+                .withRotationalRate(rotInput * getRotationScale() * getMaxAngularSpeed());
+                
+            })
         );
 
         // SysId routines

@@ -4,9 +4,10 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+// WPI Libraries
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.Feeder;
+
+// Subsystems
 import frc.robot.subsystems.FeederSubsystem;  
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */

@@ -33,7 +33,6 @@ public class IntakeSubsystem extends Subsystems1507 {
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-
         cfg.Slot0.kP = Gains.Roller.KP;
         cfg.Slot0.kI = Gains.Roller.KI;
         cfg.Slot0.kD = Gains.Roller.KD;
@@ -50,8 +49,9 @@ public class IntakeSubsystem extends Subsystems1507 {
     }
 
     public void run(double dutyCycle) {
+        SmartDashboard.putNumber("Intake/Roller Target Duty Cycle", dutyCycle);
         intakeMotor.setControl(dutyRequest.withOutput(dutyCycle));
-    } 
+    }
 
     public void setpower(double power) {
         intakeMotor.set(power);

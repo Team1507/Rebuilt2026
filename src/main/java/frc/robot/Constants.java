@@ -237,7 +237,7 @@ public class Constants {
         // ============================================================
         // Hardware
         // ============================================================
-        public static final int INTAKE_ROLLER_CAN_ID = 20;
+        public static final int INTAKE_ROLLER_CAN_ID = 30;
         public static final int INTAKE_ARM_CAN_ID = 21;
 
         public static final double INTAKE_ARM_MAX_ANGLE_DEGREES = 90.0;
@@ -256,8 +256,8 @@ public class Constants {
                 public static final double KD = 0.0;
 
                 // Feedforward
-                public static final double KV = 0.0929007;  // volts per motor RPS  0.1353
-                public static final double KS = 0.018;
+                public static final double KV = 0.10333857939;  // volts per motor RPS  0.1353
+                public static final double KS = 0.025;
                 public static final double KA = 0.0;
             }
 
