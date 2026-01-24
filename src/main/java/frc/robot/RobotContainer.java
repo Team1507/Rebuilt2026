@@ -21,7 +21,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.Feeder;
+import frc.robot.Constants.Intake;
 import frc.robot.commands.CmdFeederFeed;
+import frc.robot.commands.CmdIntakeDeploy;
 import frc.robot.commands.CmdShooterPIDTuner;
 import frc.robot.generated.TunerConstants;
 import frc.robot.mechanics.FlywheelModel;
@@ -33,6 +35,8 @@ import frc.robot.shooter.data.ShotTrainer;
 import frc.robot.shooter.model.ModelLoader;
 import frc.robot.shooter.model.ShooterModel;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.IntakeArmSubsystem;
 import frc.robot.utilities.Telemetry;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -72,7 +76,7 @@ public class RobotContainer {
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     private final Telemetry logger = new Telemetry(getMaxSpeed());
-    private final CommandXboxController joystick = new CommandXboxController(1);
+    private final CommandXboxController joystick = new CommandXboxController(0);
 
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -121,6 +125,20 @@ public class RobotContainer {
         configureShooterDefault();
     }
 
+    // -----------------------------
+    //     intake?
+    // -----------------------------
+    public final IntakeSubsystem intakeSubsystem =
+        new IntakeSubsystem(
+            new TalonFX(Intake.INTAKE_ROLLER_CAN_ID),
+            GearRatio.gearBox(1, 1)
+        );
+
+    public final IntakeArmSubsystem intakeArmSubsystem =
+        new IntakeArmSubsystem(
+            new TalonFX(Intake.INTAKE_ARM_CAN_ID)
+        );
+
     /**
      * Shooter default behavior: use the trained model.json
      */
@@ -167,6 +185,7 @@ public class RobotContainer {
             .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x())
             .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        
 
         // ---------------------------------
         // Feeder
@@ -177,10 +196,19 @@ public class RobotContainer {
             .whileTrue(new CmdFeederFeed(feederTargetRPM, feederSubsystem));
 
         // ---------------------------------
+        // Intake?
+        // ---------------------------------
+
+        joystick.a()
+            .whileTrue(new CmdIntakeDeploy(intakeArmSubsystem, intakeSubsystem));
+
+        // ---------------------------------
         // Shooter
         // ---------------------------------
 
         SmartDashboard.putNumber("Shooter RPM", shooterRPM);
+
+
 
         // PID Tuner
         SmartDashboard.putData( 

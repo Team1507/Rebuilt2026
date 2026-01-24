@@ -233,6 +233,35 @@ public class Constants {
        
         
     }
+      public static final class Intake {
+        // ============================================================
+        // Hardware
+        // ============================================================
+        public static final int INTAKE_ROLLER_CAN_ID = 20;
+        public static final int INTAKE_ARM_CAN_ID = 21;
+
+        public static final double INTAKE_ARM_MAX_ANGLE_DEGREES = 90.0;
+        public static final double INTAKE_ARM_MIN_ANGLE_DEGREES = 0.0;
+        public static final double INTAKE_ARM_DEPLOYED_ANGLE_DEGREES = 75.0;
+        public static final double INTAKE_ARM_RETRACTED_ANGLE_DEGREES = 0.0;  //change later
+
+            // ============================================================
+        // Control Gains (Phoenix Slot0)
+        // ============================================================
+        public static final class Gains {
+            // PID
+            public static final double KP = 0.013;
+            public static final double KI = 0.0;
+            public static final double KD = 0.0;
+
+            // Feedforward
+            public static final double KV = 0.0929007;  // volts per motor RPS  0.1353
+            public static final double KS = 0.018;
+            public static final double KA = 0.0;
+        }
+       
+        
+    }
     public static final class RobotGeometry {
         public static final double HALF_LENGTH_METERS = 0.35; // half of robot length
         public static final double HALF_WIDTH_METERS  = 0.35; // half of robot width
