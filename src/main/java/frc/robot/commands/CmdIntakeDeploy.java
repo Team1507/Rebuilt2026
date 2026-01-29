@@ -15,6 +15,9 @@ public class CmdIntakeDeploy extends Command {
   /** Creates a new CmdIntakeDeploy. */
   private final IntakeArmSubsystem intakeArmSubsystem;
   private final IntakeSubsystem intakeSubsystem;
+
+  public boolean deploy = false;
+
   public CmdIntakeDeploy(IntakeArmSubsystem intakeArmSubsystem, IntakeSubsystem intakeSubsystem) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.intakeArmSubsystem = intakeArmSubsystem;
@@ -23,13 +26,17 @@ public class CmdIntakeDeploy extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() 
+  {
+
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     intakeArmSubsystem.setPosition(INTAKE_ARM_DEPLOYED_ANGLE_DEGREES);
     intakeSubsystem.run(.35);
+    deploy = true;
   }
 
   // Called once the command ends or is interrupted.
@@ -37,6 +44,7 @@ public class CmdIntakeDeploy extends Command {
   public void end(boolean interrupted) {
     intakeSubsystem.run(0);
     intakeArmSubsystem.setPosition(INTAKE_ARM_RETRACTED_ANGLE_DEGREES);
+    deploy = false;
   }
 
   // Returns true when the command should end.
