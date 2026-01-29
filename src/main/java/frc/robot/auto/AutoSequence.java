@@ -6,9 +6,12 @@ import java.util.List;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.math.geometry.Pose2d;
-
+import frc.robot.commands.CmdIntakeDeploy;
+import frc.robot.commands.CmdMoveToPose;
 // Robot Subsystems
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+// Commands
+import frc.robot.commands.CmdMoveToPose;
 
 /**
  * AutoSequence
@@ -35,6 +38,7 @@ public class AutoSequence {
      */
     public AutoSequence moveTo(Pose2d target) {
         //change later
+        steps.add(new CmdMoveToPose(drivetrain, target));
         return this;
     }
 
