@@ -5,9 +5,6 @@
 //reorganize imports later
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-
 //CTRE Imports
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -16,59 +13,41 @@ import com.ctre.phoenix6.hardware.TalonFXS;
 
 // WPI libraries
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands; 
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.Feeder;
-import frc.robot.Constants.Intake;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+// Commands
 import frc.robot.commands.CmdFeederFeed;
 import frc.robot.commands.CmdIntakeDeploy;
 import frc.robot.commands.CmdShooterPIDTuner;
-import frc.robot.generated.TunerConstants;
-import frc.robot.mechanics.FlywheelModel;
-import frc.robot.mechanics.GearRatio;
-import frc.robot.navigation.Nodes.AllianceZoneBlue;
-import frc.robot.navigation.Nodes.Hub;
+
+// Shooter
 import frc.robot.shooter.data.PoseSupplier;
 import frc.robot.shooter.data.ShotTrainer;
 import frc.robot.shooter.model.ModelLoader;
 import frc.robot.shooter.model.ShooterModel;
+
+// Subsytem Imports
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystem;
+
+// Robot Extra
 import frc.robot.utilities.Telemetry;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.navigation.Nodes.AllianceZoneBlue;
+import frc.robot.navigation.Nodes.Hub;
+import frc.robot.generated.TunerConstants;
+import frc.robot.mechanics.GearRatio;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
-
-import static edu.wpi.first.units.Units.*;
-
+// Constants
+import frc.robot.Constants.Feeder;
+import frc.robot.Constants.Intake;
 import static frc.robot.Constants.Speed.*;
 import static frc.robot.Constants.Shooter.*;
-
-import frc.robot.generated.TunerConstants;
-
-//Subsytem Imports
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.FeederSubsystem;
-//Robot Extra
-import frc.robot.utilities.Telemetry;
 
 public class RobotContainer {
     
