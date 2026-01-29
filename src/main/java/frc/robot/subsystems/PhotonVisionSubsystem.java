@@ -1,14 +1,18 @@
 package frc.robot.subsystems;
 
+// PhotonVision Imports
 import org.photonvision.PhotonCamera;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-
 // WPI libraries
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.Matrix;
 
 // Vision base class
 import frc.robot.subsystems.lib.Vision1507;
@@ -32,6 +36,7 @@ public class PhotonVisionSubsystem extends Vision1507 {
 
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
+    private final Matrix<N3, N1> std_dev;
 
     /**
      * Constructor for the PhotonVisionSubsystem.
@@ -43,7 +48,9 @@ public class PhotonVisionSubsystem extends Vision1507 {
     public PhotonVisionSubsystem(
         CommandSwerveDrivetrain drivetrain,
         Telemetry logger,
-        String cameraName
+        String cameraName,
+        Transform3d cameraToRobot,
+        Matrix<N3, N1> std_dev
     ) {
         super(drivetrain, logger);
 
@@ -52,8 +59,10 @@ public class PhotonVisionSubsystem extends Vision1507 {
         this.poseEstimator = new PhotonPoseEstimator(
             APRILTAG_LAYOUT,
             PoseStrategy.LOWEST_AMBIGUITY,
-            CAMERA_TO_ROBOT
+            cameraToRobot
         );
+
+        this.std_dev = std_dev;
     }
 
     /**
@@ -68,16 +77,16 @@ public class PhotonVisionSubsystem extends Vision1507 {
         // ------------------------------------------------------------
         // Basic diagnostics
         // ------------------------------------------------------------
-        SmartDashboard.putBoolean("PhotonVision/HasTarget", result.hasTargets());
-        SmartDashboard.putNumber("PhotonVision/TagCount", result.getTargets().size());
+        SmartDashboard.putBoolean(camera.getName() + "/HasTarget", result.hasTargets());
+        SmartDashboard.putNumber(camera.getName() + "/TagCount", result.getTargets().size());
 
         // ------------------------------------------------------------
         // Per‑target debug info (safe even if empty)
         // ------------------------------------------------------------
         for (var t : result.getTargets()) {
-            SmartDashboard.putNumber("Tag " + t.getFiducialId() + "/Yaw", t.getYaw());
-            SmartDashboard.putNumber("Tag " + t.getFiducialId() + "/Pitch", t.getPitch());
-            SmartDashboard.putNumber("Tag " + t.getFiducialId() + "/Area", t.getArea());
+            SmartDashboard.putNumber(camera.getName() + "/Tag " + t.getFiducialId() + "/Yaw", t.getYaw());
+            SmartDashboard.putNumber(camera.getName() + "/Tag " + t.getFiducialId() + "/Pitch", t.getPitch());
+            SmartDashboard.putNumber(camera.getName() + "/Tag " + t.getFiducialId() + "/Area", t.getArea());
         }
 
         // ------------------------------------------------------------
@@ -85,18 +94,18 @@ public class PhotonVisionSubsystem extends Vision1507 {
         // ------------------------------------------------------------
         if (result.hasTargets() && result.getBestTarget() != null) {
             SmartDashboard.putNumber(
-                "PhotonVision/BestAmbiguity",
+                camera.getName() + "/BestAmbiguity",
                 result.getBestTarget().getPoseAmbiguity()
             );
         } else {
-            SmartDashboard.putNumber("PhotonVision/BestAmbiguity", -1);
+            SmartDashboard.putNumber(camera.getName() + "/BestAmbiguity", -1);
         }
 
         // ------------------------------------------------------------
         // Pose estimation
         // ------------------------------------------------------------
         var estimated = poseEstimator.update(result);
-        SmartDashboard.putBoolean("PhotonVision/PoseEstimated", estimated.isPresent());
+        SmartDashboard.putBoolean(camera.getName() + "/PoseEstimated", estimated.isPresent());
 
         if (estimated.isEmpty()) {
             invalidatePose();
@@ -119,7 +128,7 @@ public class PhotonVisionSubsystem extends Vision1507 {
             drivetrain.addVisionMeasurement(
                 pose,
                 getLastPoseTimestamp(),
-                PHOTONVISION_STD_DEVS
+                std_dev
             );
         });
     }

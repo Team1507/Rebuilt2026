@@ -5,7 +5,7 @@
 //reorganize imports later
 package frc.robot;
 
-//CTRE Imports
+// CTRE Imports
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -34,6 +34,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.PhotonVisionSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystem;
 
 // Robot Extra
@@ -46,6 +47,7 @@ import frc.robot.mechanics.GearRatio;
 // Constants
 import frc.robot.Constants.Feeder;
 import frc.robot.Constants.Intake;
+import frc.robot.Constants.Vision;
 import static frc.robot.Constants.Speed.*;
 import static frc.robot.Constants.Shooter.*;
 
@@ -59,6 +61,29 @@ public class RobotContainer {
 
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    
+    // -----------------------------
+    // Cameras
+    // -----------------------------
+
+    public final PhotonVisionSubsystem visionBLUsystem = 
+        new PhotonVisionSubsystem(
+            drivetrain,
+            logger,
+            Vision.BLU.NANME,
+            Vision.BLU.CAMERA_TO_ROBOT,
+            Vision.BLU.PHOTONVISION_STD_DEVS
+        );
+    
+    public final PhotonVisionSubsystem visionYELsystem = 
+        new PhotonVisionSubsystem(
+            drivetrain,
+            logger,
+            Vision.YEL.NANME,
+            Vision.YEL.CAMERA_TO_ROBOT,
+            Vision.YEL.PHOTONVISION_STD_DEVS
+        );
+
     // -----------------------------
     // Shooter + Model
     // -----------------------------
