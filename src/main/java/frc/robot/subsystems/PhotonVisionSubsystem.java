@@ -9,7 +9,9 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 // WPI libraries
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.Matrix;
@@ -20,6 +22,7 @@ import frc.robot.subsystems.lib.Vision1507;
 // Robot Utilities
 import frc.robot.utilities.Telemetry;
 
+import static edu.wpi.first.units.Units.Rotation;
 // Robot Constants
 import static frc.robot.Constants.Vision.*;
 
@@ -36,6 +39,7 @@ public class PhotonVisionSubsystem extends Vision1507 {
 
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
+    private final Transform3d cameraToRobot;
     private final Matrix<N3, N1> std_dev;
 
     /**
@@ -55,6 +59,7 @@ public class PhotonVisionSubsystem extends Vision1507 {
         super(drivetrain, logger);
 
         this.camera = new PhotonCamera(cameraName);
+        this.cameraToRobot = cameraToRobot;
 
         this.poseEstimator = new PhotonPoseEstimator(
             APRILTAG_LAYOUT,
@@ -121,6 +126,23 @@ public class PhotonVisionSubsystem extends Vision1507 {
             pose.estimatedPose.toPose2d(),
             pose.timestampSeconds
         );
+
+        Pose2d robotPose = drivetrain.getState().Pose;
+
+        Translation3d t3 = cameraToRobot.getTranslation();
+        Rotation3d r3 = cameraToRobot.getRotation();
+
+        Translation2d t2 = new Translation2d(t3.getX(), t3.getY());
+        Rotation2d r2 = r3.toRotation2d();
+
+        Transform2d cameraOffset = new Transform2d(t2, r2);
+
+        Pose2d cameraPose = robotPose.transformBy(cameraOffset);
+        SmartDashboard.putNumber(camera.getName() + "/Pose/X",cameraPose.getX());
+        SmartDashboard.putNumber(camera.getName() + "/Pose/Y",cameraPose.getY());
+        SmartDashboard.putNumber(camera.getName() + "/Pose/ROT",cameraPose.getRotation().getDegrees());
+
+
     }
 
     public void addVisionMeasurementToDrivetrain() {

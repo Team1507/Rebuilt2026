@@ -143,8 +143,8 @@ public class Constants {
             public static final String NANME = "Bluecam";
             public static final Transform3d CAMERA_TO_ROBOT =
                 new Transform3d(
-                    new Translation3d(0.381, 0.0, 0.1905), // meters: forward, left, up
-                    new Rotation3d(0,0,0)     // radians: pitch, yaw, roll
+                    new Translation3d(-0.311, 0.311, 0.2413), // meters: forward, left, up
+                    new Rotation3d(0,0,Math.toRadians(150.5))     // radians: pitch, yaw, roll 
                 );
 
             // Standard deviations for measurement trust
@@ -160,8 +160,8 @@ public class Constants {
             public static final String NANME = "Yellowcam";
             public static final Transform3d CAMERA_TO_ROBOT =
                 new Transform3d(
-                    new Translation3d(0.381, 0.0, 0.1905), // meters: forward, left, up
-                    new Rotation3d(0,0,0)     // radians: pitch, yaw, roll
+                    new Translation3d(-0.311, -0.311, 0.2413), // meters: forward, left, up
+                    new Rotation3d(0,0,Math.toRadians(209.5))     // radians: pitch, yaw, roll
                 );
 
             // Standard deviations for measurement trust

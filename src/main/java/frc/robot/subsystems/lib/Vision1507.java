@@ -62,7 +62,7 @@ public abstract class Vision1507 extends SubsystemBase {
     @Override
     public final void periodic() {
         update();
-        addVisionMeasurementToDrivetrain();
+        //addVisionMeasurementToDrivetrain();
         publishTelemetry();
     }
 

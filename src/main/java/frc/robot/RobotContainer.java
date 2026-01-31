@@ -135,11 +135,6 @@ public class RobotContainer {
         );
     private double feederTargetRPM = 500.0;
 
-    public RobotContainer() {
-        configureBindings();
-        configureShooterDefault();
-    }
-
     // -----------------------------
     //     intake?
     // -----------------------------
@@ -152,6 +147,13 @@ public class RobotContainer {
         new IntakeArmSubsystem(
             new TalonFX(Intake.INTAKE_ARM_CAN_ID)
         );
+
+
+    public RobotContainer() {
+        configureBindings();
+        configureShooterDefault();
+        configureAutoChooser();
+    }
 
     /**
      * Shooter default behavior: use the trained model.json
@@ -228,14 +230,33 @@ public class RobotContainer {
         // PID Tuner
         SmartDashboard.putData( 
             "Run Shooter PID Tuner",
-            new CmdShooterPIDTuner(shooterSubsystem, MAX_RPM) // max RPM here
-            
+            new CmdShooterPIDTuner(shooterSubsystem, MAX_RPM) // max RPM here    
         );
+
+        drivetrain.registerTelemetry(logger::telemeterize);
     }
 
+    private void configureAutoChooser() {
+
+        // Default auto
+        autoChooser.setDefaultOption(
+            "Auto Do Nothing",
+            Commands.print("Doing nothing")
+        );
+    
+        // Example autos using your new builder
+        autoChooser.addOption(
+            "One Piece Auto",
+            AutoSample.build(drivetrain)
+        );
+    
+        // Publish to dashboard
+        SmartDashboard.putData("Auto Mode", autoChooser);
+    }    
+
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
-    }
+        return autoChooser.getSelected();
+    }    
 
     private double applyDeadband(double value, double deadband) {
         return (Math.abs(value) < deadband) ? 0.0 : value;
@@ -245,24 +266,6 @@ public class RobotContainer {
         shooterRPM = SmartDashboard.getNumber("Shooter/Shooter RPM", shooterRPM);
         SmartDashboard.putNumber("Feeder/Feeder RPM", feederSubsystem.getVelocityRPM());
 
-        visionBLUsystem.addVisionMeasurementToDrivetrain();
-        visionYELsystem.addVisionMeasurementToDrivetrain();
-
-         // Default auto
-        autoChooser.setDefaultOption(
-            "Auto Do Nothing",
-            Commands.print("Doing nothing")
-        );
-    
-        // Example autos using your new builder
-        autoChooser.addOption(
-            "Auto Sample",
-            AutoSample.build(drivetrain)
-        );
-    
-        // Publish to dashboard
-        SmartDashboard.putData("Auto Mode", autoChooser);
+        SmartDashboard.putNumber("Pigeon heading", drivetrain.getPigeon2().getRotation2d().getDegrees());
     }
 }
-
-
