@@ -9,13 +9,11 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 // WPI libraries
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.Matrix;
-
+import edu.wpi.first.math.VecBuilder;
 // Vision base class
 import frc.robot.subsystems.lib.Vision1507;
 
@@ -40,7 +38,6 @@ public class PhotonVisionSubsystem extends Vision1507 {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
     private final Transform3d cameraToRobot;
-    private final Matrix<N3, N1> std_dev;
 
     /**
      * Constructor for the PhotonVisionSubsystem.
@@ -53,8 +50,7 @@ public class PhotonVisionSubsystem extends Vision1507 {
         CommandSwerveDrivetrain drivetrain,
         Telemetry logger,
         String cameraName,
-        Transform3d cameraToRobot,
-        Matrix<N3, N1> std_dev
+        Transform3d cameraToRobot
     ) {
         super(drivetrain, logger);
 
@@ -66,8 +62,6 @@ public class PhotonVisionSubsystem extends Vision1507 {
             PoseStrategy.LOWEST_AMBIGUITY,
             cameraToRobot
         );
-
-        this.std_dev = std_dev;
     }
 
     /**
@@ -145,13 +139,69 @@ public class PhotonVisionSubsystem extends Vision1507 {
 
     }
 
-    public void addVisionMeasurementToDrivetrain() {
+    @Override
+    protected void addVisionMeasurementToDrivetrain() {
         getLatestPose().ifPresent(pose -> {
+
+            PhotonPipelineResult result = camera.getLatestResult();
+            Matrix<N3, N1> dynamicStdDev = computeStdDevs(result);
+
             drivetrain.addVisionMeasurement(
                 pose,
                 getLastPoseTimestamp(),
-                std_dev
+                dynamicStdDev
             );
         });
     }
+
+    private Matrix<N3, N1> computeStdDevs(PhotonPipelineResult result) {
+
+        // If no targets, return very large uncertainty
+        if (!result.hasTargets()) {
+            return VecBuilder.fill(0.50, 0.50, 0.80); // basically ignore
+        }
+
+        // -----------------------------
+        // 1. Ambiguity
+        // -----------------------------
+        double ambiguity = 1.0;
+        if (result.getBestTarget() != null) {
+            ambiguity = result.getBestTarget().getPoseAmbiguity();
+        }
+        double ambScale = 1.0 + 3.0 * ambiguity;
+
+        // -----------------------------
+        // 2. Tag count
+        // -----------------------------
+        int tagCount = result.getTargets().size();
+        double tagScale = 1.0 / Math.sqrt(tagCount);
+
+        // -----------------------------
+        // 3. Distance scaling
+        // -----------------------------
+        double avgDist = 0.0;
+        for (var t : result.getTargets()) {
+            avgDist += t.getBestCameraToTarget().getTranslation().getNorm();
+        }
+        avgDist /= tagCount;
+
+        double distScale = 1.0 + 0.25 * avgDist;
+
+        // -----------------------------
+        // 4. Combine scales
+        // -----------------------------
+        double finalScale = ambScale * tagScale * distScale;
+
+        // -----------------------------
+        // 5. Apply to baseline
+        // -----------------------------
+        double BASE_XY = 0.06;   // 6 cm
+        double BASE_ROT = 0.12;  // ~7 degrees
+
+        double xyStd = BASE_XY * finalScale;
+        double rotStd = BASE_ROT * finalScale;
+
+        return VecBuilder.fill(xyStd, xyStd, rotStd);
+    }
+
 }

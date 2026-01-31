@@ -147,12 +147,14 @@ public class Constants {
                     new Rotation3d(0,0,Math.toRadians(150.5))     // radians: pitch, yaw, roll 
                 );
 
+            /*
             // Standard deviations for measurement trust
             public static final Matrix<N3, N1> PHOTONVISION_STD_DEVS = VecBuilder.fill(
                 0.02,  // 2 cm X
                 0.02,  // 2 cm Y
                 0.035  // ~2 degrees
             );
+            */
         }
 
         public static final class YEL {
@@ -164,12 +166,14 @@ public class Constants {
                     new Rotation3d(0,0,Math.toRadians(209.5))     // radians: pitch, yaw, roll
                 );
 
+            /*
             // Standard deviations for measurement trust
             public static final Matrix<N3, N1> PHOTONVISION_STD_DEVS = VecBuilder.fill(
                 0.02,  // 2 cm X
                 0.02,  // 2 cm Y
                 0.035  // ~2 degrees
             );
+            */
         }
     }
 
