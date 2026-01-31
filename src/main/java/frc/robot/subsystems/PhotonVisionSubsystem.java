@@ -112,6 +112,24 @@ public class PhotonVisionSubsystem extends Vision1507 {
             return;
         }
 
+        if (result.hasTargets() && result.getBestTarget().getPoseAmbiguity() > 0.25) {
+            invalidatePose();
+            return;
+        }
+
+        if (result.getTargets().size() == 1) {
+            double dist = result.getBestTarget().getBestCameraToTarget().getTranslation().getNorm();
+            if (dist > 2.5) {
+                invalidatePose();
+                return;
+            }
+        }
+
+        if (Math.abs(result.getBestTarget().getYaw()) > 25) {
+            invalidatePose();
+            return;
+        }
+
         EstimatedRobotPose pose = estimated.get();
 
         double correctedTimestamp = pose.timestampSeconds + (Timer.getFPGATimestamp() - pose.timestampSeconds);
