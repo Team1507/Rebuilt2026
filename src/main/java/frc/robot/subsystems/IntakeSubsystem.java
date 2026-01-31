@@ -57,6 +57,10 @@ public class IntakeSubsystem extends Subsystems1507 {
         intakeMotor.set(power);
     }    
 
+    public void stop()  {
+        intakeMotor.set(0);
+    }
+
     public double getDutyCycle(){
         return intakeMotor.getDutyCycle().getValueAsDouble();
     }
