@@ -7,6 +7,7 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+import edu.wpi.first.wpilibj.Timer;
 // WPI libraries
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.geometry.*;
@@ -113,12 +114,14 @@ public class PhotonVisionSubsystem extends Vision1507 {
 
         EstimatedRobotPose pose = estimated.get();
 
+        double correctedTimestamp = pose.timestampSeconds + (Timer.getFPGATimestamp() - pose.timestampSeconds);
+
         // ------------------------------------------------------------
         // Accept pose
         // ------------------------------------------------------------
         acceptPose(
             pose.estimatedPose.toPose2d(),
-            pose.timestampSeconds
+            correctedTimestamp
         );
 
         Pose2d robotPose = drivetrain.getState().Pose;
@@ -136,7 +139,9 @@ public class PhotonVisionSubsystem extends Vision1507 {
         SmartDashboard.putNumber(camera.getName() + "/Pose/Y",cameraPose.getY());
         SmartDashboard.putNumber(camera.getName() + "/Pose/ROT",cameraPose.getRotation().getDegrees());
 
-
+        SmartDashboard.putNumber(camera.getName() + "/PV Timerstamp", getLastPoseTimestamp());
+        SmartDashboard.putNumber(camera.getName() + "/RIO Timestamp", Timer.getFPGATimestamp());
+        SmartDashboard.putNumber(camera.getName() + "/Delta", Timer.getFPGATimestamp() -getLastPoseTimestamp());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package frc.robot.auto.routines;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.auto.AutoSequence;
@@ -12,7 +13,6 @@ public class AutoSample {
 
         return new AutoSequence(drivetrain)
             .moveTo(Nodes.Start.CENTER)
-            .moveTo(Nodes.Hub.APPROACH_FRONT)
             .waitSeconds(2.0)
             .build();
     }
