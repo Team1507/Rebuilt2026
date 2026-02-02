@@ -7,7 +7,6 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-import edu.wpi.first.wpilibj.Timer;
 // WPI libraries
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.geometry.*;
@@ -15,13 +14,14 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.wpilibj.Timer;
+
 // Vision base class
 import frc.robot.subsystems.lib.Vision1507;
 
 // Robot Utilities
 import frc.robot.utilities.Telemetry;
 
-import static edu.wpi.first.units.Units.Rotation;
 // Robot Constants
 import static frc.robot.Constants.Vision.*;
 
@@ -101,18 +101,17 @@ public class PhotonVisionSubsystem extends Vision1507 {
             SmartDashboard.putNumber(camera.getName() + "/BestAmbiguity", -1);
         }
 
-        // ------------------------------------------------------------
-        // Pose estimation
-        // ------------------------------------------------------------
-        var estimated = poseEstimator.update(result);
-        SmartDashboard.putBoolean(camera.getName() + "/PoseEstimated", estimated.isPresent());
-
-        if (estimated.isEmpty()) {
-            invalidatePose();
-            return;
+        // If no targets at all, invalidate and bail 
+        if (!result.hasTargets()) {
+            invalidatePose(); 
+            return; 
         }
 
-        if (result.hasTargets() && result.getBestTarget().getPoseAmbiguity() > 0.25) {
+        // ------------------------------------------------------------
+        // Quality filters
+        // ------------------------------------------------------------
+
+        if (result.getBestTarget() != null && result.getBestTarget().getPoseAmbiguity() > 0.25) {
             invalidatePose();
             return;
         }
@@ -130,16 +129,25 @@ public class PhotonVisionSubsystem extends Vision1507 {
             return;
         }
 
-        EstimatedRobotPose pose = estimated.get();
+        // ------------------------------------------------------------
+        // Pose estimation
+        // ------------------------------------------------------------
+        var estimated = poseEstimator.update(result);
+        SmartDashboard.putBoolean(camera.getName() + "/PoseEstimated", estimated.isPresent());
 
-        double correctedTimestamp = pose.timestampSeconds + (Timer.getFPGATimestamp() - pose.timestampSeconds);
+        if (estimated.isEmpty()) {
+            invalidatePose();
+            return;
+        }
+
+        EstimatedRobotPose pose = estimated.get();
 
         // ------------------------------------------------------------
         // Accept pose
         // ------------------------------------------------------------
         acceptPose(
             pose.estimatedPose.toPose2d(),
-            correctedTimestamp
+            pose.timestampSeconds
         );
 
         Pose2d robotPose = drivetrain.getState().Pose;
