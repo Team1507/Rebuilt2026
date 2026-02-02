@@ -39,6 +39,7 @@ public class PhotonVisionSubsystem extends Vision1507 {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
     private final Transform3d cameraToRobot;
+    private final Matrix<N3, N1> std_dev;
 
     /**
      * Constructor for the PhotonVisionSubsystem.
@@ -51,12 +52,14 @@ public class PhotonVisionSubsystem extends Vision1507 {
         CommandSwerveDrivetrain drivetrain,
         Telemetry logger,
         String cameraName,
-        Transform3d cameraToRobot
+        Transform3d cameraToRobot,
+        Matrix<N3, N1> std_dev
     ) {
         super(drivetrain, logger);
 
         this.camera = new PhotonCamera(cameraName);
         this.cameraToRobot = cameraToRobot;
+        this.std_dev = std_dev;
 
         this.poseEstimator = new PhotonPoseEstimator(
             APRILTAG_LAYOUT,
@@ -174,13 +177,13 @@ public class PhotonVisionSubsystem extends Vision1507 {
     protected void addVisionMeasurementToDrivetrain() {
         getLatestPose().ifPresent(pose -> {
 
-            PhotonPipelineResult result = camera.getLatestResult();
-            Matrix<N3, N1> dynamicStdDev = computeStdDevs(result);
+            //PhotonPipelineResult result = camera.getLatestResult();
+            //Matrix<N3, N1> dynamicStdDev = computeStdDevs(result);
 
             drivetrain.addVisionMeasurement(
                 pose,
                 getLastPoseTimestamp(),
-                dynamicStdDev
+                std_dev
             );
         });
     }
