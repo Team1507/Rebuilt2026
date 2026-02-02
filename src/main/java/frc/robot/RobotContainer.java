@@ -82,7 +82,8 @@ public class RobotContainer {
             drivetrain,
             logger,
             Vision.BLU.NANME,
-            Vision.BLU.CAMERA_TO_ROBOT
+            Vision.BLU.CAMERA_TO_ROBOT,
+            Vision.BLU.PHOTONVISION_STD_DEVS
         );
     
     public final PhotonVisionSubsystem visionYELsystem = 
@@ -90,7 +91,8 @@ public class RobotContainer {
             drivetrain,
             logger,
             Vision.YEL.NANME,
-            Vision.YEL.CAMERA_TO_ROBOT
+            Vision.YEL.CAMERA_TO_ROBOT,
+            Vision.YEL.PHOTONVISION_STD_DEVS
         );
 
     // -----------------------------
