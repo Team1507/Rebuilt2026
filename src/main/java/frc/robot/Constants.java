@@ -136,7 +136,7 @@ public class Constants {
     public static final class Vision{
         // --- April Tags ---
         public static final AprilTagFieldLayout APRILTAG_LAYOUT =
-            AprilTagFields.k2026RebuiltAndymark.loadAprilTagLayoutField();
+            AprilTagFields.k2026RebuiltWelded.loadAprilTagLayoutField();
 
         public static final class BLU {
             // Photon Vision
@@ -178,8 +178,7 @@ public class Constants {
         // ============================================================
         // Hardware
         // ============================================================
-        public static final int SHOOTER_CAN_ID = 0;
-
+        public static final int SHOOTER_CAN_ID = 19;
         // Maximum wheel RPM (for UI, clamping, etc.)
         public static final double MAX_RPM = 2400.0;
 
@@ -231,34 +230,60 @@ public class Constants {
         }
     }
     public static final class Feeder {
-        // ============================================================
-        // Hardware
-        // ============================================================
-        public static final int FEEDER_CAN_ID = 7;
+        public static final class BLU{
+
+        
+            // ============================================================
+            // Hardware
+            // ============================================================
+            public static final int CAN_ID = 20;
 
             // ============================================================
-        // Control Gains (Phoenix Slot0)
-        // ============================================================
-        public static final class Gains {
-            // PID
-            public static final double KP = 0.11;  // 0.013
-            public static final double KI = 0.0;
-            public static final double KD = 0.0;
+            // Control Gains (Phoenix Slot0)
+            // ============================================================
+            public static final class Gains {
+                // PID
+                public static final double KP = 0.11;  // 0.013
+                public static final double KI = 0.0;
+                public static final double KD = 0.0;
 
-            // Feedforward
-            public static final double KV = 0.09375;  // volts per motor RPS  0.1353
-            public static final double KS = 0.245;
-            public static final double KA = 0.0;
+                // Feedforward
+                public static final double KV = 0.09375;  // volts per motor RPS  0.1353
+                public static final double KS = 0.245;
+                public static final double KA = 0.0;
+            }
         }
-       
+
+        public static final class YEL{
+
         
+            // ============================================================
+            // Hardware
+            // ============================================================
+            public static final int CAN_ID = 18;
+
+            // ============================================================
+            // Control Gains (Phoenix Slot0)
+            // ============================================================
+            public static final class Gains {
+                // PID
+                public static final double KP = 0.11;  // 0.013
+                public static final double KI = 0.0;
+                public static final double KD = 0.0;
+
+                // Feedforward
+                public static final double KV = 0.09375;  // volts per motor RPS  0.1353
+                public static final double KS = 0.245;
+                public static final double KA = 0.0;
+            }
+        }
     }
       public static final class Intake {
         // ============================================================
         // Hardware
         // ============================================================
-        public static final int INTAKE_ROLLER_CAN_ID = 30;
-        public static final int INTAKE_ARM_CAN_ID = 21;
+        public static final int INTAKE_ROLLER_CAN_ID = 13;
+        public static final int INTAKE_ARM_CAN_ID = 14;
 
         public static final double INTAKE_ARM_MAX_ANGLE_DEGREES = 90.0;
         public static final double INTAKE_ARM_MIN_ANGLE_DEGREES = 0.0;
@@ -332,7 +357,7 @@ public class Constants {
     public static final class FieldElements {
         // --- April Tags ---
         public static final AprilTagFieldLayout APRILTAG_LAYOUT =
-            AprilTagFields.k2025ReefscapeAndyMark.loadAprilTagLayoutField();
+            AprilTagFields.k2026RebuiltAndymark.loadAprilTagLayoutField();
 
         // --- Field ---
         public static final double FIELD_LENGTH = 16.54; // meters

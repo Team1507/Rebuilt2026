@@ -63,7 +63,7 @@ public class PhotonVisionSubsystem extends Vision1507 {
 
         this.poseEstimator = new PhotonPoseEstimator(
             APRILTAG_LAYOUT,
-            PoseStrategy.LOWEST_AMBIGUITY,
+            PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
             cameraToRobot
         );
     }

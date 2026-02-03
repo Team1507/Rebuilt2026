@@ -128,10 +128,18 @@ public class RobotContainer {
     // -----------------------------
     //      feeder
     // -----------------------------
-    public final FeederSubsystem feederSubsystem =
+    public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
-            new TalonFXS(Feeder.FEEDER_CAN_ID),
-            GearRatio.gearBox(1, 1)
+            new TalonFXS(Feeder.BLU.CAN_ID),
+            GearRatio.gearBox(1, 1),
+            "BLU"
+        );
+
+    public final FeederSubsystem feederYELsystem =
+        new FeederSubsystem(
+            new TalonFXS(Feeder.YEL.CAN_ID),
+            GearRatio.gearBox(1, 1),
+            "YEL"
         );
     private double feederTargetRPM = 500.0;
 
@@ -210,7 +218,9 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("Feeder/Target RPM", feederTargetRPM);
         joystick.b()
-            .whileTrue(new CmdFeederFeed(feederTargetRPM, feederSubsystem));
+            .whileTrue(new CmdFeederFeed(feederTargetRPM, feederBLUsystem));
+        joystick.b()
+            .whileTrue(new CmdFeederFeed(feederTargetRPM, feederYELsystem));
 
         // ---------------------------------
         // Intake?
@@ -264,7 +274,8 @@ public class RobotContainer {
 
     public void updateDashboard(){
         shooterRPM = SmartDashboard.getNumber("Shooter/Shooter RPM", shooterRPM);
-        SmartDashboard.putNumber("Feeder/Feeder RPM", feederSubsystem.getVelocityRPM());
+        SmartDashboard.putNumber("Feeder/Blue RPM", feederBLUsystem.getVelocityRPM());
+        SmartDashboard.putNumber("Feeder/Yellow RPM", feederYELsystem.getVelocityRPM());
 
         SmartDashboard.putNumber("Pigeon heading", drivetrain.getPigeon2().getRotation2d().getDegrees());
     }
