@@ -9,20 +9,25 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // CTRE Imports
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXSConfiguration;
+import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.signals.MotorArrangementValue;
 
-import frc.robot.Constants.Intake.Gains;
+import frc.robot.Constants.Agitator.Gains;
+
 // Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
 
 public class AgitatorSubsystem extends Subsystems1507 {
 
+  private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
   
-  private final TalonFX agitatorMotor;
+  private final TalonFXS agitatorMotor;
   /** Creates a new HopperSubsystem. */
-  public AgitatorSubsystem(TalonFX motor) {
+  public AgitatorSubsystem(TalonFXS motor) {
 
     //declare dependencies
     this.agitatorMotor = motor;
@@ -31,15 +36,16 @@ public class AgitatorSubsystem extends Subsystems1507 {
   }
   private void configureMotor() {
             
-        TalonFXConfiguration cfg = new TalonFXConfiguration();
+        TalonFXSConfiguration cfg = new TalonFXSConfiguration();
+        cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
 
-        cfg.Slot0.kP = Gains.Arm.KP;
-        cfg.Slot0.kI = Gains.Arm.KI;
-        cfg.Slot0.kD = Gains.Arm.KD;
+        cfg.Slot0.kP = Gains.KP;
+        cfg.Slot0.kI = Gains.KI;
+        cfg.Slot0.kD = Gains.KD;
 
-        cfg.Slot0.kV = Gains.Arm.KV;
-        cfg.Slot0.kS = Gains.Arm.KS;
-        cfg.Slot0.kA = Gains.Arm.KA;
+        cfg.Slot0.kV = Gains.KV;
+        cfg.Slot0.kS = Gains.KS;
+        cfg.Slot0.kA = Gains.KA;
 
         // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
@@ -48,8 +54,14 @@ public class AgitatorSubsystem extends Subsystems1507 {
         agitatorMotor.getConfigurator().apply(cfg);
     }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
+  public void setVelocityRPM(double rpm) {
+    double agitatorRPS = rpm / 60.0;
+    agitatorMotor.setControl(velocityRequest.withVelocity(agitatorRPS));
   }
+  private double getTargetRPM(){
+    double agitatorRPS = agitatorMotor.getVelocity().getValueAsDouble();
+    double agitatorRPM = agitatorRPS * 60.0;
+    return agitatorRPM;
+  }
+  
 }

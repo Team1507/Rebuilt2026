@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.CmdFeederFeed;
 import frc.robot.commands.CmdIntakeDeploy;
 import frc.robot.commands.CmdShooterPIDTuner;
+import frc.robot.commands.CmdShoot;
 
 // Shooter
 import frc.robot.shooter.data.PoseSupplier;
@@ -39,6 +40,10 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.PhotonVisionSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystem;
+import frc.robot.subsystems.AgitatorSubsystem;
+import frc.robot.subsystems.HopperSubsystem;
+import frc.robot.subsystems.IntakeArmSubsystem;
+import frc.robot.subsystems.PhotonVisionSubsystem;
 
 // Robot Extra
 import frc.robot.utilities.Telemetry;
@@ -46,10 +51,11 @@ import frc.robot.navigation.Nodes.AllianceZoneBlue;
 import frc.robot.navigation.Nodes.Hub;
 import frc.robot.generated.TunerConstants;
 import frc.robot.mechanics.GearRatio;
-
+import frc.robot.Constants.Agitator;
 // Constants
 import frc.robot.Constants.Feeder;
 import frc.robot.Constants.Intake;
+import frc.robot.Constants.Shooter;
 import frc.robot.Constants.Vision;
 import frc.robot.auto.routines.AutoSample;
 
@@ -117,7 +123,8 @@ public class RobotContainer {
         );
 
     //declare shooter RPM variable
-    public double shooterRPM;
+    public double shooterRPM = 3000;
+    public double shooterShootRPM = 5000;
 
     public final ShotTrainer shotTrainer =
         new ShotTrainer(
@@ -130,7 +137,7 @@ public class RobotContainer {
     // -----------------------------
     public final FeederSubsystem feederSubsystem =
         new FeederSubsystem(
-            new TalonFXS(Feeder.FEEDER_CAN_ID),
+            new TalonFX(Feeder.FEEDER_CAN_ID),
             GearRatio.gearBox(1, 1)
         );
     private double feederTargetRPM = 500.0;
@@ -139,7 +146,7 @@ public class RobotContainer {
         configureBindings();
         configureShooterDefault();
     }
-
+    public double feederRPM;
     // -----------------------------
     //     intake?
     // -----------------------------
@@ -153,6 +160,15 @@ public class RobotContainer {
             new TalonFX(Intake.INTAKE_ARM_CAN_ID)
         );
 
+    // -----------------------------
+    //     agitator!!!!
+    // -----------------------------
+
+    public final AgitatorSubsystem agitatorSubsystem = 
+        new AgitatorSubsystem(
+            new TalonFXS(Agitator.AGITATOR_CAN_ID)
+        );
+    public double agitatorRPM;
     /**
      * Shooter default behavior: use the trained model.json
      */
@@ -221,7 +237,11 @@ public class RobotContainer {
         // Shooter
         // ---------------------------------
 
-        SmartDashboard.putNumber("Shooter RPM", shooterRPM);
+        SmartDashboard.putNumber("Shooter/Shooter Idle RPM", shooterRPM);
+        SmartDashboard.putNumber("Shooter/ShooterShootRPM", shooterShootRPM);
+        joystick.y()
+            .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederSubsystem, shooterSubsystem));
+        
 
 
 
@@ -242,8 +262,10 @@ public class RobotContainer {
     }
 
     public void updateDashboard(){
-        shooterRPM = SmartDashboard.getNumber("Shooter/Shooter RPM", shooterRPM);
+        shooterRPM = SmartDashboard.getNumber("Shooter/Shooter Idle RPM", shooterRPM);
+        shooterShootRPM = SmartDashboard.getNumber("Shooter/ShooterShootRPM", shooterShootRPM);
         SmartDashboard.putNumber("Feeder/Feeder RPM", feederSubsystem.getVelocityRPM());
+
 
         visionBLUsystem.addVisionMeasurementToDrivetrain();
         visionYELsystem.addVisionMeasurementToDrivetrain();

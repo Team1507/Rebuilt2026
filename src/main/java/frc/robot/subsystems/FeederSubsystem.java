@@ -5,9 +5,10 @@ import static edu.wpi.first.units.Units.Hertz;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 // CTRE Libraries
-import com.ctre.phoenix6.configs.TalonFXSConfiguration;
-import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
@@ -28,11 +29,11 @@ import frc.robot.subsystems.lib.Subsystems1507;
 
 public class FeederSubsystem extends Subsystems1507 {
 
-    private final TalonFXS feedermotor;
+    private final TalonFX feedermotor;
     private final GearRatio ratio; 
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
-    public FeederSubsystem(TalonFXS feedermotor, GearRatio ratio) {
+    public FeederSubsystem(TalonFX feedermotor, GearRatio ratio) {
         this.feedermotor = feedermotor;
         this.ratio = ratio;
         configureMotor();
@@ -48,8 +49,7 @@ public class FeederSubsystem extends Subsystems1507 {
      */
     private void configureMotor() {
         
-        TalonFXSConfiguration cfg = new TalonFXSConfiguration();
-        cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
+         TalonFXConfiguration cfg = new TalonFXConfiguration();
 
         cfg.Slot0.kP = Gains.KP;
         cfg.Slot0.kI = Gains.KI;
