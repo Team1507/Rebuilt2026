@@ -16,7 +16,8 @@ import frc.robot.Constants.Shooter;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CmdShoot extends Command {
 
-  public final FeederSubsystem feederSubsystem;
+  public final FeederSubsystem feederBLUsystem;
+  public final FeederSubsystem feederYELsystem;
   public final AgitatorSubsystem agitatorSubsystem;
   public final ShooterSubsystem shooterSubsystem;
   public final double shooterTargetRPM;
@@ -25,18 +26,20 @@ public class CmdShoot extends Command {
   public boolean shooterReachedTarget = false;
 
   /** Creates a new CmdShoot. */
-  public CmdShoot(double shooterRPM, double feederRPM, double agitatorRPM, AgitatorSubsystem agitatorSubsystem, FeederSubsystem feederSubsystem, ShooterSubsystem shooterSubsystem) {
+  public CmdShoot(double shooterRPM, double feederRPM, double agitatorRPM, AgitatorSubsystem agitatorSubsystem, FeederSubsystem feederBLUsystem, FeederSubsystem feederYELsystem, ShooterSubsystem shooterSubsystem) {
     // Use addRequirements() here to declare subsystem dependencies.
 
     this.agitatorSubsystem = agitatorSubsystem;
-    this.feederSubsystem = feederSubsystem;
+    this.feederBLUsystem = feederBLUsystem;
+    this.feederYELsystem = feederYELsystem;
     this.shooterSubsystem = shooterSubsystem;
     this.shooterTargetRPM = shooterRPM;
     this.feederTargetRPM = feederRPM;
     this.agitatorTargetRPM = agitatorRPM;
 
     addRequirements(agitatorSubsystem);
-    addRequirements(feederSubsystem);
+    addRequirements(feederBLUsystem);
+    addRequirements(feederYELsystem);
     addRequirements(shooterSubsystem);
   }
 
@@ -59,7 +62,8 @@ public class CmdShoot extends Command {
     }
 
     if(shooterReachedTarget){
-      feederSubsystem.setVelocityRPM(feederTargetRPM);
+      feederBLUsystem.setVelocityRPM(feederTargetRPM);
+      feederYELsystem.setVelocityRPM(feederTargetRPM);
       agitatorSubsystem.setVelocityRPM(agitatorTargetRPM);
     }
 
@@ -68,7 +72,8 @@ public class CmdShoot extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    feederSubsystem.setVelocityRPM(0.0);
+    feederBLUsystem.setVelocityRPM(0.0);
+    feederYELsystem.setVelocityRPM(0.0);
     agitatorSubsystem.setVelocityRPM(0.0);
     shooterSubsystem.setTargetRPM(2000);
   }

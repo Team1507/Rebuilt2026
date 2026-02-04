@@ -63,5 +63,9 @@ public class AgitatorSubsystem extends Subsystems1507 {
     double agitatorRPM = agitatorRPS * 60.0;
     return agitatorRPM;
   }
-  
+
+   /** Stop motor */
+    public void stopMotor() {
+        agitatorMotor.set(0);
+  }
 }

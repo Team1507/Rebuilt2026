@@ -2,40 +2,42 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.intake;
+package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.AgitatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class CmdIntakeRoller extends Command {
+public class CmdAgitatorAgitate extends Command {
 
-  public final IntakeSubsystem intakeSubsystem;
-   public final double targetPower;
-
-  /** Creates a new CmdIntakeRoller. */
-  public CmdIntakeRoller(IntakeSubsystem intakeSubsystem, double power) {
-    this.intakeSubsystem = intakeSubsystem;
-    this.targetPower = power;
+  public final AgitatorSubsystem agitatorSubsystem;
+  public final double targetRPM;
+  public boolean FeederFeeding = true;
+  public CmdAgitatorAgitate(double RPM, AgitatorSubsystem agitatorSubsystem) {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(intakeSubsystem);
+    this.agitatorSubsystem = agitatorSubsystem;
+    this.targetRPM = RPM;
+
+    addRequirements(agitatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    agitatorSubsystem.setVelocityRPM(targetRPM);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    intakeSubsystem.setpower(targetPower);
+    agitatorSubsystem.setVelocityRPM(targetRPM);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intakeSubsystem.stop();
+    agitatorSubsystem.stopMotor();
   }
 
   // Returns true when the command should end.
