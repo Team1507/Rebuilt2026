@@ -136,15 +136,15 @@ public class Constants {
     public static final class Vision{
         // --- April Tags ---
         public static final AprilTagFieldLayout APRILTAG_LAYOUT =
-            AprilTagFields.k2026RebuiltAndymark.loadAprilTagLayoutField();
+            AprilTagFields.k2026RebuiltWelded.loadAprilTagLayoutField();
 
         public static final class BLU {
             // Photon Vision
             public static final String NANME = "Bluecam";
             public static final Transform3d CAMERA_TO_ROBOT =
                 new Transform3d(
-                    new Translation3d(0.381, 0.0, 0.1905), // meters: forward, left, up
-                    new Rotation3d(0,0,0)     // radians: pitch, yaw, roll
+                    new Translation3d(-0.311, 0.311, 0.2413), // meters: forward, left, up
+                    new Rotation3d(0,0,Math.toRadians(150.5))     // radians: pitch, yaw, roll 
                 );
 
             // Standard deviations for measurement trust
@@ -160,8 +160,8 @@ public class Constants {
             public static final String NANME = "Yellowcam";
             public static final Transform3d CAMERA_TO_ROBOT =
                 new Transform3d(
-                    new Translation3d(0.381, 0.0, 0.1905), // meters: forward, left, up
-                    new Rotation3d(0,0,0)     // radians: pitch, yaw, roll
+                    new Translation3d(-0.311, -0.311, 0.2413), // meters: forward, left, up
+                    new Rotation3d(0,0,Math.toRadians(209.5))     // radians: pitch, yaw, roll
                 );
 
             // Standard deviations for measurement trust
@@ -178,8 +178,7 @@ public class Constants {
         // ============================================================
         // Hardware
         // ============================================================
-        public static final int SHOOTER_CAN_ID = 17;
-
+        public static final int SHOOTER_CAN_ID = 19;
         // Maximum wheel RPM (for UI, clamping, etc.)
         public static final double MAX_RPM = 2400.0;
 
@@ -234,34 +233,60 @@ public class Constants {
         }
     }
     public static final class Feeder {
-        // ============================================================
-        // Hardware
-        // ============================================================
-        public static final int FEEDER_CAN_ID = 18;
+        public static final class BLU{
+
+        
+            // ============================================================
+            // Hardware
+            // ============================================================
+            public static final int CAN_ID = 20;
 
             // ============================================================
-        // Control Gains (Phoenix Slot0)
-        // ============================================================
-        public static final class Gains {
-            // PID
-            public static final double KP = 0.11;  // 0.013
-            public static final double KI = 0.0;
-            public static final double KD = 0.0;
+            // Control Gains (Phoenix Slot0)
+            // ============================================================
+            public static final class Gains {
+                // PID
+                public static final double KP = 0.11;  // 0.013
+                public static final double KI = 0.0;
+                public static final double KD = 0.0;
 
-            // Feedforward
-            public static final double KV = 0.09375;  // volts per motor RPS  0.1353
-            public static final double KS = 0.245;
-            public static final double KA = 0.0;
+                // Feedforward
+                public static final double KV = 0.09375;  // volts per motor RPS  0.1353
+                public static final double KS = 0.245;
+                public static final double KA = 0.0;
+            }
         }
-       
+
+        public static final class YEL{
+
         
+            // ============================================================
+            // Hardware
+            // ============================================================
+            public static final int CAN_ID = 18;
+
+            // ============================================================
+            // Control Gains (Phoenix Slot0)
+            // ============================================================
+            public static final class Gains {
+                // PID
+                public static final double KP = 0.11;  // 0.013
+                public static final double KI = 0.0;
+                public static final double KD = 0.0;
+
+                // Feedforward
+                public static final double KV = 0.09375;  // volts per motor RPS  0.1353
+                public static final double KS = 0.245;
+                public static final double KA = 0.0;
+            }
+        }
     }
       public static final class Intake {
         // ============================================================
         // Hardware
         // ============================================================
-        public static final int INTAKE_ROLLER_CAN_ID = 30;
-        public static final int INTAKE_ARM_CAN_ID = 21;
+        public static final int INTAKE_ROLLER_CAN_ID = 13;
+        public static final int INTAKE_ARM_CAN_ID = 14;
 
         public static final double INTAKE_ARM_MAX_ANGLE_DEGREES = 90.0;
         public static final double INTAKE_ARM_MIN_ANGLE_DEGREES = 0.0;
@@ -303,7 +328,7 @@ public class Constants {
         // Hardware
         // ============================================================
         public static final int AGITATOR_CAN_ID = 15;
-
+        
             // ============================================================
         // Control Gains (Phoenix Slot0)
         // ============================================================
@@ -357,7 +382,7 @@ public class Constants {
     public static final class FieldElements {
         // --- April Tags ---
         public static final AprilTagFieldLayout APRILTAG_LAYOUT =
-            AprilTagFields.k2025ReefscapeAndyMark.loadAprilTagLayoutField();
+            AprilTagFields.k2026RebuiltAndymark.loadAprilTagLayoutField();
 
         // --- Field ---
         public static final double FIELD_LENGTH = 16.54; // meters

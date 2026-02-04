@@ -135,18 +135,21 @@ public class RobotContainer {
     // -----------------------------
     //      feeder
     // -----------------------------
-    public final FeederSubsystem feederSubsystem =
+    public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
-            new TalonFX(Feeder.FEEDER_CAN_ID),
-            GearRatio.gearBox(1, 1)
+            new TalonFX(Feeder.BLU.CAN_ID),
+            GearRatio.gearBox(1, 1),
+            "BLU"
+        );
+
+    public final FeederSubsystem feederYELsystem =
+        new FeederSubsystem(
+            new TalonFX(Feeder.YEL.CAN_ID),
+            GearRatio.gearBox(1, 1),
+            "YEL"
         );
     private double feederTargetRPM = 500.0;
 
-    public RobotContainer() {
-        configureBindings();
-        configureShooterDefault();
-    }
-    public double feederRPM;
     // -----------------------------
     //     intake?
     // -----------------------------
@@ -159,16 +162,24 @@ public class RobotContainer {
         new IntakeArmSubsystem(
             new TalonFX(Intake.INTAKE_ARM_CAN_ID)
         );
-
     // -----------------------------
-    //     agitator!!!!
+    //     Agitator
     // -----------------------------
-
-    public final AgitatorSubsystem agitatorSubsystem = 
+     public final AgitatorSubsystem agitatorSubsystem =
         new AgitatorSubsystem(
             new TalonFXS(Agitator.AGITATOR_CAN_ID)
+            
         );
-    public double agitatorRPM;
+
+    private double AgitatorTargetRPM = 500.0;
+
+
+    public RobotContainer() {
+        configureBindings();
+        configureShooterDefault();
+        configureAutoChooser();
+    }
+
     /**
      * Shooter default behavior: use the trained model.json
      */
@@ -224,7 +235,9 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("Feeder/Target RPM", feederTargetRPM);
         joystick.b()
-            .whileTrue(new CmdFeederFeed(feederTargetRPM, feederSubsystem));
+            .whileTrue(new CmdFeederFeed(feederTargetRPM, feederBLUsystem));
+        joystick.b()
+            .whileTrue(new CmdFeederFeed(feederTargetRPM, feederYELsystem));
 
         // ---------------------------------
         // Intake?
@@ -240,7 +253,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("Shooter/Shooter Idle RPM", shooterRPM);
         SmartDashboard.putNumber("Shooter/ShooterShootRPM", shooterShootRPM);
         joystick.y()
-            .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederSubsystem, shooterSubsystem));
+            .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterSubsystem));
         
 
 
@@ -248,29 +261,15 @@ public class RobotContainer {
         // PID Tuner
         SmartDashboard.putData( 
             "Run Shooter PID Tuner",
-            new CmdShooterPIDTuner(shooterSubsystem, MAX_RPM) // max RPM here
-            
+            new CmdShooterPIDTuner(shooterSubsystem, MAX_RPM) // max RPM here    
         );
+
+        drivetrain.registerTelemetry(logger::telemeterize);
     }
 
-    public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
-    }
+    private void configureAutoChooser() {
 
-    private double applyDeadband(double value, double deadband) {
-        return (Math.abs(value) < deadband) ? 0.0 : value;
-    }
-
-    public void updateDashboard(){
-        shooterRPM = SmartDashboard.getNumber("Shooter/Shooter Idle RPM", shooterRPM);
-        shooterShootRPM = SmartDashboard.getNumber("Shooter/ShooterShootRPM", shooterShootRPM);
-        SmartDashboard.putNumber("Feeder/Feeder RPM", feederSubsystem.getVelocityRPM());
-
-
-        visionBLUsystem.addVisionMeasurementToDrivetrain();
-        visionYELsystem.addVisionMeasurementToDrivetrain();
-
-         // Default auto
+        // Default auto
         autoChooser.setDefaultOption(
             "Auto Do Nothing",
             Commands.print("Doing nothing")
@@ -278,13 +277,27 @@ public class RobotContainer {
     
         // Example autos using your new builder
         autoChooser.addOption(
-            "Auto Sample",
+            "One Piece Auto",
             AutoSample.build(drivetrain)
         );
     
         // Publish to dashboard
         SmartDashboard.putData("Auto Mode", autoChooser);
+    }    
+
+    public Command getAutonomousCommand() {
+        return autoChooser.getSelected();
+    }    
+
+    private double applyDeadband(double value, double deadband) {
+        return (Math.abs(value) < deadband) ? 0.0 : value;
+    }
+
+    public void updateDashboard(){
+        shooterRPM = SmartDashboard.getNumber("Shooter/Shooter RPM", shooterRPM);
+        SmartDashboard.putNumber("Feeder/Blue RPM", feederBLUsystem.getVelocityRPM());
+        SmartDashboard.putNumber("Feeder/Yellow RPM", feederYELsystem.getVelocityRPM());
+
+        SmartDashboard.putNumber("Pigeon heading", drivetrain.getPigeon2().getRotation2d().getDegrees());
     }
 }
-
-
