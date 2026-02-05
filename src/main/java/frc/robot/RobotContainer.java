@@ -227,6 +227,14 @@ public class RobotContainer {
 
         // Reset the field-centric heading on left bumper press.
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        joystick.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        joystick.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+
+        if (joystick.getHID().getLeftBumper()) {
+            TunerConstants.drivespeed = 2.0;
+        } else {
+            TunerConstants.drivespeed = 4.79;
+        }
         
 
         // ---------------------------------
@@ -243,7 +251,7 @@ public class RobotContainer {
         // Intake?
         // ---------------------------------
 
-        joystick.a()
+        joystick.leftTrigger()
             .whileTrue(new CmdIntakeDeploy(intakeArmSubsystem, intakeSubsystem));
 
         // ---------------------------------
@@ -252,7 +260,7 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("Shooter/Shooter Idle RPM", shooterRPM);
         SmartDashboard.putNumber("Shooter/ShooterShootRPM", shooterShootRPM);
-        joystick.y()
+        joystick.rightTrigger()
             .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterSubsystem));
         
 

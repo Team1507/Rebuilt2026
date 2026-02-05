@@ -9,10 +9,8 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // CTRE Imports
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 
@@ -34,10 +32,9 @@ public class HopperSubsystem extends Subsystems1507 {
   }
   private void configureMotor() {
             
-        TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-        TalonFXSConfiguration config = new TalonFXSConfiguration();
-        config.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
+        TalonFXSConfiguration cfg = new TalonFXSConfiguration();
+        cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
         cfg.Slot0.kP = Gains.Arm.KP;
         cfg.Slot0.kI = Gains.Arm.KI;
         cfg.Slot0.kD = Gains.Arm.KD;
@@ -50,7 +47,7 @@ public class HopperSubsystem extends Subsystems1507 {
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
                     .withPeakReverseVoltage(Volts.of(-8));
 
-        hopperMotor.getConfigurator().apply(config);
+        hopperMotor.getConfigurator().apply(cfg);
     }
 
     public void setPosition(double degrees){
