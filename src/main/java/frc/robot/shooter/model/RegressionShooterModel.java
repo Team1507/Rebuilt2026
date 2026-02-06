@@ -8,7 +8,6 @@
 
 package frc.robot.shooter.model;
 
-import frc.robot.shooter.data.PoseSupplier;
 import frc.robot.shooter.data.ShotRecord;
 
 public class RegressionShooterModel implements ShooterModel {
@@ -21,9 +20,7 @@ public class RegressionShooterModel implements ShooterModel {
     private final double f; // shotsInBurst
     private final double g; // bias
 
-    private final PoseSupplier poseSupplier;
-
-    public RegressionShooterModel(ModelConfig config, PoseSupplier poseSupplier) {
+    public RegressionShooterModel(ModelConfig config) {
         this.a = config.a;
         this.b = config.b;
         this.c = config.c;
@@ -31,8 +28,6 @@ public class RegressionShooterModel implements ShooterModel {
         this.e = config.e;
         this.f = config.f;
         this.g = config.g;
-
-        this.poseSupplier = poseSupplier;
     }
 
     @Override

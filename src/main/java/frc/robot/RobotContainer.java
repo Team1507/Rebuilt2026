@@ -9,6 +9,9 @@
 //reorganize imports later
 package frc.robot;
 
+import java.util.Optional;
+import java.util.function.Supplier;
+
 // CTRE Imports
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -22,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.*;
@@ -29,11 +33,11 @@ import static edu.wpi.first.units.Units.*;
 // Commands
 import frc.robot.commands.CmdFeederFeed;
 import frc.robot.commands.CmdIntakeDeploy;
+import frc.robot.commands.CmdMoveToPose;
 import frc.robot.commands.CmdShooterPIDTuner;
 import frc.robot.commands.CmdShoot;
 
 // Shooter
-import frc.robot.shooter.data.PoseSupplier;
 import frc.robot.shooter.data.ShotTrainer;
 import frc.robot.shooter.model.ModelLoader;
 import frc.robot.shooter.model.ShooterModel;
@@ -66,6 +70,7 @@ import frc.robot.Constants.kVision;
 import static frc.robot.Constants.kShooter.*;
 
 // Autos
+import frc.robot.auto.AutoCapabilities;
 import frc.robot.auto.routines.AutoSample;
 
 
@@ -116,7 +121,7 @@ public class RobotContainer {
     // -----------------------------
     private final GearRatio ratio = GearRatio.gearBox(1, 2);
     
-    private final PoseSupplier poseSupplier = () -> drivetrain.getState().Pose;
+    private final Supplier<Pose2d> poseSupplier = () -> drivetrain.getState().Pose;
 
     // Load model.json from deploy directory
     private final ShooterModel shooterModelConfig =
@@ -363,12 +368,28 @@ public class RobotContainer {
             Commands.print("Doing nothing")
         );
     
-        // Example autos using your new builder
+        // --- Autonomous Capabilities Wiring ---
+
+        AutoCapabilities autoCaps = new AutoCapabilities(
+            // 1. moveTo: Pose2d → Command
+            pose -> new CmdMoveToPose(drivetrain, pose, MaxSpeed, MaxAngularRate),
+
+            // 2. intake: Optional<Supplier<Command>>
+            Optional.of(() -> new CmdIntakeDeploy(intakeArmSubsystem, intakeSubsystem)),
+
+            // 3. score: Optional<Supplier<Command>>
+            Optional.of(() -> new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterBLUsystem)),
+
+            // 4. waitSeconds: Double → Command
+            seconds -> Commands.waitSeconds(seconds)
+        );
+
+        // --- Example autos using the new builder ---
         autoChooser.addOption(
             "One Piece Auto",
-            AutoSample.build(drivetrain, MaxSpeed, MaxAngularRate)
+            AutoSample.build(autoCaps, MaxSpeed, MaxAngularRate)
         );
-    
+
         // Publish to dashboard
         SmartDashboard.putData("Auto Mode", autoChooser);
     }    

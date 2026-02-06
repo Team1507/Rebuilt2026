@@ -11,6 +11,7 @@ package frc.robot.shooter.data;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -22,7 +23,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 public class ShotTrainer {
 
     private final TalonFX shooterMotor;
-    private final PoseSupplier poseSupplier;
+    private final Supplier<Pose2d> poseSupplier;
     private Translation2d targetPose;
 
 
@@ -37,7 +38,7 @@ public class ShotTrainer {
             .getTable("Shooter")
             .getSubTable("UnlabeledShots");
 
-    public ShotTrainer(TalonFX shooterMotor, PoseSupplier poseSupplier, Translation2d targetPose) {
+    public ShotTrainer(TalonFX shooterMotor, Supplier<Pose2d> poseSupplier, Translation2d targetPose) {
         this.shooterMotor = shooterMotor;
         this.poseSupplier = poseSupplier;
         this.targetPose = targetPose;
@@ -49,7 +50,7 @@ public class ShotTrainer {
 
     private void recordShot(double timestampSeconds) {
 
-        Pose2d pose = poseSupplier.getPose();
+        Pose2d pose = poseSupplier.get();
         double distance = pose.getTranslation().getDistance(targetPose);
 
         double rpm = shooterMotor.getClosedLoopReference().getValueAsDouble();
@@ -81,9 +82,6 @@ public class ShotTrainer {
         t.getEntry("stator").setDouble(r.statorCurrent);
         t.getEntry("supply").setDouble(r.supplyCurrent);
         t.getEntry("error").setDouble(r.closedLoopError);
-
-        // Elastic dropdown
-        t.getEntry("distance").setDouble(r.distanceToTarget);
     }
 
     public void update() {

@@ -8,6 +8,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 // CTRE Libraries
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -27,7 +29,6 @@ import frc.robot.mechanics.GearRatio;
 import frc.robot.mechanics.FlywheelModel;
 
 // Shooter Model
-import frc.robot.shooter.data.PoseSupplier;
 import frc.robot.shooter.data.ShotRecord;
 import frc.robot.shooter.model.ShooterModel;
 
@@ -74,7 +75,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private static final ShooterModel DEFAULT_MODEL = null;
 
     /** Default pose supplier returning origin. */
-    private static final PoseSupplier DEFAULT_POSE_SUPPLIER = () -> new Pose2d();
+    private static final Supplier<Pose2d> DEFAULT_POSE_SUPPLIER = () -> new Pose2d();
 
     /** Default target pose for model-driven shooters. */
     private static final Pose2d DEFAULT_TARGET_POSE = new Pose2d();
@@ -105,8 +106,9 @@ public class ShooterSubsystem extends SubsystemBase {
     // ------------------------------------------------------------
 
     private final ShooterModel model;
-    private final PoseSupplier poseSupplier;
+    private final Supplier<Pose2d> poseSupplier;
     private Pose2d targetPose;
+    private final ShooterKinematics kinematics;
 
     /** Phoenix 6 uses motor RPS internally. */
     private double targetMotorRPS = 0.0;
@@ -160,7 +162,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem(
         TalonFX shooterMotor,
         ShooterModel model,
-        PoseSupplier poseSupplier,
+        Supplier<Pose2d> poseSupplier,
         Pose2d targetPose,
         Transform2d shooterOffset
     ) {
@@ -192,7 +194,7 @@ public class ShooterSubsystem extends SubsystemBase {
         TalonFX shooterMotor,
         GearRatio ratio,
         ShooterModel model,
-        PoseSupplier poseSupplier,
+        Supplier<Pose2d> poseSupplier,
         Pose2d targetPose,
         Transform2d shooterOffset
     ) {
@@ -232,7 +234,7 @@ public class ShooterSubsystem extends SubsystemBase {
         GearRatio ratio,
         FlywheelModel flywheel,
         ShooterModel model,
-        PoseSupplier poseSupplier,
+        Supplier<Pose2d> poseSupplier,
         Pose2d targetPose,
         Transform2d shooterOffset
     ) {
@@ -243,6 +245,8 @@ public class ShooterSubsystem extends SubsystemBase {
         this.poseSupplier = poseSupplier;
         this.targetPose = targetPose;
         this.shooterOffset = shooterOffset;
+
+        this.kinematics = new ShooterKinematics(shooterOffset);
 
         configureBLUPID();
     }
@@ -333,7 +337,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return pose of the shooter
      */
     public Pose2d getShooterPose() {
-        return poseSupplier.getPose().transformBy(shooterOffset);
+        return kinematics.shooterPose(poseSupplier.get());
     }
 
     // ------------------------------------------------------------
@@ -346,8 +350,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return telemetry snapshot
      */
     private ShotRecord buildTelemetry() {
-        Pose2d robotPose = poseSupplier.getPose();
-        Pose2d shooterPose = robotPose.transformBy(shooterOffset);
+        Pose2d robotPose = poseSupplier.get();
+        Pose2d shooterPose = kinematics.shooterPose(robotPose);
 
         double distance = shooterPose.getTranslation().getDistance(targetPose.getTranslation());
 
@@ -495,5 +499,21 @@ public class ShooterSubsystem extends SubsystemBase {
         // 5. Step flywheel physics
         if (flywheel != null)
             simWheelRPM = flywheel.stepRPM(simWheelRPM, simVoltage, dt);
+    }
+
+    // ------------------------------------------------------------
+    // Internal helper
+    // ------------------------------------------------------------ 
+    
+    private static class ShooterKinematics {
+        private final Transform2d offset;
+        
+        ShooterKinematics(Transform2d offset) {
+            this.offset = offset;
+        }
+        
+        Pose2d shooterPose(Pose2d robotPose) {
+            return robotPose.transformBy(offset);
+        }
     }
 }

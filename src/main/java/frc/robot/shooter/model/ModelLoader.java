@@ -10,15 +10,17 @@ package frc.robot.shooter.model;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
 
-import frc.robot.shooter.data.PoseSupplier;
+import edu.wpi.first.math.geometry.Pose2d;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class ModelLoader {
 
-    public static ShooterModel load(String path, PoseSupplier poseSupplier) {
+    public static ShooterModel load(String path, Supplier<Pose2d> poseSupplier) {
         try {
             String json = Files.readString(Path.of(path));
 
