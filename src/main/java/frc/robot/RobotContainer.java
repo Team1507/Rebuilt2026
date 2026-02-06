@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.CmdFeederFeed;
 import frc.robot.commands.CmdIntakeDeploy;
 import frc.robot.commands.CmdShooterPIDTuner;
+import frc.robot.commands.CmdShoot;
 
 // Shooter
 import frc.robot.shooter.data.PoseSupplier;
@@ -40,6 +41,10 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.PhotonVisionSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystem;
+import frc.robot.subsystems.AgitatorSubsystem;
+import frc.robot.subsystems.HopperSubsystem;
+import frc.robot.subsystems.IntakeArmSubsystem;
+import frc.robot.subsystems.PhotonVisionSubsystem;
 
 // Robot Extra
 import frc.robot.utilities.Telemetry;
@@ -47,10 +52,11 @@ import frc.robot.navigation.Nodes.AllianceZoneBlue;
 import frc.robot.navigation.Nodes.Hub;
 import frc.robot.generated.TunerConstants;
 import frc.robot.mechanics.GearRatio;
-
+import frc.robot.Constants.Agitator;
 // Constants
 import frc.robot.Constants.Feeder;
 import frc.robot.Constants.Intake;
+import frc.robot.Constants.Shooter;
 import frc.robot.Constants.Vision;
 import frc.robot.auto.routines.AutoSample;
 
@@ -120,7 +126,8 @@ public class RobotContainer {
         );
 
     //declare shooter RPM variable
-    public double shooterRPM;
+    public double shooterRPM = 3000;
+    public double shooterShootRPM = 5000;
 
     public final ShotTrainer shotTrainer =
         new ShotTrainer(
@@ -133,14 +140,14 @@ public class RobotContainer {
     // -----------------------------
     public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
-            new TalonFXS(Feeder.BLU.CAN_ID),
+            new TalonFX(Feeder.BLU.CAN_ID),
             GearRatio.gearBox(1, 1),
             "BLU"
         );
 
     public final FeederSubsystem feederYELsystem =
         new FeederSubsystem(
-            new TalonFXS(Feeder.YEL.CAN_ID),
+            new TalonFX(Feeder.YEL.CAN_ID),
             GearRatio.gearBox(1, 1),
             "YEL"
         );
@@ -156,8 +163,19 @@ public class RobotContainer {
 
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
-            new TalonFX(Intake.INTAKE_ARM_CAN_ID)
+            new TalonFXS(Intake.INTAKE_LEFT_ARM_CAN_ID),
+            new TalonFXS(Intake.INTAKE_RIGHT_ARM_CAN_ID)
         );
+    // -----------------------------
+    //     Agitator
+    // -----------------------------
+     public final AgitatorSubsystem agitatorSubsystem =
+        new AgitatorSubsystem(
+            new TalonFXS(Agitator.AGITATOR_CAN_ID)
+            
+        );
+
+    private double AgitatorTargetRPM = 500.0;
 
 
     public RobotContainer() {
@@ -223,6 +241,15 @@ public class RobotContainer {
             MaxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
             MaxAngularRate = RotationsPerSecond.of(.75).in(RadiansPerSecond);
         }));
+        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        joystick.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        joystick.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+
+        if (joystick.getHID().getLeftBumper()) {
+            TunerConstants.drivespeed = 2.0;
+        } else {
+            TunerConstants.drivespeed = 4.79;
+        }
         
 
         // ---------------------------------
@@ -239,14 +266,18 @@ public class RobotContainer {
         // Intake?
         // ---------------------------------
 
-        joystick.a()
+        joystick.leftTrigger()
             .whileTrue(new CmdIntakeDeploy(intakeArmSubsystem, intakeSubsystem));
 
         // ---------------------------------
         // Shooter
         // ---------------------------------
 
-        SmartDashboard.putNumber("Shooter RPM", shooterRPM);
+        SmartDashboard.putNumber("Shooter/Shooter Idle RPM", shooterRPM);
+        SmartDashboard.putNumber("Shooter/ShooterShootRPM", shooterShootRPM);
+        joystick.rightTrigger()
+            .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterSubsystem));
+        
 
 
 

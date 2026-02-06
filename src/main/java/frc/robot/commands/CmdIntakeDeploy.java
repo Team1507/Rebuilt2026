@@ -8,6 +8,9 @@ import static frc.robot.Constants.Intake.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystem;
+import frc.robot.commands.CmdAgitatorAgitate;
+import frc.robot.commands.CmdIntakeDeploy;
+
 
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
