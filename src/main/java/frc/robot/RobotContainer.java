@@ -160,7 +160,8 @@ public class RobotContainer {
 
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
-            new TalonFX(Intake.INTAKE_ARM_CAN_ID)
+            new TalonFXS(Intake.INTAKE_LEFT_ARM_CAN_ID),
+            new TalonFXS(Intake.INTAKE_RIGHT_ARM_CAN_ID)
         );
     // -----------------------------
     //     Agitator

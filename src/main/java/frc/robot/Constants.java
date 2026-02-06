@@ -286,7 +286,8 @@ public class Constants {
         // Hardware
         // ============================================================
         public static final int INTAKE_ROLLER_CAN_ID = 13;
-        public static final int INTAKE_ARM_CAN_ID = 14;
+        public static final int INTAKE_LEFT_ARM_CAN_ID = 14;
+        public static final int INTAKE_RIGHT_ARM_CAN_ID = 27;
 
         public static final double INTAKE_ARM_MAX_ANGLE_DEGREES = 90.0;
         public static final double INTAKE_ARM_MIN_ANGLE_DEGREES = 0.0;
