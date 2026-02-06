@@ -19,6 +19,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.LinkedList;
@@ -141,10 +142,28 @@ public class Vision extends SubsystemBase {
                 }
             }
 
-            Logger.recordOutput("Vision/" + io[cam].getName() + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
-            Logger.recordOutput("Vision/" + io[cam].getName() + "/RobotPoses", robotPoses.toArray(new Pose3d[0]));
-            Logger.recordOutput("Vision/" + io[cam].getName() + "/RobotPosesAccepted", robotPosesAccepted.toArray(new Pose3d[0]));
-            Logger.recordOutput("Vision/" + io[cam].getName() + "/RobotPosesRejected", robotPosesRejected.toArray(new Pose3d[0]));
+            // --- SMARTDASHBOARD PER-CAMERA TELEMETRY ---
+            String camName = io[cam].getName();
+
+            // Connection status
+            SmartDashboard.putBoolean("Vision/" + camName + "/Connected", inputs[cam].connected);
+
+            // Tag count
+            SmartDashboard.putNumber("Vision/" + camName + "/TagCount", inputs[cam].tagIds.length);
+
+            // Has target
+            boolean hasTarget = inputs[cam].latestTargetObservation != null;
+            SmartDashboard.putBoolean("Vision/" + camName + "/HasTarget", hasTarget);
+
+            // Accepted / rejected counts
+            SmartDashboard.putNumber("Vision/" + camName + "/AcceptedCount", robotPosesAccepted.size());
+            SmartDashboard.putNumber("Vision/" + camName + "/RejectedCount", robotPosesRejected.size());
+
+
+                        Logger.recordOutput("Vision/" + io[cam].getName() + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
+            Logger.recordOutput("Vision/" + camName + "/RobotPoses", robotPoses.toArray(new Pose3d[0]));
+            Logger.recordOutput("Vision/" + camName + "/RobotPosesAccepted", robotPosesAccepted.toArray(new Pose3d[0]));
+            Logger.recordOutput("Vision/" + camName + "/RobotPosesRejected", robotPosesRejected.toArray(new Pose3d[0]));
 
             allTagPoses.addAll(tagPoses);
             allRobotPoses.addAll(robotPoses);
