@@ -1,3 +1,11 @@
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
+
 package frc.robot.subsystems;
 
 // CTRE Libraries
@@ -24,8 +32,9 @@ import frc.robot.shooter.data.ShotRecord;
 import frc.robot.shooter.model.ShooterModel;
 
 // Constants
-import frc.robot.Constants.Shooter;
-import frc.robot.Constants.Shooter.Gains;
+import frc.robot.Constants.kShooter;
+import frc.robot.Constants.kShooter.BLU;
+import frc.robot.Constants.kShooter.YEL;
 
 /**
  * ShooterSubsystem provides a unified interface for controlling a flywheel‑based shooter.
@@ -235,7 +244,7 @@ public class ShooterSubsystem extends SubsystemBase {
         this.targetPose = targetPose;
         this.shooterOffset = shooterOffset;
 
-        configurePID();
+        configureBLUPID();
     }
 
     // ------------------------------------------------------------
@@ -243,19 +252,19 @@ public class ShooterSubsystem extends SubsystemBase {
     // ------------------------------------------------------------
 
     /**
-     * Applies PID and feedforward gains from {@link Shooter.Gains}
+     * Applies PID and feedforward gains from {@link kShooter.kGains}
      * to the TalonFX Slot0 configuration.
      */
-    private void configurePID() {
+    private void configureBLUPID() {
         TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-        cfg.Slot0.kP = Gains.KP;
-        cfg.Slot0.kI = Gains.KI;
-        cfg.Slot0.kD = Gains.KD;
+        cfg.Slot0.kP = BLU.kGains.KP;
+        cfg.Slot0.kI = BLU.kGains.KI;
+        cfg.Slot0.kD = BLU.kGains.KD;
 
-        cfg.Slot0.kV = Gains.KV;
-        cfg.Slot0.kS = Gains.KS;
-        cfg.Slot0.kA = Gains.KA;
+        cfg.Slot0.kV = BLU.kGains.KV;
+        cfg.Slot0.kS = BLU.kGains.KS;
+        cfg.Slot0.kA = BLU.kGains.KA;
 
         shooterMotor.getConfigurator().apply(cfg);
     }
@@ -454,24 +463,24 @@ public class ShooterSubsystem extends SubsystemBase {
         double motorRPS = ratio.toMotor(wheelRPS);
 
         // 1. Sensor filtering
-        double alphaSensor = dt / (Shooter.Sim.SENSOR_FILTER_TIME_CONSTANT + dt);
+        double alphaSensor = dt / (kShooter.kSim.SENSOR_FILTER_TIME_CONSTANT + dt);
         simMotorRpsMeasured += alphaSensor * (motorRPS - simMotorRpsMeasured);
 
         // 2. Command filtering
-        double alphaCommand = dt / (Shooter.Sim.COMMAND_FILTER_TIME_CONSTANT + dt);
+        double alphaCommand = dt / (kShooter.kSim.COMMAND_FILTER_TIME_CONSTANT + dt);
         simMotorRpsCommanded += alphaCommand * (targetMotorRPS - simMotorRpsCommanded);
 
         // 3. Phoenix-like control law
         double errorRPS = simMotorRpsCommanded - simMotorRpsMeasured;
 
-        double ffVolts = Gains.KV * simMotorRpsCommanded;
-        double ksVolts = Gains.KS * Math.signum(simMotorRpsCommanded);
-        double fbVolts = Gains.KP * errorRPS;
+        double ffVolts = BLU.kGains.KV * simMotorRpsCommanded;
+        double ksVolts = BLU.kGains.KS * Math.signum(simMotorRpsCommanded);
+        double fbVolts = BLU.kGains.KP * errorRPS;
 
         double desiredVolts = ffVolts + ksVolts + fbVolts;
 
         // 4. Voltage slew rate limiting
-        double maxStep = Shooter.Sim.VOLTAGE_SLEW_RATE * dt;
+        double maxStep = kShooter.kSim.VOLTAGE_SLEW_RATE * dt;
         double delta = desiredVolts - simVoltage;
 
         if (delta > maxStep) delta = maxStep;
@@ -480,8 +489,8 @@ public class ShooterSubsystem extends SubsystemBase {
         simVoltage += delta;
 
         // Clamp to battery
-        simVoltage = Math.max(-Shooter.Sim.MAX_VOLTAGE,
-                              Math.min(Shooter.Sim.MAX_VOLTAGE, simVoltage));
+        simVoltage = Math.max(-kShooter.kSim.MAX_VOLTAGE,
+                              Math.min(kShooter.kSim.MAX_VOLTAGE, simVoltage));
 
         // 5. Step flywheel physics
         if (flywheel != null)

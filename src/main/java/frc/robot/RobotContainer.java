@@ -1,6 +1,10 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
 
 //reorganize imports later
 package frc.robot;
@@ -18,9 +22,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import static edu.wpi.first.units.Units.*;
 
 // Commands
 import frc.robot.commands.CmdFeederFeed;
@@ -39,70 +43,73 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.PhotonVisionSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystem;
 import frc.robot.subsystems.AgitatorSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
-import frc.robot.subsystems.IntakeArmSubsystem;
-import frc.robot.subsystems.PhotonVisionSubsystem;
+
+// Vision
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
 
 // Robot Extra
 import frc.robot.utilities.Telemetry;
-import frc.robot.navigation.Nodes.AllianceZoneBlue;
 import frc.robot.navigation.Nodes.Hub;
 import frc.robot.generated.TunerConstants;
 import frc.robot.mechanics.GearRatio;
-import frc.robot.Constants.Agitator;
+import frc.robot.Constants.kAgitator;
+
 // Constants
-import frc.robot.Constants.Feeder;
-import frc.robot.Constants.Intake;
-import frc.robot.Constants.Shooter;
-import frc.robot.Constants.Vision;
+import frc.robot.Constants.kFeeder;
+import frc.robot.Constants.kIntake;
+import frc.robot.Constants.kShooter;
+import frc.robot.Constants.kVision;
+import static frc.robot.Constants.kShooter.*;
+
+// Autos
 import frc.robot.auto.routines.AutoSample;
 
-import static frc.robot.Constants.Speed.*;
-import static frc.robot.Constants.Shooter.*;
 
-import frc.robot.generated.TunerConstants;
-
-import static edu.wpi.first.units.Units.*;
 public class RobotContainer {
+
+    // Chooser for selecting autonomous routines on the dashboard
     private final SendableChooser<Command> autoChooser = new SendableChooser<>();
-    
-    public static double MaxSpeed = 0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    public static double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+    // Max robot drive speed (scaled from the drivetrain's 12V free speed)
+    public static double MaxSpeed =
+        0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
 
-    private final Telemetry logger = new Telemetry(getMaxSpeed());
+    // Max rotational speed for teleop turning
+    public static double MaxAngularRate =
+        RotationsPerSecond.of(0.75).in(RadiansPerSecond);
+
+    // Base field‑centric drive request with deadbands and open‑loop voltage control
+    private final SwerveRequest.FieldCentric drive =
+        new SwerveRequest.FieldCentric()
+            .withDeadband(MaxSpeed * 0.1)
+            .withRotationalDeadband(MaxAngularRate * 0.1)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+    // Main swerve drivetrain instance generated from Phoenix Tuner configs
+    public final CommandSwerveDrivetrain drivetrain =
+        TunerConstants.createDrivetrain();
+
+    // Telemetry logger for drivetrain and vision data
+    private final Telemetry logger = new Telemetry(MaxSpeed);
+
+    // Primary Xbox controller for driver input
     private final CommandXboxController joystick = new CommandXboxController(0);
 
-
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    
     // -----------------------------
-    // Cameras
+    // Vision
     // -----------------------------
 
-    public final PhotonVisionSubsystem visionBLUsystem = 
-        new PhotonVisionSubsystem(
-            drivetrain,
-            logger,
-            Vision.BLU.NANME,
-            Vision.BLU.CAMERA_TO_ROBOT,
-            Vision.BLU.PHOTONVISION_STD_DEVS
-        );
-    
-    public final PhotonVisionSubsystem visionYELsystem = 
-        new PhotonVisionSubsystem(
-            drivetrain,
-            logger,
-            Vision.YEL.NANME,
-            Vision.YEL.CAMERA_TO_ROBOT,
-            Vision.YEL.PHOTONVISION_STD_DEVS
-        );
+    public final Vision PVManager =
+        new Vision(
+            drivetrain::addVisionMeasurement,
+            drivetrain::getHeading,          // Supplier<Rotation2d>
+            drivetrain::seedPoseFromVision,
+            new VisionIOPhotonVision(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
+            new VisionIOPhotonVision(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
 
     // -----------------------------
     // Shooter + Model
@@ -115,94 +122,101 @@ public class RobotContainer {
     private final ShooterModel shooterModelConfig =
         ModelLoader.load("model.json", poseSupplier);
 
-    public final ShooterSubsystem shooterSubsystem =
+    public final ShooterSubsystem shooterBLUsystem =
         new ShooterSubsystem(
-            new TalonFX(SHOOTER_CAN_ID),
+            new TalonFX(kShooter.BLU.CAN_ID),
             ratio,
             shooterModelConfig,
             poseSupplier,
             Hub.CENTER, // default target
-            SHOOTER_OFFSET
+            kShooter.BLU.ROBOT_TO_SHOOTER
         );
 
     //declare shooter RPM variable
     public double shooterRPM = 3000;
     public double shooterShootRPM = 5000;
 
-    public final ShotTrainer shotTrainer =
+    public final ShotTrainer shotBLUTrainer =
         new ShotTrainer(
-            shooterSubsystem.getShooterMotor(),
+            shooterBLUsystem.getShooterMotor(),
             poseSupplier,
             Hub.CENTER.getTranslation()
         );
+
     // -----------------------------
-    //      feeder
+    // feeder
     // -----------------------------
     public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
-            new TalonFX(Feeder.BLU.CAN_ID),
+            new TalonFX(kFeeder.BLU.CAN_ID),
             GearRatio.gearBox(1, 1),
             "BLU"
         );
 
     public final FeederSubsystem feederYELsystem =
         new FeederSubsystem(
-            new TalonFX(Feeder.YEL.CAN_ID),
+            new TalonFX(kFeeder.YEL.CAN_ID),
             GearRatio.gearBox(1, 1),
             "YEL"
         );
     private double feederTargetRPM = 500.0;
 
     // -----------------------------
-    //     intake?
+    // intake
     // -----------------------------
     public final IntakeSubsystem intakeSubsystem =
         new IntakeSubsystem(
-            new TalonFX(Intake.INTAKE_ROLLER_CAN_ID)
+            new TalonFX(kIntake.kRoller.CAN_ID)
         );
 
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
-            new TalonFXS(Intake.INTAKE_LEFT_ARM_CAN_ID),
-            new TalonFXS(Intake.INTAKE_RIGHT_ARM_CAN_ID)
+            new TalonFXS(kIntake.kArm.BLU.CAN_ID),
+            new TalonFXS(kIntake.kArm.YEL.CAN_ID)
         );
+
     // -----------------------------
-    //     Agitator
+    // Agitator
     // -----------------------------
      public final AgitatorSubsystem agitatorSubsystem =
         new AgitatorSubsystem(
-            new TalonFXS(Agitator.AGITATOR_CAN_ID)
+            new TalonFXS(kAgitator.CAN_ID)
             
         );
 
     private double AgitatorTargetRPM = 500.0;
 
-
+    /**
+     * Constructs the {@code RobotContainer}, the central configuration hub for the robot.
+     * <p>
+     * This initializes all subsystems, loads shooter models, sets up default commands,
+     * binds driver controls, configures vision processing, registers telemetry sources,
+     * builds autonomous routines, and publishes key values to SmartDashboard.
+     * <p>
+     * The constructor ensures that all robot systems are fully wired together before
+     * entering any robot mode, providing a single point of orchestration for runtime behavior.
+     */
     public RobotContainer() {
-        configureBindings();
-        configureShooterDefault();
-        configureAutoChooser();
+        configureTelemetry();
+        configureDefaultCommands();
+        configureDriverControls();
+        configureVision();
+        configureAutos();
+        configureDashboard();
     }
 
     /**
-     * Shooter default behavior: use the trained model.json
+     * Configures the default commands for major subsystems.
+     * <p>
+     * This establishes the continuous behaviors that run whenever no other
+     * commands are scheduled for a subsystem. For the drivetrain, this binds
+     * joystick input to field‑centric swerve control. For the shooter, this
+     * applies the idle RPM target so the flywheel maintains readiness.
+     * <p>
+     * Also registers an idle request during robot disable to ensure neutral
+     * modes are applied consistently.
      */
-    private void configureShooterDefault() {
-
-        shooterSubsystem.setDefaultCommand(
-            Commands.run(
-                () -> {
-                    // Build telemetry → ask model → set RPM
-                    //shooterSubsystem.updateShooterFromModel();
-                    shooterSubsystem.setTargetRPM(shooterRPM);
-                },
-                shooterSubsystem
-            )
-        );
-    }
-    
-
-    private void configureBindings() 
+    private void configureDefaultCommands() 
     {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -221,6 +235,35 @@ public class RobotContainer {
         RobotModeTriggers.disabled().whileTrue(
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
+
+        shooterBLUsystem.setDefaultCommand(
+            Commands.run(
+                () -> 
+                    // Build telemetry → ask model → set RPM
+                    //shooterSubsystem.updateShooterFromModel();
+                    shooterBLUsystem.setTargetRPM(shooterRPM),
+                shooterBLUsystem
+            )
+        );
+    }
+
+    /**
+     * Binds all driver and operator controller inputs to their respective actions.
+     * <p>
+     * This includes:
+     * <ul>
+     *   <li>SysId routines for drivetrain characterization</li>
+     *   <li>Heading reset and drive‑mode scaling</li>
+     *   <li>Feeder, intake, shooter, and agitator command bindings</li>
+     * </ul>
+     * The method centralizes all human‑interface logic so that control mappings
+     * remain easy to audit and modify.
+     */
+    private void configureDriverControls() {
+
+        // ---------------------------------
+        // Drivetrain
+        // ---------------------------------
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -250,20 +293,18 @@ public class RobotContainer {
         } else {
             TunerConstants.drivespeed = 4.79;
         }
-        
 
         // ---------------------------------
         // Feeder
         // ---------------------------------
 
-        SmartDashboard.putNumber("Feeder/Target RPM", feederTargetRPM);
         joystick.b()
             .whileTrue(new CmdFeederFeed(feederTargetRPM, feederBLUsystem));
         joystick.b()
             .whileTrue(new CmdFeederFeed(feederTargetRPM, feederYELsystem));
 
         // ---------------------------------
-        // Intake?
+        // Intake
         // ---------------------------------
 
         joystick.leftTrigger()
@@ -273,24 +314,48 @@ public class RobotContainer {
         // Shooter
         // ---------------------------------
 
-        SmartDashboard.putNumber("Shooter/Shooter Idle RPM", shooterRPM);
-        SmartDashboard.putNumber("Shooter/ShooterShootRPM", shooterShootRPM);
         joystick.rightTrigger()
-            .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterSubsystem));
+            .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterBLUsystem));
         
+    }
 
+    /**
+     * Performs vision‑system configuration and initialization.
+     * <p>
+     * Currently a placeholder for future operator bindings or debug toggles.
+     * Vision pipelines and pose‑estimation integration are initialized in the
+     * constructor; this method exists to keep the structure consistent and
+     * maintain a dedicated expansion point for vision‑related controls.
+     */
+    private void configureVision() {
+        // Nothing to bind yet — vision runs autonomously
+        // Future: buttons for resetVisionSeeding(), debug toggles, etc.
+    }
 
-
-        // PID Tuner
-        SmartDashboard.putData( 
-            "Run Shooter PID Tuner",
-            new CmdShooterPIDTuner(shooterSubsystem, MAX_RPM) // max RPM here    
-        );
+    /**
+     * Registers telemetry sources and attaches them to the drivetrain logger.
+     * <p>
+     * This includes PhotonVision pose sources and the drivetrain’s internal
+     * telemetry stream. By centralizing telemetry registration here, the robot
+     * ensures consistent logging across all modes and simplifies debugging and
+     * performance analysis.
+     */
+    private void configureTelemetry() {
+        logger.registerVisionPoseSource("PhotonVisionManager");
+        logger.registerVisionPoseSource("Photon-BLU");
+        logger.registerVisionPoseSource("Photon-YEL");
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
-    private void configureAutoChooser() {
+    /**
+     * Builds and registers autonomous routines with the SmartDashboard chooser.
+     * <p>
+     * Sets a default “do nothing” auto and adds additional routines constructed
+     * through the project’s auto builder. This method ensures that all autos are
+     * discoverable and selectable before the robot enters autonomous mode.
+     */
+    private void configureAutos() {
 
         // Default auto
         autoChooser.setDefaultOption(
@@ -301,7 +366,7 @@ public class RobotContainer {
         // Example autos using your new builder
         autoChooser.addOption(
             "One Piece Auto",
-            AutoSample.build(drivetrain)
+            AutoSample.build(drivetrain, MaxSpeed, MaxAngularRate)
         );
     
         // Publish to dashboard
@@ -310,17 +375,83 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
-    }    
-
-    private double applyDeadband(double value, double deadband) {
-        return (Math.abs(value) < deadband) ? 0.0 : value;
     }
 
-    public void updateDashboard(){
-        shooterRPM = SmartDashboard.getNumber("Shooter/Shooter RPM", shooterRPM);
-        SmartDashboard.putNumber("Feeder/Blue RPM", feederBLUsystem.getVelocityRPM());
-        SmartDashboard.putNumber("Feeder/Yellow RPM", feederYELsystem.getVelocityRPM());
+    /**
+     * Publishes operator‑tunable parameters, subsystem controls, and diagnostic
+     * values to SmartDashboard.
+     * <p>
+     * This includes shooter RPM setpoints, feeder targets, and command buttons
+     * such as the Shooter PID Tuner. Dashboard values allow real‑time adjustment
+     * and monitoring during development and testing.
+     */
+    private void configureDashboard() {
 
-        SmartDashboard.putNumber("Pigeon heading", drivetrain.getPigeon2().getRotation2d().getDegrees());
+        // ---------------------------------
+        // Auto
+        // ---------------------------------
+        SmartDashboard.putData("Auto Mode", autoChooser);
+
+        // ---------------------------------
+        // Shooter
+        // ---------------------------------
+        SmartDashboard.putNumber("Shooter/Shooter Idle RPM", shooterRPM);
+        SmartDashboard.putNumber("Shooter/ShooterShootRPM", shooterShootRPM);
+        SmartDashboard.putData(
+            "Run Shooter PID Tuner",
+            new CmdShooterPIDTuner(shooterBLUsystem, MAX_RPM));
+
+        SmartDashboard.putNumber("Shooter/BLU/TargetRPM", shooterBLUsystem.getTargetRPM());
+        SmartDashboard.putNumber("Shooter/BLU/ActualRPM", shooterBLUsystem.getShooterRPM());
+        SmartDashboard.putNumber("Shooter/BLU/TargetRPM", shooterRPM);
+        SmartDashboard.putNumber("Shooter/BLU/Voltage", shooterBLUsystem.getShooterVoltage());
+        SmartDashboard.putNumber("Shooter/BLU/StatorCurrent", shooterBLUsystem.getStatorCurrent());
+        SmartDashboard.putNumber("Shooter/BLU/SupplyCurrent", shooterBLUsystem.getSupplyCurrent());
+        SmartDashboard.putNumber("Shooter/BLU/ClosedLoopError", shooterBLUsystem.getClosedLoopError());
+
+        // ---------------------------------
+        // Feeder
+        // ---------------------------------
+        SmartDashboard.putNumber("Feeder/Target RPM", feederTargetRPM);
+
+        // ---------------------------------
+        // Intake
+        // ---------------------------------
+
+        // ---------------------------------
+        // Agitator
+        // ---------------------------------
+
+        // ---------------------------------
+        // Climber
+        // ---------------------------------
+
+        // ---------------------------------
+        // Hooper
+        // ---------------------------------
+
+        // ---------------------------------
+        // Vision
+        // ---------------------------------
+    }
+
+    /**
+     * Reads operator‑adjustable dashboard inputs and publishes live telemetry.
+     * <p>
+     * This method is intended to be called periodically (e.g., in robotPeriodic)
+     * to synchronize SmartDashboard values with internal state. It updates shooter
+     * RPM setpoints and reports drivetrain heading for debugging and driver
+     * awareness.
+     */
+    public void updateDashboardInputs() {
+
+        // Read operator input
+        shooterRPM = SmartDashboard.getNumber("Shooter RPM", shooterRPM);
+
+        // Publish live telemetry
+        SmartDashboard.putNumber(
+            "Pigeon heading",
+            drivetrain.getPigeon2().getRotation2d().getDegrees()
+        );
     }
 }

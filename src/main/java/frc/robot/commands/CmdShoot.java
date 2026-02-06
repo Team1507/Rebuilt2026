@@ -1,17 +1,22 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
 
 package frc.robot.commands;
 
-import static frc.robot.Constants.Shooter.SHOOTER_TOLERANCE;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+
+// Subsystems
 import frc.robot.subsystems.AgitatorSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.Constants.Shooter;
+
+// Constants
+import static frc.robot.Constants.kShooter.TARGET_TOLERANCE;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CmdShoot extends Command {
@@ -56,7 +61,7 @@ public class CmdShoot extends Command {
     shooterSubsystem.setTargetRPM(shooterTargetRPM);
 
     //agitator runs once actual RPM is within a specific tolerance for desired RPM
-    if(shooterSubsystem.getShooterRPM() >= shooterTargetRPM - SHOOTER_TOLERANCE && !shooterReachedTarget) {
+    if(shooterSubsystem.getShooterRPM() >= shooterTargetRPM - TARGET_TOLERANCE && !shooterReachedTarget) {
 
       shooterReachedTarget = true;
     }

@@ -1,6 +1,10 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
 
 package frc.robot.subsystems;
 
@@ -12,9 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
-import com.fasterxml.jackson.annotation.JacksonInject.Value;
 
 // Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
@@ -23,46 +25,61 @@ import frc.robot.subsystems.lib.Subsystems1507;
 import frc.robot.mechanics.GearRatio;
 
 // Constants
-import frc.robot.Constants.Intake.Gains;
+import frc.robot.Constants.kIntake.kArm.BLU;
+import frc.robot.Constants.kIntake.kArm.YEL;;
 
 /**
  * Intake Arm Subsystem
  */
 public class IntakeArmSubsystem extends Subsystems1507 {
     
-    private final TalonFXS intakeLeftArmMotor;
-    private final TalonFXS intakeRightArmMotor;
+    private final TalonFXS intakeBLUArmMotor;
+    private final TalonFXS intakeYELArmMotor;
     private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
 
     private GearRatio ratio = GearRatio.gearBox(1, 2);
 
     /** Creates a new IntakeSubsystem. */
-    public IntakeArmSubsystem(TalonFXS motorLeft,TalonFXS motorRight) {
-        this.intakeLeftArmMotor = motorLeft;
-        configureMotor();
-        this.intakeRightArmMotor = motorRight;
-        configureMotor();
+    public IntakeArmSubsystem(TalonFXS motorBLU,TalonFXS motorYEL) {
+        this.intakeBLUArmMotor = motorBLU;
+        this.intakeYELArmMotor = motorYEL;
+        configureMotors();
     }
 
-    private void configureMotor() {
+    private void configureMotors() {
             
-        TalonFXSConfiguration cfg = new TalonFXSConfiguration();
-        cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
+        TalonFXSConfiguration cfgBLU = new TalonFXSConfiguration();
+        cfgBLU.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
 
-        cfg.Slot0.kP = Gains.Arm.KP;
-        cfg.Slot0.kI = Gains.Arm.KI;
-        cfg.Slot0.kD = Gains.Arm.KD;
+        cfgBLU.Slot0.kP = BLU.kGains.KP;
+        cfgBLU.Slot0.kI = BLU.kGains.KI;
+        cfgBLU.Slot0.kD = BLU.kGains.KD;
 
-        cfg.Slot0.kV = Gains.Arm.KV;
-        cfg.Slot0.kS = Gains.Arm.KS;
-        cfg.Slot0.kA = Gains.Arm.KA;
+        cfgBLU.Slot0.kV = BLU.kGains.KV;
+        cfgBLU.Slot0.kS = BLU.kGains.KS;
+        cfgBLU.Slot0.kA = BLU.kGains.KA;
 
         // --- VOLTAGE LIMITS ---
-        cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
+        cfgBLU.Voltage.withPeakForwardVoltage(Volts.of(8))
                     .withPeakReverseVoltage(Volts.of(-8));
 
-        intakeLeftArmMotor.getConfigurator().apply(cfg);
-        intakeRightArmMotor.getConfigurator().apply(cfg);
+        intakeBLUArmMotor.getConfigurator().apply(cfgBLU);
+
+        TalonFXSConfiguration cfgYEL = new TalonFXSConfiguration();
+        cfgYEL.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
+
+        cfgYEL.Slot0.kP = YEL.kGains.KP;
+        cfgYEL.Slot0.kI = YEL.kGains.KI;
+        cfgYEL.Slot0.kD = YEL.kGains.KD;
+
+        cfgYEL.Slot0.kV = YEL.kGains.KV;
+        cfgYEL.Slot0.kS = YEL.kGains.KS;
+        cfgYEL.Slot0.kA = YEL.kGains.KA;
+
+        // --- VOLTAGE LIMITS ---
+        cfgYEL.Voltage.withPeakForwardVoltage(Volts.of(8))
+                    .withPeakReverseVoltage(Volts.of(-8));
+        intakeYELArmMotor.getConfigurator().apply(cfgYEL);
     }
 
     public void setPosition(double degrees){
@@ -71,12 +88,12 @@ public class IntakeArmSubsystem extends Subsystems1507 {
         double leftMotorRot = ratio.toMotor(leftOutputRot);
         double rightMotorRot = -ratio.toMotor(rightOutputRot);
 
-        intakeLeftArmMotor.setControl(positionRequest.withPosition(leftMotorRot));
-        intakeRightArmMotor.setControl(positionRequest.withPosition(rightMotorRot));
+        intakeBLUArmMotor.setControl(positionRequest.withPosition(leftMotorRot));
+        intakeYELArmMotor.setControl(positionRequest.withPosition(rightMotorRot));
     }
 
     public double getPositionDegrees() {
-        double leftMotorRot = intakeLeftArmMotor.getPosition().getValueAsDouble();
+        double leftMotorRot = intakeBLUArmMotor.getPosition().getValueAsDouble();
         //double rightMotorRot = -intakeRightArmMotor.getPosition().getValueAsDouble();
         double leftOutputRot = ratio.toOutput(leftMotorRot);
         //double rightOutputRot = -ratio.toOutput(rightMotorRot);

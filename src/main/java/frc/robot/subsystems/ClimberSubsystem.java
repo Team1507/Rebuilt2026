@@ -1,11 +1,15 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
 
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.Intake.Gains;
+import frc.robot.Constants.kClimber.kGains;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import static edu.wpi.first.units.Units.Volts;
@@ -27,13 +31,13 @@ public class ClimberSubsystem extends SubsystemBase {
   private void configureMotor() {
       TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-        cfg.Slot0.kP = Gains.Arm.KP;
-        cfg.Slot0.kI = Gains.Arm.KI;
-        cfg.Slot0.kD = Gains.Arm.KD;
+        cfg.Slot0.kP = kGains.KP;
+        cfg.Slot0.kI = kGains.KI;
+        cfg.Slot0.kD = kGains.KD;
 
-        cfg.Slot0.kV = Gains.Arm.KV;
-        cfg.Slot0.kS = Gains.Arm.KS;
-        cfg.Slot0.kA = Gains.Arm.KA;
+        cfg.Slot0.kV = kGains.KV;
+        cfg.Slot0.kS = kGains.KS;
+        cfg.Slot0.kA = kGains.KA;
 
         // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))

@@ -1,12 +1,15 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
 
 package frc.robot.subsystems;
 
 // WPI Imports
 import static edu.wpi.first.units.Units.Volts;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // CTRE Imports
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
@@ -14,7 +17,7 @@ import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 
-import frc.robot.Constants.Intake.Gains;
+import frc.robot.Constants.kHopper.kGains;
 // Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
 
@@ -35,13 +38,13 @@ public class HopperSubsystem extends Subsystems1507 {
 
         TalonFXSConfiguration cfg = new TalonFXSConfiguration();
         cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
-        cfg.Slot0.kP = Gains.Arm.KP;
-        cfg.Slot0.kI = Gains.Arm.KI;
-        cfg.Slot0.kD = Gains.Arm.KD;
+        cfg.Slot0.kP = kGains.KP;
+        cfg.Slot0.kI = kGains.KI;
+        cfg.Slot0.kD = kGains.KD;
 
-        cfg.Slot0.kV = Gains.Arm.KV;
-        cfg.Slot0.kS = Gains.Arm.KS;
-        cfg.Slot0.kA = Gains.Arm.KA;
+        cfg.Slot0.kV = kGains.KV;
+        cfg.Slot0.kS = kGains.KS;
+        cfg.Slot0.kA = kGains.KA;
 
         // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))

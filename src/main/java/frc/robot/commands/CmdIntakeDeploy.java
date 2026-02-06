@@ -1,17 +1,18 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
 
 package frc.robot.commands;
 
-import static frc.robot.Constants.Intake.*;
+import static frc.robot.Constants.kIntake.kArm.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystem;
-import frc.robot.commands.CmdAgitatorAgitate;
 import frc.robot.commands.CmdIntakeDeploy;
-
-
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CmdIntakeDeploy extends Command {
@@ -37,7 +38,7 @@ public class CmdIntakeDeploy extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    intakeArmSubsystem.setPosition(INTAKE_ARM_DEPLOYED_ANGLE_DEGREES);
+    intakeArmSubsystem.setPosition(DEPLOYED_ANGLE_DEGREES);
     intakeSubsystem.run(.35);
     deploy = true;
   }
@@ -46,7 +47,7 @@ public class CmdIntakeDeploy extends Command {
   @Override
   public void end(boolean interrupted) {
     intakeSubsystem.run(0);
-    intakeArmSubsystem.setPosition(INTAKE_ARM_RETRACTED_ANGLE_DEGREES);
+    intakeArmSubsystem.setPosition(RETRACTED_ANGLE_DEGREES);
     deploy = false;
   }
 

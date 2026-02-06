@@ -1,10 +1,14 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
 
 package frc.robot.commands.intake;
 
-import static frc.robot.Constants.Intake.INTAKE_ARM_RETRACTED_ANGLE_DEGREES;
+import static frc.robot.Constants.kIntake.kArm.RETRACTED_ANGLE_DEGREES;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -29,7 +33,7 @@ public final IntakeArmSubsystem intakeArmSubsystem;
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    intakeArmSubsystem.setPosition(INTAKE_ARM_RETRACTED_ANGLE_DEGREES);
+    intakeArmSubsystem.setPosition(RETRACTED_ANGLE_DEGREES);
   }
 
   // Called once the command ends or is interrupted.

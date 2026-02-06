@@ -1,3 +1,11 @@
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
+
 package frc.robot.commands;
 
 // WPI libraries
@@ -11,8 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 // Robot Constants
-import static frc.robot.Constants.MoveToPose.*;
-import static frc.robot.Constants.Speed.*;
+import static frc.robot.Constants.kMoveToPose.*;
 
 /**
  * Command that drives the robot to a target Pose2d (x, y, heading).
@@ -24,6 +31,8 @@ import static frc.robot.Constants.Speed.*;
 public class CmdMoveToPose extends Command {
   private final CommandSwerveDrivetrain drivetrain;
   private final Pose2d targetPose;
+  private final double maxSpeed;
+  private final double maxAngularSpeed;
 
   // Variables used for stall detection (track last position + time)
   private double lastX, lastY, lastCheckTime;
@@ -34,9 +43,11 @@ public class CmdMoveToPose extends Command {
   private final PIDController yController = new PIDController(Y_KP, Y_KI, Y_KD);
   private final PIDController thetaController = new PIDController(THETA_KP, THETA_KI, THETA_KD);
 
-  public CmdMoveToPose(CommandSwerveDrivetrain drivetrain, Pose2d targetPose) {
+  public CmdMoveToPose(CommandSwerveDrivetrain drivetrain, Pose2d targetPose, double maxSpeed, double maxAngularSpeed) {
     this.drivetrain = drivetrain;
     this.targetPose = targetPose;
+    this.maxSpeed = maxSpeed;
+    this.maxAngularSpeed = maxAngularSpeed;
     addRequirements(drivetrain); // ensures no other command uses drivetrain at same time
 
     // Allow rotation PID to wrap around [-pi, pi] so it chooses shortest turn
@@ -78,9 +89,9 @@ public class CmdMoveToPose extends Command {
 
     // 3. Cap speeds to prevent runaway values
     // (keeps motion safe and predictable during tuning)
-    xSpeed = Math.copySign(Math.min(Math.abs(xSpeed), getMaxSpeed()), xSpeed);
-    ySpeed = Math.copySign(Math.min(Math.abs(ySpeed), getMaxSpeed()), ySpeed);
-    thetaSpeed = Math.copySign(Math.min(Math.abs(thetaSpeed), getMaxAngularSpeed()), thetaSpeed);
+    xSpeed = Math.copySign(Math.min(Math.abs(xSpeed), maxSpeed), xSpeed);
+    ySpeed = Math.copySign(Math.min(Math.abs(ySpeed), maxSpeed), ySpeed);
+    thetaSpeed = Math.copySign(Math.min(Math.abs(thetaSpeed), maxAngularSpeed), thetaSpeed);
 
     // 4. Deadband small dithers near target
     // If error is below DEADBAND_ERROR, zero out tiny corrections

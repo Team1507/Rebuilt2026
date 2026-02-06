@@ -1,24 +1,23 @@
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
+
 package frc.robot.subsystems;
-import static edu.wpi.first.units.Units.Volts;
-import static edu.wpi.first.units.Units.Hertz;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
 
 // CTRE Libraries
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.MotorArrangementValue;
-import com.ctre.phoenix6.StatusSignal;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import static edu.wpi.first.units.Units.Volts;
 
-import frc.robot.Constants.Feeder.BLU;
-import frc.robot.Constants.Feeder.YEL;
-import frc.robot.Constants.Shooter;
+import frc.robot.Constants.kFeeder.BLU;
+import frc.robot.Constants.kFeeder.YEL;
+import frc.robot.Constants.kShooter;
+
 // Mechanics
 import frc.robot.mechanics.GearRatio;
 
@@ -53,20 +52,20 @@ public class FeederSubsystem extends Subsystems1507 {
     // ------------------------------------------------------------
 
     /**
-     * Applies PID and feedforward gains from {@link Shooter.Gains}
+     * Applies PID and feedforward gains from {@link kShooter.kGains}
      * to the TalonFX Slot0 configuration.
      */
     private void configureBlueMotor() {
         
          TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-        cfg.Slot0.kP = BLU.Gains.KP;
-        cfg.Slot0.kI = BLU.Gains.KI;
-        cfg.Slot0.kD = BLU.Gains.KD;
+        cfg.Slot0.kP = BLU.kGains.KP;
+        cfg.Slot0.kI = BLU.kGains.KI;
+        cfg.Slot0.kD = BLU.kGains.KD;
 
-        cfg.Slot0.kV = BLU.Gains.KV;
-        cfg.Slot0.kS = BLU.Gains.KS;
-        cfg.Slot0.kA = BLU.Gains.KA;
+        cfg.Slot0.kV = BLU.kGains.KV;
+        cfg.Slot0.kS = BLU.kGains.KS;
+        cfg.Slot0.kA = BLU.kGains.KA;
 
          // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
@@ -77,13 +76,13 @@ public class FeederSubsystem extends Subsystems1507 {
         
         TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-        cfg.Slot0.kP = YEL.Gains.KP;
-        cfg.Slot0.kI = YEL.Gains.KI;
-        cfg.Slot0.kD = YEL.Gains.KD;
+        cfg.Slot0.kP = YEL.kGains.KP;
+        cfg.Slot0.kI = YEL.kGains.KI;
+        cfg.Slot0.kD = YEL.kGains.KD;
 
-        cfg.Slot0.kV = YEL.Gains.KV;
-        cfg.Slot0.kS = YEL.Gains.KS;
-        cfg.Slot0.kA = YEL.Gains.KA;
+        cfg.Slot0.kV = YEL.kGains.KV;
+        cfg.Slot0.kS = YEL.kGains.KS;
+        cfg.Slot0.kA = YEL.kGains.KA;
 
          // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))

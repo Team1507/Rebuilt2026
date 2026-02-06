@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.lib;
+package frc.robot.subsystems.vision;
 
 import java.util.Optional;
 
@@ -30,7 +30,7 @@ import frc.robot.utilities.Telemetry;
  *  - Call acceptPose(...) when a new valid pose is produced
  *  - Call invalidatePose() when tracking is lost
  */
-public abstract class Vision1507 extends SubsystemBase {
+public abstract class VisionSystem extends SubsystemBase {
 
     /** Most recent accepted vision pose. */
     protected Pose2d latestPose = new Pose2d();
@@ -50,7 +50,7 @@ public abstract class Vision1507 extends SubsystemBase {
     /** Telemetry logger for AdvantageScope / dashboards. */
     protected final Telemetry logger;
 
-    protected Vision1507(CommandSwerveDrivetrain drivetrain, Telemetry logger) {
+    protected VisionSystem(CommandSwerveDrivetrain drivetrain, Telemetry logger) {
         this.drivetrain = drivetrain;
         this.logger = logger;
     }

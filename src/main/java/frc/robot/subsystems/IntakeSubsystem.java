@@ -1,6 +1,10 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
 
 package frc.robot.subsystems;
 
@@ -17,7 +21,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import frc.robot.subsystems.lib.Subsystems1507;
 
 // Constants
-import frc.robot.Constants.Intake.Gains;
+import frc.robot.Constants.kIntake.kRoller.kGains;
 
 public class IntakeSubsystem extends Subsystems1507 {
     private final TalonFX intakeMotor;
@@ -33,13 +37,13 @@ public class IntakeSubsystem extends Subsystems1507 {
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-        cfg.Slot0.kP = Gains.Roller.KP;
-        cfg.Slot0.kI = Gains.Roller.KI;
-        cfg.Slot0.kD = Gains.Roller.KD;
+        cfg.Slot0.kP = kGains.KP;
+        cfg.Slot0.kI = kGains.KI;
+        cfg.Slot0.kD = kGains.KD;
 
-        cfg.Slot0.kV = Gains.Roller.KV;
-        cfg.Slot0.kS = Gains.Roller.KS;
-        cfg.Slot0.kA = Gains.Roller.KA;
+        cfg.Slot0.kV = kGains.KV;
+        cfg.Slot0.kS = kGains.KS;
+        cfg.Slot0.kA = kGains.KA;
 
         // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))

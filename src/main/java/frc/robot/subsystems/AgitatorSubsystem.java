@@ -1,22 +1,23 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
 
 package frc.robot.subsystems;
 
 // WPI Imports
 import static edu.wpi.first.units.Units.Volts;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // CTRE Imports
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
-import com.ctre.phoenix6.configs.TalonFXSConfiguration;
-import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 
-import frc.robot.Constants.Agitator.Gains;
+import frc.robot.Constants.kAgitator.kGains;
 
 // Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
@@ -39,13 +40,13 @@ public class AgitatorSubsystem extends Subsystems1507 {
         TalonFXSConfiguration cfg = new TalonFXSConfiguration();
         cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
 
-        cfg.Slot0.kP = Gains.KP;
-        cfg.Slot0.kI = Gains.KI;
-        cfg.Slot0.kD = Gains.KD;
+        cfg.Slot0.kP = kGains.KP;
+        cfg.Slot0.kI = kGains.KI;
+        cfg.Slot0.kD = kGains.KD;
 
-        cfg.Slot0.kV = Gains.KV;
-        cfg.Slot0.kS = Gains.KS;
-        cfg.Slot0.kA = Gains.KA;
+        cfg.Slot0.kV = kGains.KV;
+        cfg.Slot0.kS = kGains.KS;
+        cfg.Slot0.kA = kGains.KA;
 
         // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
@@ -58,7 +59,7 @@ public class AgitatorSubsystem extends Subsystems1507 {
     double agitatorRPS = rpm / 60.0;
     agitatorMotor.setControl(velocityRequest.withVelocity(agitatorRPS));
   }
-  private double getTargetRPM(){
+  private double getTargetRPM() {
     double agitatorRPS = agitatorMotor.getVelocity().getValueAsDouble();
     double agitatorRPM = agitatorRPS * 60.0;
     return agitatorRPM;
