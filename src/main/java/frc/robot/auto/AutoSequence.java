@@ -10,74 +10,82 @@ package frc.robot.auto;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.math.geometry.Pose2d;
+
+// Robot Subsystems
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+
+// Commands
+import frc.robot.commands.CmdMoveToPose;
+import frc.robot.commands.CmdIntakeDeploy;
+import frc.robot.commands.CmdMoveToPose;
 
 /**
  * AutoSequence
  *
- * A fluent, subsystem‑agnostic builder for autonomous routines. This class
- * defines the *structure* of an autonomous routine, while the *implementation*
- * of each action is supplied externally through an {@link AutoCapabilities}
- * object created in RobotContainer.
- *
- * <p>Each call to a high‑level action (moveTo, intake, score, waitSeconds)
- * appends a {@code Supplier<Command>} to an internal list. When {@link #build()}
- * is invoked, these suppliers are resolved into a sequential command group.</p>
- *
- * <p>This architecture cleanly separates:
- * <ul>
- *   <li>Student‑authored autonomous scripts</li>
- *   <li>Subsystem wiring and command construction</li>
- * </ul>
- * and ensures AutoSequence remains reusable, testable, and easy to extend.</p>
+ * Mentor-provided base class for building autonomous routines using a fluent API.
+ * Students will extend this by adding new high-level actions (score, intake, etc.)
+ * that internally add Commands to the 'steps' list.
  */
 public class AutoSequence {
 
-    /** Ordered list of command factories representing the autonomous steps. */
-    private final List<Supplier<Command>> steps = new ArrayList<>();
+    // Internal list of steps that will be executed in order
+    private final List<Command> steps = new ArrayList<>();
 
-    /** Capabilities describing which actions are available. */
-    private final AutoCapabilities caps;
+    // Required subsystem reference for movement commands
+    private final CommandSwerveDrivetrain drivetrain;
 
-    /** Optional per-step speed overrides (applied only to movement commands). */
+    private final double maxSpeed;
+    private final double MaxAngularRate;
+
     private Double nextSpeedOverride = null;
     private Double nextAngularOverride = null;
 
-    /** Default speed profile for movement commands. */
-    private final double defaultSpeed;
-    private final double defaultAngular;
-
     /**
-     * Creates a new AutoSequence builder using the provided capabilities.
+     * Creates a new AutoSequence builder.
      *
-     * @param caps            The set of available autonomous actions.
-     * @param defaultSpeed    Default translational speed for movement.
-     * @param defaultAngular  Default rotational speed for movement.
+     * @param drivetrain        The drivetrain subsystem used for all movement commands.
+     * @param maxSpeed          The default translational speed used for move actions.
+     * @param MaxAngularRate    The default rotational rate used for move actions.
      *
-     * <p>RobotContainer is responsible for constructing the {@link AutoCapabilities}
-     * instance and wiring each action to the appropriate subsystem.</p>
+     * <p>This constructor defines the baseline speed profile for the entire
+     * autonomous routine. Individual steps may override these values using
+     * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}.</p>
      */
-    public AutoSequence(AutoCapabilities caps, double defaultSpeed, double defaultAngular) {
-        this.caps = caps;
-        this.defaultSpeed = defaultSpeed;
-        this.defaultAngular = defaultAngular;
+    public AutoSequence(CommandSwerveDrivetrain drivetrain, double maxSpeed, double MaxAngularRate) {
+        this.drivetrain = drivetrain;
+        this.maxSpeed = maxSpeed;
+        this.MaxAngularRate = MaxAngularRate;
     }
 
     /**
      * Applies a temporary translational speed override for the next movement
-     * command only.
+     * command only. The angular speed remains unchanged.
+     *
+     * @param speed  The translational speed to use for the next move.
+     * @return       This AutoSequence for fluent chaining.
+     *
+     * <p>This override is consumed by the next call to {@code moveTo()} and
+     * automatically resets afterward.</p>
      */
     public AutoSequence withSpeed(double speed) {
-        return withSpeed(speed, defaultAngular);
+        return withSpeed(speed, MaxAngularRate);
     }
 
     /**
-     * Applies temporary translational and rotational speed overrides for the
-     * next movement command only.
+     * Applies a temporary translational and angular speed override for the next
+     * movement command only.
+     *
+     * @param speed         The translational speed to use for the next move.
+     * @param angularRate   The rotational rate to use for the next move.
+     * @return              This AutoSequence for fluent chaining.
+     *
+     * <p>Overrides apply to a single movement step and then clear automatically,
+     * ensuring later steps return to the default speed profile unless explicitly
+     * overridden again.</p>
      */
     public AutoSequence withSpeed(double speed, double angularRate) {
         this.nextSpeedOverride = speed;
@@ -85,66 +93,99 @@ public class AutoSequence {
         return this;
     }
 
-    /**
+   /**
      * Adds a movement step that drives the robot to the specified target pose.
+     * <p>
+     * This method automatically applies any temporary speed overrides set by
+     * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}. If no
+     * override is active, the default {@code maxSpeed} and {@code maxAngularRate}
+     * provided in the constructor are used.
+     * <p>
+     * Speed overrides apply to <em>only this movement command</em> and are cleared
+     * immediately afterward, ensuring later steps return to the default speed
+     * profile unless explicitly overridden again.
      *
-     * @param target  The desired end pose for the robot.
-     * @return        This AutoSequence for fluent chaining.
+     * @param target The desired end pose for the robot.
+     * @return This AutoSequence instance for fluent chaining.
+     *
+     * <p><strong>Note:</strong> Students should not modify this method. It defines
+     * the core behavior of movement steps within the autonomous builder.</p>
      */
     public AutoSequence moveTo(Pose2d target) {
 
-        if (caps.moveTo() == null)
-            throw new IllegalStateException("This AutoSequence does not support movement.");
+        double speedToUse = (nextSpeedOverride != null)
+            ? nextSpeedOverride
+            : maxSpeed;
 
-        double speed = nextSpeedOverride != null ? nextSpeedOverride : defaultSpeed;
-        double angular = nextAngularOverride != null ? nextAngularOverride : defaultAngular;
+        double angularToUse = (nextAngularOverride != null)
+            ? nextAngularOverride
+            : MaxAngularRate;
 
+        // Clear override after one use
         nextSpeedOverride = null;
         nextAngularOverride = null;
 
-        steps.add(() -> caps.moveTo().apply(target));
+        steps.add(new CmdMoveToPose(drivetrain, target, speedToUse, angularToUse));
         return this;
     }
 
     /**
-     * Adds an intake action to the autonomous sequence.
-     */
-    public AutoSequence intake() {
-        if (caps.intake().isEmpty())
-            throw new IllegalStateException("This AutoSequence does not support intake.");
-
-        steps.add(caps.intake().get());
-        return this;
-    }
-
-    /**
-     * Adds a scoring action to the autonomous sequence.
+     * TODO: Add a scoring action.
+     * This should add a Command that performs the robot's scoring routine.
+     * Example:
+     * steps.add(new ScoreCommand(shooterSubsystem));
      */
     public AutoSequence score() {
-        if (caps.score().isEmpty())
-            throw new IllegalStateException("This AutoSequence does not support scoring.");
-
-        steps.add(caps.score().get());
+        // TODO: Implement scoring command
         return this;
     }
 
     /**
-     * Adds a timed wait action to the autonomous sequence.
+     * TODO: Add an intake action.
+     * This should add a Command that runs the intake to collect a game piece.
+     * Example:
+     * steps.add(new IntakeCommand(intakeSubsystem));
+     */
+    public AutoSequence intake() {
+        // TODO: Implement intake command
+        return this;
+    }
+
+    /**
+     * Wait for a number of seconds before continuing.
+     * This is already implemented for students.
      */
     public AutoSequence waitSeconds(double seconds) {
-        steps.add(() -> caps.waitSeconds().apply(seconds));
+        steps.add(Commands.waitSeconds(seconds));
         return this;
     }
 
+    // may add more actions here:
+    // - shoot()
+    // - moveThrough(Pose2d...)
+    // - parallel(Command...)
+    // - race(Command...)
+    // - outtake()
+    // - align()
+    // - moveRRT()
+    // etc.
+
     /**
-     * Builds the final autonomous command by resolving all stored suppliers
-     * into a sequential command group.
+     * Finalizes the autonomous routine by assembling all queued steps into a
+     * single sequential command.
+     * <p>
+     * Each step added through the fluent API (such as {@code moveTo()},
+     * {@code waitSeconds()}, or future high-level actions) is executed in the
+     * order it was added. The resulting command is ready to be scheduled by the
+     * robot during the autonomous period.
+     *
+     * @return A fully constructed {@link Command} representing the autonomous
+     *         sequence.
+     *
+     * <p><strong>Note:</strong> Students should not modify this method. It defines
+     * the execution model for all autonomous routines built with this class.</p>
      */
     public Command build() {
-        return Commands.sequence(
-            steps.stream()
-                 .map(Supplier::get)
-                 .toArray(Command[]::new)
-        );
+        return Commands.sequence(steps.toArray(Command[]::new));
     }
 }

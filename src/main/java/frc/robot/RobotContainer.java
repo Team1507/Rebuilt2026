@@ -9,7 +9,6 @@
 //reorganize imports later
 package frc.robot;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 // CTRE Imports
@@ -70,7 +69,6 @@ import frc.robot.Constants.kVision;
 import static frc.robot.Constants.kShooter.*;
 
 // Autos
-import frc.robot.auto.AutoCapabilities;
 import frc.robot.auto.routines.AutoSample;
 
 
@@ -367,27 +365,11 @@ public class RobotContainer {
             "Auto Do Nothing",
             Commands.print("Doing nothing")
         );
-    
-        // --- Autonomous Capabilities Wiring ---
-
-        AutoCapabilities autoCaps = new AutoCapabilities(
-            // 1. moveTo: Pose2d → Command
-            pose -> new CmdMoveToPose(drivetrain, pose, MaxSpeed, MaxAngularRate),
-
-            // 2. intake: Optional<Supplier<Command>>
-            Optional.of(() -> new CmdIntakeDeploy(intakeArmSubsystem, intakeSubsystem)),
-
-            // 3. score: Optional<Supplier<Command>>
-            Optional.of(() -> new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterBLUsystem)),
-
-            // 4. waitSeconds: Double → Command
-            seconds -> Commands.waitSeconds(seconds)
-        );
 
         // --- Example autos using the new builder ---
         autoChooser.addOption(
             "One Piece Auto",
-            AutoSample.build(autoCaps, MaxSpeed, MaxAngularRate)
+            AutoSample.build(drivetrain, MaxSpeed, MaxAngularRate)
         );
 
         // Publish to dashboard
