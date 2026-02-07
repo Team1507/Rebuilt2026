@@ -37,7 +37,7 @@ public class IntakeArmSubsystem extends Subsystems1507 {
     private final TalonFXS intakeYELArmMotor;
     private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
 
-    private GearRatio ratio = GearRatio.gearBox(1, 2);
+    private GearRatio ratio = GearRatio.gearBox(100, 1);
 
     /** Creates a new IntakeSubsystem. */
     public IntakeArmSubsystem(TalonFXS motorBLU,TalonFXS motorYEL) {
@@ -92,20 +92,32 @@ public class IntakeArmSubsystem extends Subsystems1507 {
         intakeYELArmMotor.setControl(positionRequest.withPosition(rightMotorRot));
     }
 
-    public double getPositionDegrees() {
-        double leftMotorRot = intakeBLUArmMotor.getPosition().getValueAsDouble();
+    public double getBLUPositionDegrees() {
+        double motorRot = intakeBLUArmMotor.getPosition().getValueAsDouble();
         //double rightMotorRot = -intakeRightArmMotor.getPosition().getValueAsDouble();
-        double leftOutputRot = ratio.toOutput(leftMotorRot);
+        double outputRot = ratio.toOutput(motorRot);
         //double rightOutputRot = -ratio.toOutput(rightMotorRot);
 
-        return leftOutputRot;
+        return outputRot;
+        //cant figure out how to return both positions.
+        
+    }
+
+    public double getYELPositionDegrees() {
+        double motorRot = intakeYELArmMotor.getPosition().getValueAsDouble();
+        //double rightMotorRot = -intakeRightArmMotor.getPosition().getValueAsDouble();
+        double outputRot = ratio.toOutput(motorRot);
+        //double rightOutputRot = -ratio.toOutput(rightMotorRot);
+
+        return outputRot;
         //cant figure out how to return both positions.
         
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Intake/Arm Angle", getPositionDegrees());
+        SmartDashboard.putNumber("Intake/Arm/ Blue Angle", getBLUPositionDegrees());
+        SmartDashboard.putNumber("Intake/Arm/ Yellow Angle", getYELPositionDegrees());
     }
 
 }

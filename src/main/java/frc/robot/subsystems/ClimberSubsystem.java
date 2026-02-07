@@ -12,6 +12,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.kClimber.kGains;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.revrobotics.servohub.config.ServoHubConfig;
+import com.revrobotics.servohub.ServoHub;
+import com.revrobotics.servohub.config.ServoChannelConfig;
+
 import static edu.wpi.first.units.Units.Volts;
 import frc.robot.mechanics.GearRatio;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,17 +24,21 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class ClimberSubsystem extends SubsystemBase {
   private final TalonFX climberMotor;
-
-  private GearRatio ratio = GearRatio.gearBox(1,2);
+  private final ServoHub ratchetLock;
+  private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
+  private GearRatio ratio = GearRatio.gearBox(64,1);
 
   /** Creates a new ClimberSubsystem. */
-  public ClimberSubsystem(TalonFX climberMotor) {
+  public ClimberSubsystem(TalonFX climberMotor, ServoHub ratchetLock) {
     this.climberMotor = climberMotor;
+    this.ratchetLock = ratchetLock;
     configureMotor();
   }
 
   private void configureMotor() {
       TalonFXConfiguration cfg = new TalonFXConfiguration();
+      ServoHubConfig config = new ServoHubConfig();
+      config.channel0.pulseRange(500, 1500, 2500).disableBehavior(ServoChannelConfig.BehaviorWhenDisabled.kSupplyPower);
 
         cfg.Slot0.kP = kGains.KP;
         cfg.Slot0.kI = kGains.KI;
@@ -44,21 +53,26 @@ public class ClimberSubsystem extends SubsystemBase {
             .withPeakReverseVoltage(Volts.of(-8));
         
         climberMotor.getConfigurator().apply(cfg);
+        ratchetLock.configure(config, ServoHub.ResetMode.kNoResetSafeParameters);
   }
 
-  public void setPostition(double degrees){
-    double outputRot = degrees / 360.0;
-    double motorRot = ratio.toMotor(outputRot);
+  public void setPosition(double position){
+    double motorPos = ratio.toMotor(position);
+    climberMotor.setControl(positionRequest.withPosition(motorPos));
+  }
+  public void setservo (double position){
+   // ratchetLock.set(position);
   }
 
-   public double getPostitionDegrees() {
+   public double getPosition() {
     double motorRot = climberMotor.getPosition().getValueAsDouble();
     double outputRot = ratio.toOutput(motorRot);
-    return outputRot * 360.0;
+    return outputRot;
    }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Climber Angle", getPostitionDegrees());
+    SmartDashboard.putNumber("Climber Position", getPosition());
   }
+  
 }

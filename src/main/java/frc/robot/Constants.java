@@ -252,6 +252,10 @@ public class Constants {
     public static final class kClimber {
         public static final int CAN_ID = 23;
 
+        public static final double UP = 27;
+        public static final double DOWN = 20;
+        
+
         public static final class kGains {
             public static final double KP = 0.11;
             public static final double KI = 0.0;
@@ -259,7 +263,7 @@ public class Constants {
 
             public static final double KV = 0.09375;
             public static final double KS = 0.245;
-            public static final double KA = 0.0;
+            public static final double KA = 0.0; 
         }
     }
 
@@ -322,3 +326,6 @@ public class Constants {
         public static final double STALL_TIMEOUT = 1.0;
     }
 }
+   
+        
+    

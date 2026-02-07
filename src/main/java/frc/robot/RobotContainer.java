@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 
 // CTRE Imports
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.revrobotics.servohub.ServoHub;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.TalonFXS;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.*;
 
+import frc.robot.commands.CmdClimberClimbup;
 // Commands
 import frc.robot.commands.CmdFeederFeed;
 import frc.robot.commands.CmdIntakeDeploy;
@@ -48,6 +50,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystem;
 import frc.robot.subsystems.AgitatorSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 
 // Vision
@@ -66,6 +69,7 @@ import frc.robot.Constants.kFeeder;
 import frc.robot.Constants.kIntake;
 import frc.robot.Constants.kShooter;
 import frc.robot.Constants.kVision;
+import frc.robot.Constants.kClimber;
 import static frc.robot.Constants.kShooter.*;
 
 // Autos
@@ -101,7 +105,7 @@ public class RobotContainer {
 
     // Primary Xbox controller for driver input
     private final CommandXboxController joystick = new CommandXboxController(0);
-
+private final CommandXboxController topstick = new CommandXboxController(1);
     // -----------------------------
     // Vision
     // -----------------------------
@@ -188,6 +192,12 @@ public class RobotContainer {
         );
 
     private double AgitatorTargetRPM = 500.0;
+
+    public final ClimberSubsystem climberSubsystem =
+        new ClimberSubsystem(
+            new TalonFX(kClimber.CAN_ID), 
+            new ServoHub(36)
+        );
 
     /**
      * Constructs the {@code RobotContainer}, the central configuration hub for the robot.
@@ -291,11 +301,19 @@ public class RobotContainer {
         joystick.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         joystick.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
 
-        if (joystick.getHID().getLeftBumper()) {
-            TunerConstants.drivespeed = 2.0;
-        } else {
-            TunerConstants.drivespeed = 4.79;
-        }
+        // When button is pressed, set to full speed
+        // true = button pressed
+        joystick.leftBumper().onTrue(new InstantCommand(() -> {
+            MaxSpeed = 0.3 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+            MaxAngularRate = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
+        }));
+
+        // When button is released, go back to slow mode
+        // false = button released
+        joystick.leftBumper().onFalse(new InstantCommand(() -> {
+            MaxSpeed = 0.65 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+            MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
+        }));
 
         // ---------------------------------
         // Feeder
@@ -320,6 +338,7 @@ public class RobotContainer {
         joystick.rightTrigger()
             .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterBLUsystem));
         
+            topstick.a().whileTrue (new CmdClimberClimbup(climberSubsystem, climberSubsystem));
     }
 
     /**
@@ -420,7 +439,8 @@ public class RobotContainer {
         // ---------------------------------
         // Intake
         // ---------------------------------
-
+        SmartDashboard.putNumber("Intake/Arm/Blue/Angle", intakeArmSubsystem.getBLUPositionDegrees());
+        SmartDashboard.putNumber("Intake/Arm/Yellow/Angle", intakeArmSubsystem.getYELPositionDegrees());
         // ---------------------------------
         // Agitator
         // ---------------------------------
@@ -428,7 +448,7 @@ public class RobotContainer {
         // ---------------------------------
         // Climber
         // ---------------------------------
-
+        SmartDashboard.putNumber("Climber Position", climberSubsystem.getPosition());
         // ---------------------------------
         // Hooper
         // ---------------------------------
