@@ -19,38 +19,23 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 // Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
-
+import frc.robot.utilities.MotorConfig;
 // Constants
-import frc.robot.Constants.kIntake.kRoller.kGains;
+import frc.robot.mechanics.GearRatio;
 
 public class IntakeSubsystem extends Subsystems1507 {
     private final TalonFX intakeMotor;
     private final DutyCycleOut dutyRequest = new DutyCycleOut(0);
+    private final GearRatio ratio;
 
     /** Creates a new IntakeSubsystem. */
-    public IntakeSubsystem(TalonFX intakeMotor) {
-        this.intakeMotor = intakeMotor;
-        configureMotor();
+    public IntakeSubsystem(MotorConfig config) {
+        this.intakeMotor = new TalonFX (config.CAN_ID());
+        this.ratio = config.ratio();
+        configureFXMotor(config, intakeMotor);
     }
 
-    private void configureMotor() {
-
-        TalonFXConfiguration cfg = new TalonFXConfiguration();
-
-        cfg.Slot0.kP = kGains.KP;
-        cfg.Slot0.kI = kGains.KI;
-        cfg.Slot0.kD = kGains.KD;
-
-        cfg.Slot0.kV = kGains.KV;
-        cfg.Slot0.kS = kGains.KS;
-        cfg.Slot0.kA = kGains.KA;
-
-        // --- VOLTAGE LIMITS ---
-        cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
-            .withPeakReverseVoltage(Volts.of(-8));
-        
-        intakeMotor.getConfigurator().apply(cfg);
-    }
+  
 
     public void run(double dutyCycle) {
         SmartDashboard.putNumber("Intake/Roller Target Duty Cycle", dutyCycle);

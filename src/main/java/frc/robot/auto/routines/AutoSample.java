@@ -11,14 +11,14 @@ package frc.robot.auto.routines;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.auto.AutoSequence;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.utilities.SubsystemsRecord;
 import frc.robot.navigation.Nodes;
 
 public class AutoSample {
 
-    public static Command build(CommandSwerveDrivetrain drivetrain, double maxSpeed, double maxAngularSpeed) {
+    public static Command build(SubsystemsRecord record, double maxSpeed, double maxAngularSpeed) {
 
-        return new AutoSequence(drivetrain, maxSpeed, maxAngularSpeed)
+        return new AutoSequence(record, maxSpeed, maxAngularSpeed)
             .moveTo(Nodes.Start.CENTER)
             .waitSeconds(2.0)
             .withSpeed(6.0).moveTo(Nodes.Start.LEFT)

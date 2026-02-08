@@ -17,10 +17,9 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 
-import frc.robot.Constants.kAgitator.kGains;
-
 // Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
+import frc.robot.utilities.MotorConfig;
 
 public class AgitatorSubsystem extends Subsystems1507 {
 
@@ -28,32 +27,13 @@ public class AgitatorSubsystem extends Subsystems1507 {
   
   private final TalonFXS agitatorMotor;
   /** Creates a new HopperSubsystem. */
-  public AgitatorSubsystem(TalonFXS motor) {
+  public AgitatorSubsystem(MotorConfig motor) {
+    this.agitatorMotor = new TalonFXS(motor.CAN_ID());
 
-    //declare dependencies
-    this.agitatorMotor = motor;
-    configureMotor();
+    configureFXSMotor(motor, agitatorMotor);
     
   }
-  private void configureMotor() {
-            
-        TalonFXSConfiguration cfg = new TalonFXSConfiguration();
-        cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
-
-        cfg.Slot0.kP = kGains.KP;
-        cfg.Slot0.kI = kGains.KI;
-        cfg.Slot0.kD = kGains.KD;
-
-        cfg.Slot0.kV = kGains.KV;
-        cfg.Slot0.kS = kGains.KS;
-        cfg.Slot0.kA = kGains.KA;
-
-        // --- VOLTAGE LIMITS ---
-        cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
-                    .withPeakReverseVoltage(Volts.of(-8));
-
-        agitatorMotor.getConfigurator().apply(cfg);
-    }
+ 
 
   public void setVelocityRPM(double rpm) {
     double agitatorRPS = rpm / 60.0;

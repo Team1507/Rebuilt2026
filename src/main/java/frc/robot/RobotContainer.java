@@ -26,18 +26,20 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.*;
 
-import frc.robot.commands.CmdClimberClimbup;
+import frc.robot.commands.CmdClimberRobotUp;
 // Commands
 import frc.robot.commands.CmdFeederFeed;
 import frc.robot.commands.CmdIntakeDeploy;
 import frc.robot.commands.CmdMoveToPose;
 import frc.robot.commands.CmdShooterPIDTuner;
 import frc.robot.commands.CmdShoot;
-
+import frc.robot.commands.CmdClimberRatchet;
+import frc.robot.commands.CmdClimberReset;
 // Shooter
 import frc.robot.shooter.data.ShotTrainer;
 import frc.robot.shooter.model.ModelLoader;
@@ -56,7 +58,7 @@ import frc.robot.subsystems.HopperSubsystem;
 // Vision
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
-
+import frc.robot.utilities.SubsystemsRecord;
 // Robot Extra
 import frc.robot.utilities.Telemetry;
 import frc.robot.navigation.Nodes.Hub;
@@ -70,6 +72,7 @@ import frc.robot.Constants.kIntake;
 import frc.robot.Constants.kShooter;
 import frc.robot.Constants.kVision;
 import frc.robot.Constants.kClimber;
+import frc.robot.Constants.kHopper;
 import static frc.robot.Constants.kShooter.*;
 
 // Autos
@@ -155,17 +158,13 @@ private final CommandXboxController topstick = new CommandXboxController(1);
     // -----------------------------
     public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
-            new TalonFX(kFeeder.BLU.CAN_ID),
-            GearRatio.gearBox(1, 1),
-            "BLU"
+            kFeeder.BLU_CONFIG
         );
 
     public final FeederSubsystem feederYELsystem =
         new FeederSubsystem(
-            new TalonFX(kFeeder.YEL.CAN_ID),
-            GearRatio.gearBox(1, 1),
-            "YEL"
-        );
+            kFeeder.YEL_CONFIG
+        ); 
     private double feederTargetRPM = 500.0;
 
     // -----------------------------
@@ -173,13 +172,13 @@ private final CommandXboxController topstick = new CommandXboxController(1);
     // -----------------------------
     public final IntakeSubsystem intakeSubsystem =
         new IntakeSubsystem(
-            new TalonFX(kIntake.kRoller.CAN_ID)
+            kIntake.ROLLER_CONFIG
         );
 
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
-            new TalonFXS(kIntake.kArm.BLU.CAN_ID),
-            new TalonFXS(kIntake.kArm.YEL.CAN_ID)
+            kIntake.kArm.BLU_CONFIG,
+            kIntake.kArm.YEL_CONFIG
         );
 
     // -----------------------------
@@ -187,16 +186,27 @@ private final CommandXboxController topstick = new CommandXboxController(1);
     // -----------------------------
      public final AgitatorSubsystem agitatorSubsystem =
         new AgitatorSubsystem(
-            new TalonFXS(kAgitator.CAN_ID)
+            kAgitator.CONFIG
             
         );
 
     private double AgitatorTargetRPM = 500.0;
 
+    // -----------------------------
+    // climber
+    // -----------------------------
     public final ClimberSubsystem climberSubsystem =
         new ClimberSubsystem(
-            new TalonFX(kClimber.CAN_ID), 
-            new ServoHub(36)
+            kClimber.CONFIG,
+            kClimber.SERVO_PORT
+        );
+
+    // -----------------------------
+    // hopper
+    // -----------------------------
+    public final HopperSubsystem hopperSubsystem =
+        new HopperSubsystem(
+            kHopper.CONFIG
         );
 
     /**
@@ -338,7 +348,7 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         joystick.rightTrigger()
             .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterBLUsystem));
         
-            topstick.a().whileTrue (new CmdClimberClimbup(climberSubsystem, climberSubsystem));
+            topstick.a().onTrue (new CmdClimberRatchet(climberSubsystem));
     }
 
     /**
@@ -378,7 +388,18 @@ private final CommandXboxController topstick = new CommandXboxController(1);
      * discoverable and selectable before the robot enters autonomous mode.
      */
     private void configureAutos() {
+        SubsystemsRecord record = new SubsystemsRecord(
+            drivetrain,
+            agitatorSubsystem,
+            climberSubsystem,
+            feederBLUsystem,
+            feederYELsystem,
+            hopperSubsystem,
+            intakeArmSubsystem,
+            intakeSubsystem,
+            shooterBLUsystem
 
+        );
         // Default auto
         autoChooser.setDefaultOption(
             "Auto Do Nothing",
@@ -388,7 +409,7 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         // --- Example autos using the new builder ---
         autoChooser.addOption(
             "One Piece Auto",
-            AutoSample.build(drivetrain, MaxSpeed, MaxAngularRate)
+            AutoSample.build(record, MaxSpeed, MaxAngularRate)
         );
 
         // Publish to dashboard
@@ -449,6 +470,7 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         // Climber
         // ---------------------------------
         SmartDashboard.putNumber("Climber Position", climberSubsystem.getPosition());
+        SmartDashboard.putData("Reset Climber", new CmdClimberReset(climberSubsystem));
         // ---------------------------------
         // Hooper
         // ---------------------------------

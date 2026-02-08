@@ -15,13 +15,11 @@ import frc.robot.subsystems.ClimberSubsystem;
 
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class CmdClimberClimbup extends Command {
+public class CmdClimberRobotUp extends Command {
   private final ClimberSubsystem climberSubsystem;
-  private final ClimberSubsystem rachetlock;
   /** Creates a new CmdClimberClimb. */
-  public CmdClimberClimbup(ClimberSubsystem rachetlock, ClimberSubsystem climberSubsystem ) {
+  public CmdClimberRobotUp(ClimberSubsystem climberSubsystem ) {
       this.climberSubsystem = climberSubsystem;
-      this.rachetlock = rachetlock;
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -30,11 +28,10 @@ public class CmdClimberClimbup extends Command {
   public void initialize() {
 
   }
-
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    climberSubsystem.setPosition(kClimber.UP);
+    climberSubsystem.setPosition(kClimber.ROBOT_UP);
    // rachetlock.Set(1);
    
   }

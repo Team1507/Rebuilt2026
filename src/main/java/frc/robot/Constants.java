@@ -11,6 +11,8 @@ package frc.robot;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.*;
+import frc.robot.mechanics.GearRatio;
+import frc.robot.utilities.MotorConfig;
 
 /**
  * Central location for all robot-wide constants.
@@ -133,36 +135,29 @@ public class Constants {
     // ║             (Mana‑Driven Material Uplift System)              ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kFeeder {
+        public static final MotorConfig BLU_CONFIG = new MotorConfig(
+            20,
+            0.11,
+            0.0,
+            0.0,
+            0.09375,
+            0.245, 
+            0.0, 
+            8, -8,
+            GearRatio.gearBox(1, 1));
 
-        /** Blue feeder motor */
-        public static final class BLU {
-            public static final int CAN_ID = 20;
-
-            public static final class kGains {
-                public static final double KP = 0.11;
-                public static final double KI = 0.0;
-                public static final double KD = 0.0;
-
-                public static final double KV = 0.09375;
-                public static final double KS = 0.245;
-                public static final double KA = 0.0;
-            }
-        }
 
         /** Yellow feeder motor */
-        public static final class YEL {
-            public static final int CAN_ID = 18;
-
-            public static final class kGains {
-                public static final double KP = 0.11;
-                public static final double KI = 0.0;
-                public static final double KD = 0.0;
-
-                public static final double KV = 0.09375;
-                public static final double KS = 0.245;
-                public static final double KA = 0.0;
-            }
-        }
+        public static final MotorConfig YEL_CONFIG = new MotorConfig(
+            18,
+            0.11,
+            0.0,
+            0.0,
+            0.09375,
+            0.245,
+            0.0,
+            8, -8,
+            GearRatio.gearBox(1, 1));
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -170,21 +165,17 @@ public class Constants {
     // ║                 (Soul‑Siphon Acquisition Arm)                 ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kIntake {
+        public static final MotorConfig ROLLER_CONFIG = new MotorConfig(
+            13, 
+            0.013,
+            0.0,
+            0.0,
+            0.10333857939,
+            0.025, 0.0,
+            8, -8,
+            GearRatio.gearBox(1, 1));
 
         /** Roller motor */
-        public static final class kRoller {
-            public static final int CAN_ID = 13;
-
-            public static final class kGains {
-                public static final double KP = 0.013;
-                public static final double KI = 0.0;
-                public static final double KD = 0.0;
-
-                public static final double KV = 0.10333857939;
-                public static final double KS = 0.025;
-                public static final double KA = 0.0;
-            }
-        }
 
         /** Intake arm motors + limits */
         public static final class kArm {
@@ -194,36 +185,25 @@ public class Constants {
             public static final double MIN_ANGLE_DEGREES = 0.0;
             public static final double DEPLOYED_ANGLE_DEGREES = 75.0;
             public static final double RETRACTED_ANGLE_DEGREES = 0.0;
+            public static final MotorConfig BLU_CONFIG = new MotorConfig(
+            14, 
+            1.0,
+            0.0,
+            0.0,
+            0.0929007,
+            0.018, 0.0,
+            8, -8,
+            GearRatio.gearBox(100, 1));
 
-            /** Blue arm motor */
-            public static final class BLU {
-                public static final int CAN_ID = 14;
-
-                public static final class kGains {
-                    public static final double KP = 1.0;
-                    public static final double KI = 0.0;
-                    public static final double KD = 0.0;
-
-                    public static final double KV = 0.0929007;
-                    public static final double KS = 0.018;
-                    public static final double KA = 0.0;
-                }
-            }
-
-            /** Yellow arm motor */
-            public static final class YEL {
-                public static final int CAN_ID = 27;
-
-                public static final class kGains {
-                    public static final double KP = 1.0;
-                    public static final double KI = 0.0;
-                    public static final double KD = 0.0;
-
-                    public static final double KV = 0.0929007;
-                    public static final double KS = 0.018;
-                    public static final double KA = 0.0;
-                }
-            }
+            public static final MotorConfig YEL_CONFIG = new MotorConfig(
+            27, 
+            1.0,
+            0.0,
+            0.0,
+            0.0929007,
+            0.018, 0.0,
+            8, -8,
+            GearRatio.gearBox(100, 1));
         }
     }
 
@@ -232,17 +212,15 @@ public class Constants {
     // ║               (Arcane Material Stirring Engine)               ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kAgitator {
-        public static final int CAN_ID = 15;
-
-        public static final class kGains {
-            public static final double KP = 0.11;
-            public static final double KI = 0.0;
-            public static final double KD = 0.0;
-
-            public static final double KV = 0.09375;
-            public static final double KS = 0.245;
-            public static final double KA = 0.0;
-        }
+        public static final MotorConfig CONFIG = new MotorConfig(
+            15, 
+            0.11,
+            0.0,
+            0.0,
+            0.245,
+            0.018, 0.0,
+            8, -8,
+            GearRatio.gearBox(1, 1));
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -250,21 +228,23 @@ public class Constants {
     // ║                (Ether‑Lift Ascension Mechanism)               ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kClimber {
-        public static final int CAN_ID = 23;
 
+        //height for the climber
         public static final double UP = 27;
         public static final double DOWN = 20;
-        
 
-        public static final class kGains {
-            public static final double KP = 0.11;
-            public static final double KI = 0.0;
-            public static final double KD = 0.0;
-
-            public static final double KV = 0.09375;
-            public static final double KS = 0.245;
-            public static final double KA = 0.0; 
-        }
+        public static final double ROBOT_UP = DOWN;
+        public static final double ROBOT_DOWN = UP;
+        public static final int SERVO_PORT = 0;
+        public static final MotorConfig CONFIG = new MotorConfig(
+            23, 
+            0.11,
+            0.0,
+            0.0,
+            0.09375,
+            0.245, 0.0,
+            8, -8,
+            GearRatio.gearBox(64, 1));
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -272,17 +252,16 @@ public class Constants {
     // ║                (Arcane Material Buffer Chamber)               ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kHopper {
-        public static final int CAN_ID = 23;
 
-        public static final class kGains {
-            public static final double KP = 0.11;
-            public static final double KI = 0.0;
-            public static final double KD = 0.0;
-
-            public static final double KV = 0.09375;
-            public static final double KS = 0.245;
-            public static final double KA = 0.0;
-        }
+        public static final MotorConfig CONFIG = new MotorConfig(
+            23, 
+            0.11,
+            0.0,
+            0.0,
+            0.09375,
+            0.245, 0.0,
+            8, -8,
+            GearRatio.gearBox(1, 1));
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗

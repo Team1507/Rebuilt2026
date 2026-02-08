@@ -16,12 +16,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.math.geometry.Pose2d;
 
 // Robot Subsystems
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.utilities.SubsystemsRecord;
 
 // Commands
 import frc.robot.commands.CmdMoveToPose;
 import frc.robot.commands.CmdIntakeDeploy;
-import frc.robot.commands.CmdMoveToPose;
+import frc.robot.commands.CmdShoot;
+import frc.robot.commands.CmdHopperExtension;
 
 /**
  * AutoSequence
@@ -36,8 +37,7 @@ public class AutoSequence {
     private final List<Command> steps = new ArrayList<>();
 
     // Required subsystem reference for movement commands
-    private final CommandSwerveDrivetrain drivetrain;
-
+    private final SubsystemsRecord record;
     private final double maxSpeed;
     private final double MaxAngularRate;
 
@@ -55,8 +55,8 @@ public class AutoSequence {
      * autonomous routine. Individual steps may override these values using
      * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}.</p>
      */
-    public AutoSequence(CommandSwerveDrivetrain drivetrain, double maxSpeed, double MaxAngularRate) {
-        this.drivetrain = drivetrain;
+    public AutoSequence(SubsystemsRecord record, double maxSpeed, double MaxAngularRate) {
+        this.record = record;
         this.maxSpeed = maxSpeed;
         this.MaxAngularRate = MaxAngularRate;
     }
@@ -125,7 +125,7 @@ public class AutoSequence {
         nextSpeedOverride = null;
         nextAngularOverride = null;
 
-        steps.add(new CmdMoveToPose(drivetrain, target, speedToUse, angularToUse));
+        steps.add(new CmdMoveToPose(record.drivetrain(), target, speedToUse, angularToUse));
         return this;
     }
 
@@ -135,8 +135,20 @@ public class AutoSequence {
      * Example:
      * steps.add(new ScoreCommand(shooterSubsystem));
      */
-    public AutoSequence score() {
+    public AutoSequence shoot() {
         // TODO: Implement scoring command
+        steps.add(new CmdShoot(67.0, 
+            67.0, 
+            67.0, 
+            record.agitator(), 
+            record.BLUfeeder(), 
+            record.YELfeeder(), 
+            record.shooter()));
+        return this;
+    }
+
+    public AutoSequence hopperExtend() {
+        steps.add(new CmdHopperExtension(67.0, record.hopper()));
         return this;
     }
 
@@ -148,6 +160,7 @@ public class AutoSequence {
      */
     public AutoSequence intake() {
         // TODO: Implement intake command
+        steps.add(new CmdIntakeDeploy(record.intakeArm(), record.intakeRoller()));
         return this;
     }
 
