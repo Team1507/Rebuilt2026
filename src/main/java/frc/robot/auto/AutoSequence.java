@@ -17,12 +17,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 
 // Robot Subsystems
 import frc.robot.utilities.SubsystemsRecord;
-
-// Commands
-import frc.robot.commands.CmdMoveToPose;
-import frc.robot.commands.CmdIntakeDeploy;
-import frc.robot.commands.CmdShoot;
-import frc.robot.commands.CmdHopperExtension;
+import frc.robot.commands.drive.CmdMoveToPose;
+import frc.robot.commands.hopper.CmdHopperExtension;
+import frc.robot.commands.intake.CmdIntakeDeploy;
+import frc.robot.commands.shoot.CmdShoot;
 
 /**
  * AutoSequence

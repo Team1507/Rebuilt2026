@@ -31,15 +31,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.*;
 
-import frc.robot.commands.CmdClimberRobotUp;
-// Commands
-import frc.robot.commands.CmdFeederFeed;
-import frc.robot.commands.CmdIntakeDeploy;
-import frc.robot.commands.CmdMoveToPose;
-import frc.robot.commands.CmdShooterPIDTuner;
-import frc.robot.commands.CmdShoot;
-import frc.robot.commands.CmdClimberRatchet;
-import frc.robot.commands.CmdClimberReset;
+import frc.robot.commands.climb.CmdClimberRatchet;
+import frc.robot.commands.climb.CmdClimberReset;
+import frc.robot.commands.climb.CmdClimberRobotUp;
+import frc.robot.commands.drive.CmdMoveToPose;
+import frc.robot.commands.feed.CmdFeederFeed;
+import frc.robot.commands.intake.CmdIntakeDeploy;
+import frc.robot.commands.shoot.CmdShoot;
+import frc.robot.commands.shoot.CmdShooterPIDTuner;
 // Shooter
 import frc.robot.shooter.data.ShotTrainer;
 import frc.robot.shooter.model.ModelLoader;

@@ -6,49 +6,42 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.commands;
+package frc.robot.commands.agitate;
 
-import static frc.robot.Constants.kIntake.kArm.*;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.IntakeArmSubsystem;
-import frc.robot.commands.CmdIntakeDeploy;
+
+import frc.robot.subsystems.AgitatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class CmdIntakeDeploy extends Command {
-  /** Creates a new CmdIntakeDeploy. */
-  private final IntakeArmSubsystem intakeArmSubsystem;
-  private final IntakeSubsystem intakeSubsystem;
+public class CmdAgitatorAgitate extends Command {
 
-  public boolean deploy = false;
-
-  public CmdIntakeDeploy(IntakeArmSubsystem intakeArmSubsystem, IntakeSubsystem intakeSubsystem) {
+  public final AgitatorSubsystem agitatorSubsystem;
+  public final double targetRPM;
+  public boolean FeederFeeding = true;
+  public CmdAgitatorAgitate(double RPM, AgitatorSubsystem agitatorSubsystem) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.intakeArmSubsystem = intakeArmSubsystem;
-    this.intakeSubsystem = intakeSubsystem;
+    this.agitatorSubsystem = agitatorSubsystem;
+    this.targetRPM = RPM;
+
+    addRequirements(agitatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() 
-  {
-
+  public void initialize() {
+    agitatorSubsystem.setVelocityRPM(targetRPM);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    intakeArmSubsystem.setPosition(DEPLOYED_ANGLE_DEGREES);
-    intakeSubsystem.run(.35);
-    deploy = true;
+    agitatorSubsystem.setVelocityRPM(targetRPM);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intakeSubsystem.run(0);
-    intakeArmSubsystem.setPosition(RETRACTED_ANGLE_DEGREES);
-    deploy = false;
+    agitatorSubsystem.stopMotor();
   }
 
   // Returns true when the command should end.

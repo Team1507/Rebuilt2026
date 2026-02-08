@@ -6,26 +6,25 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.commands;
+package frc.robot.commands.hopper;
 
-// WPI Libraries
 import edu.wpi.first.wpilibj2.command.Command;
 
-// Subsystems
-import frc.robot.subsystems.FeederSubsystem;  
-
+import frc.robot.subsystems.HopperSubsystem;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class CmdFeederFeed extends Command {
- 
-  public final FeederSubsystem feederSubsystem;
-  public final double targetRPM;
-  public boolean FeederFeeding = true;
-  public CmdFeederFeed(double RPM, FeederSubsystem feederSubsystem) {
-    // Use addRequirements() here to declare subsystem dependencies.
-    this.feederSubsystem = feederSubsystem;
-    this.targetRPM = RPM;
+public class CmdHopperExtension extends Command {
 
-    addRequirements(feederSubsystem);
+  public final HopperSubsystem hopperSubsystem;
+  public final double position;
+  public boolean HopperExtended = true;
+  /** Creates a new CmdHopperExtension. */
+  public CmdHopperExtension(double position, HopperSubsystem hopperSubsystem) {
+    // Use addRequirements() here to declare subsystem dependencies.
+    this.hopperSubsystem = hopperSubsystem;
+    this.position = position;
+
+    addRequirements(hopperSubsystem);
+    
   }
 
   // Called when the command is initially scheduled.
@@ -35,13 +34,12 @@ public class CmdFeederFeed extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    feederSubsystem.setVelocityRPM(targetRPM);
+    hopperSubsystem.setPosition(position);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-  feederSubsystem.stopMotor();
   }
 
   // Returns true when the command should end.
