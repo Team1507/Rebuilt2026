@@ -82,43 +82,39 @@ public class Constants {
         public static final double MAX_RPM = 2400.0;
         public static final double TARGET_TOLERANCE = 2.0;
 
-        /** Blue shooter configuration */
-        public static final class BLU {
-            public static final int CAN_ID = 19;
+        public static final MotorConfig BLU_CONFIG = new MotorConfig(
+            19,
 
-            // Shooter position relative to robot center
-            public static final Transform2d ROBOT_TO_SHOOTER =
-                new Transform2d(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0));
+            0.02,
+            0.0,
+            0.0,
 
-            /** PID + feedforward gains */
-            public static final class kGains {
-                public static final double KP = 0.02;
-                public static final double KI = 0.0;
-                public static final double KD = 0.0;
+            0.1052631579,
+            0.245, 
+            0.0,
 
-                public static final double KV = 0.1052631579;
-                public static final double KS = 0.2;
-                public static final double KA = 0.0;
-            }
-        }
+            8, -8,
 
-        /** Yellow shooter configuration */
-        public static final class YEL {
-            public static final int CAN_ID = 17;
+            GearRatio.gearBox(1, 1),
 
-            public static final Transform2d ROBOT_TO_SHOOTER =
-                new Transform2d(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0));
+            new Transform2d(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0)));
 
-            public static final class kGains {
-                public static final double KP = 0.02;
-                public static final double KI = 0.0;
-                public static final double KD = 0.0;
+        public static final MotorConfig YEL_CONFIG = new MotorConfig(
+            17,
 
-                public static final double KV = 0.1052631579;
-                public static final double KS = 0.2;
-                public static final double KA = 0.0;
-            }
-        }
+            0.02,
+            0.0,
+            0.0,
+
+            0.1052631579,
+            0.245, 
+            0.0,
+
+            8, -8,
+
+            GearRatio.gearBox(1, 1),
+
+            new Transform2d(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0)));
 
         // ---------------- Simulation Behavior ----------------
         public static final class kSim {
@@ -171,7 +167,8 @@ public class Constants {
             0.0,
             0.0,
             0.10333857939,
-            0.025, 0.0,
+            0.025,
+            0.0,
             8, -8,
             GearRatio.gearBox(1, 1));
 
@@ -186,24 +183,26 @@ public class Constants {
             public static final double DEPLOYED_ANGLE_DEGREES = 75.0;
             public static final double RETRACTED_ANGLE_DEGREES = 0.0;
             public static final MotorConfig BLU_CONFIG = new MotorConfig(
-            14, 
-            1.0,
-            0.0,
-            0.0,
-            0.0929007,
-            0.018, 0.0,
-            8, -8,
-            GearRatio.gearBox(100, 1));
+                14, 
+                1.0,
+                0.0,
+                0.0,
+                0.0929007,
+                0.018,
+                0.0,
+                8, -8,
+                GearRatio.gearBox(100, 1));
 
             public static final MotorConfig YEL_CONFIG = new MotorConfig(
-            27, 
-            1.0,
-            0.0,
-            0.0,
-            0.0929007,
-            0.018, 0.0,
-            8, -8,
-            GearRatio.gearBox(100, 1));
+                27, 
+                1.0,
+                0.0,
+                0.0,
+                0.0929007,
+                0.018,
+                0.0,
+                8, -8,
+                GearRatio.gearBox(100, 1));
         }
     }
 

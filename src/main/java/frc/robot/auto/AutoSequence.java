@@ -8,19 +8,23 @@
 
 package frc.robot.auto;
 
+// Java
 import java.util.ArrayList;
 import java.util.List;
 
+// WPI Lib
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.math.geometry.Pose2d;
 
-// Robot Subsystems
-import frc.robot.utilities.SubsystemsRecord;
+// Robot Commands
 import frc.robot.commands.drive.CmdMoveToPose;
 import frc.robot.commands.hopper.CmdHopperExtension;
 import frc.robot.commands.intake.CmdIntakeDeploy;
 import frc.robot.commands.shoot.CmdShoot;
+
+// Utilities
+import frc.robot.utilities.SubsystemsRecord;
 
 /**
  * AutoSequence
@@ -128,13 +132,11 @@ public class AutoSequence {
     }
 
     /**
-     * TODO: Add a scoring action.
      * This should add a Command that performs the robot's scoring routine.
      * Example:
      * steps.add(new ScoreCommand(shooterSubsystem));
      */
     public AutoSequence shoot() {
-        // TODO: Implement scoring command
         steps.add(new CmdShoot(67.0, 
             67.0, 
             67.0, 
@@ -151,13 +153,11 @@ public class AutoSequence {
     }
 
     /**
-     * TODO: Add an intake action.
      * This should add a Command that runs the intake to collect a game piece.
      * Example:
      * steps.add(new IntakeCommand(intakeSubsystem));
      */
     public AutoSequence intake() {
-        // TODO: Implement intake command
         steps.add(new CmdIntakeDeploy(record.intakeArm(), record.intakeRoller()));
         return this;
     }

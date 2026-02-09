@@ -13,10 +13,7 @@ import java.util.function.Supplier;
 
 // CTRE Imports
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.revrobotics.servohub.ServoHub;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.hardware.TalonFXS;
 
 // WPI libraries
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,15 +23,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.*;
 
 import frc.robot.commands.climb.CmdClimberRatchet;
 import frc.robot.commands.climb.CmdClimberReset;
-import frc.robot.commands.climb.CmdClimberRobotUp;
-import frc.robot.commands.drive.CmdMoveToPose;
 import frc.robot.commands.feed.CmdFeederFeed;
 import frc.robot.commands.intake.CmdIntakeDeploy;
 import frc.robot.commands.shoot.CmdShoot;
@@ -57,13 +51,13 @@ import frc.robot.subsystems.HopperSubsystem;
 // Vision
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
-import frc.robot.utilities.SubsystemsRecord;
+
 // Robot Extra
 import frc.robot.utilities.Telemetry;
 import frc.robot.navigation.Nodes.Hub;
 import frc.robot.generated.TunerConstants;
-import frc.robot.mechanics.GearRatio;
 import frc.robot.Constants.kAgitator;
+import frc.robot.utilities.SubsystemsRecord;
 
 // Constants
 import frc.robot.Constants.kFeeder;
@@ -72,7 +66,6 @@ import frc.robot.Constants.kShooter;
 import frc.robot.Constants.kVision;
 import frc.robot.Constants.kClimber;
 import frc.robot.Constants.kHopper;
-import static frc.robot.Constants.kShooter.*;
 
 // Autos
 import frc.robot.auto.routines.AutoSample;
@@ -122,35 +115,42 @@ private final CommandXboxController topstick = new CommandXboxController(1);
 
     // -----------------------------
     // Shooter + Model
-    // -----------------------------
-    private final GearRatio ratio = GearRatio.gearBox(1, 2);
-    
+    // -----------------------------    
     private final Supplier<Pose2d> poseSupplier = () -> drivetrain.getState().Pose;
 
     // Load model.json from deploy directory
     private final ShooterModel shooterModelConfig =
         ModelLoader.load("model.json", poseSupplier);
 
-    public final ShooterSubsystem shooterBLUsystem =
-        new ShooterSubsystem(
-            new TalonFX(kShooter.BLU.CAN_ID),
-            ratio,
-            shooterModelConfig,
-            poseSupplier,
-            Hub.CENTER, // default target
-            kShooter.BLU.ROBOT_TO_SHOOTER
-        );
-
     //declare shooter RPM variable
     public double shooterRPM = 3000;
     public double shooterShootRPM = 5000;
+
+    public final ShooterSubsystem shooterBLUsystem =
+        new ShooterSubsystem(
+            kShooter.BLU_CONFIG,
+            shooterModelConfig,
+            poseSupplier,
+            Hub.CENTER);
 
     public final ShotTrainer shotBLUTrainer =
         new ShotTrainer(
             shooterBLUsystem.getShooterMotor(),
             poseSupplier,
-            Hub.CENTER.getTranslation()
-        );
+            Hub.CENTER.getTranslation());
+
+    public final ShooterSubsystem shooterYELsystem =
+        new ShooterSubsystem(
+            kShooter.YEL_CONFIG,
+            shooterModelConfig,
+            poseSupplier,
+            Hub.CENTER);
+
+    public final ShotTrainer shotYELTrainer =
+        new ShotTrainer(
+            shooterYELsystem.getShooterMotor(),
+            poseSupplier,
+            Hub.CENTER.getTranslation());
 
     // -----------------------------
     // feeder
@@ -186,10 +186,8 @@ private final CommandXboxController topstick = new CommandXboxController(1);
      public final AgitatorSubsystem agitatorSubsystem =
         new AgitatorSubsystem(
             kAgitator.CONFIG
-            
         );
 
-    private double AgitatorTargetRPM = 500.0;
 
     // -----------------------------
     // climber
@@ -441,8 +439,9 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         SmartDashboard.putNumber("Shooter/ShooterShootRPM", shooterShootRPM);
         SmartDashboard.putData(
             "Run Shooter PID Tuner",
-            new CmdShooterPIDTuner(shooterBLUsystem, MAX_RPM));
+            new CmdShooterPIDTuner(shooterBLUsystem, kShooter.MAX_RPM));
 
+        // BLU Shooter
         SmartDashboard.putNumber("Shooter/BLU/TargetRPM", shooterBLUsystem.getTargetRPM());
         SmartDashboard.putNumber("Shooter/BLU/ActualRPM", shooterBLUsystem.getShooterRPM());
         SmartDashboard.putNumber("Shooter/BLU/TargetRPM", shooterRPM);
@@ -450,6 +449,15 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         SmartDashboard.putNumber("Shooter/BLU/StatorCurrent", shooterBLUsystem.getStatorCurrent());
         SmartDashboard.putNumber("Shooter/BLU/SupplyCurrent", shooterBLUsystem.getSupplyCurrent());
         SmartDashboard.putNumber("Shooter/BLU/ClosedLoopError", shooterBLUsystem.getClosedLoopError());
+
+        // YEL Shooter
+        SmartDashboard.putNumber("Shooter/YEL/TargetRPM", shooterYELsystem.getTargetRPM());
+        SmartDashboard.putNumber("Shooter/YEL/ActualRPM", shooterYELsystem.getShooterRPM());
+        SmartDashboard.putNumber("Shooter/YEL/TargetRPM", shooterRPM);
+        SmartDashboard.putNumber("Shooter/YEL/Voltage", shooterYELsystem.getShooterVoltage());
+        SmartDashboard.putNumber("Shooter/YEL/StatorCurrent", shooterYELsystem.getStatorCurrent());
+        SmartDashboard.putNumber("Shooter/YEL/SupplyCurrent", shooterYELsystem.getSupplyCurrent());
+        SmartDashboard.putNumber("Shooter/YEL/ClosedLoopError", shooterYELsystem.getClosedLoopError());
 
         // ---------------------------------
         // Feeder
@@ -461,6 +469,7 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         // ---------------------------------
         SmartDashboard.putNumber("Intake/Arm/Blue/Angle", intakeArmSubsystem.getBLUPositionDegrees());
         SmartDashboard.putNumber("Intake/Arm/Yellow/Angle", intakeArmSubsystem.getYELPositionDegrees());
+
         // ---------------------------------
         // Agitator
         // ---------------------------------
@@ -470,6 +479,7 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         // ---------------------------------
         SmartDashboard.putNumber("Climber Position", climberSubsystem.getPosition());
         SmartDashboard.putData("Reset Climber", new CmdClimberReset(climberSubsystem));
+
         // ---------------------------------
         // Hooper
         // ---------------------------------

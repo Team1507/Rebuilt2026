@@ -25,7 +25,6 @@ public class ShotRecord {
     public final double distanceToTarget;
 
     public boolean made;
-    public double missAmount;
 
     // Temporal metadata
     public double pressDuration;
@@ -50,9 +49,8 @@ public class ShotRecord {
         this.distanceToTarget = distanceToTarget;
     }
 
-    public void setLabel(boolean made, double missAmount) {
+    public void setLabel(boolean made) {
         this.made = made;
-        this.missAmount = missAmount;
     }
 
     public void setPressData(double pressDuration, int shotsInBurst) {

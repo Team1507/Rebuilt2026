@@ -24,7 +24,6 @@ public class CSVWriter {
         "closedLoopError",
         "distance",
         "made",
-        "missAmount",
         "pressDuration",
         "shotsInBurst"
     };
@@ -56,7 +55,6 @@ public class CSVWriter {
                 r.closedLoopError + "," +
                 r.distanceToTarget + "," +
                 r.made + "," +
-                r.missAmount + "," +
                 r.pressDuration + "," +
                 r.shotsInBurst
             );

@@ -11,18 +11,14 @@ package frc.robot.subsystems;
 import java.util.function.Supplier;
 
 // CTRE Libraries
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
 // WPI Libraries
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 // Mechanics
 import frc.robot.mechanics.GearRatio;
@@ -32,10 +28,12 @@ import frc.robot.mechanics.FlywheelModel;
 import frc.robot.shooter.data.ShotRecord;
 import frc.robot.shooter.model.ShooterModel;
 
+// Extras
+import frc.robot.subsystems.lib.Subsystems1507;
+import frc.robot.utilities.MotorConfig;
+
 // Constants
 import frc.robot.Constants.kShooter;
-import frc.robot.Constants.kShooter.BLU;
-import frc.robot.Constants.kShooter.YEL;
 
 /**
  * ShooterSubsystem provides a unified interface for controlling a flywheel‑based shooter.
@@ -51,7 +49,7 @@ import frc.robot.Constants.kShooter.YEL;
  * All constructors chain into the full constructor, ensuring consistent initialization.
  * Simulation behavior is automatically enabled when running in WPILib simulation mode.
  */
-public class ShooterSubsystem extends SubsystemBase {
+public class ShooterSubsystem extends Subsystems1507 {
 
     // ------------------------------------------------------------
     // Default objects for optional constructors
@@ -79,12 +77,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     /** Default target pose for model-driven shooters. */
     private static final Pose2d DEFAULT_TARGET_POSE = new Pose2d();
-
-    /** Default shooter pose for model-driven shooters. */
-    private static final Transform2d DEFAULT_SHOOTER_OFFSET = new Transform2d(
-            new Translation2d(0.0, 0.0), // X=2m, Y=0m
-            Rotation2d.fromDegrees(0)
-        );
 
     // ------------------------------------------------------------
     // Hardware
@@ -135,15 +127,13 @@ public class ShooterSubsystem extends SubsystemBase {
      *
      * @param shooterMotor the TalonFX controlling the shooter
      */
-    public ShooterSubsystem(TalonFX shooterMotor) {
+    public ShooterSubsystem(MotorConfig motorConfig) {
         this(
-            shooterMotor,
-            DEFAULT_RATIO,
+            motorConfig,
             DEFAULT_FLYWHEEL,
             DEFAULT_MODEL,
             DEFAULT_POSE_SUPPLIER,
-            DEFAULT_TARGET_POSE,
-            DEFAULT_SHOOTER_OFFSET
+            DEFAULT_TARGET_POSE
         );
     }
 
@@ -160,57 +150,22 @@ public class ShooterSubsystem extends SubsystemBase {
      * @param targetPose   target pose used by the shooter model
      */
     public ShooterSubsystem(
-        TalonFX shooterMotor,
+        MotorConfig motorConfig,
         ShooterModel model,
         Supplier<Pose2d> poseSupplier,
-        Pose2d targetPose,
-        Transform2d shooterOffset
+        Pose2d targetPose
     ) {
         this(
-            shooterMotor,
-            DEFAULT_RATIO,
+            motorConfig,
             DEFAULT_FLYWHEEL,
             model,
             poseSupplier,
-            targetPose,
-            shooterOffset
+            targetPose
         );
     }
 
     // ------------------------------------------------------------
-    // Constructor Tier 3 — GearRatio + Model-driven shooter
-    // ------------------------------------------------------------
-
-    /**
-     * Creates a shooter subsystem with a custom GearRatio and model-driven behavior.
-     *
-     * @param shooterMotor the TalonFX controlling the shooter
-     * @param ratio        gearbox ratio for motor↔wheel conversion
-     * @param model        shooter model used to compute RPM
-     * @param poseSupplier supplier for robot pose
-     * @param targetPose   target pose used by the shooter model
-     */
-    public ShooterSubsystem(
-        TalonFX shooterMotor,
-        GearRatio ratio,
-        ShooterModel model,
-        Supplier<Pose2d> poseSupplier,
-        Pose2d targetPose,
-        Transform2d shooterOffset
-    ) {
-        this(
-            shooterMotor,
-            ratio,
-            DEFAULT_FLYWHEEL,
-            model,
-            poseSupplier,
-            targetPose,
-            shooterOffset
-        );
-    }
-
-    // ------------------------------------------------------------
-    // Constructor Tier 4 — Full physics simulation
+    // Constructor Tier 3 — Full physics simulation
     // ------------------------------------------------------------
 
     /**
@@ -230,47 +185,23 @@ public class ShooterSubsystem extends SubsystemBase {
      * @param targetPose   target pose used by the shooter model
      */
     public ShooterSubsystem(
-        TalonFX shooterMotor,
-        GearRatio ratio,
+        MotorConfig motorConfig,
         FlywheelModel flywheel,
         ShooterModel model,
         Supplier<Pose2d> poseSupplier,
-        Pose2d targetPose,
-        Transform2d shooterOffset
+        Pose2d targetPose
     ) {
-        this.shooterMotor = shooterMotor;
-        this.ratio = ratio;
+        this.shooterMotor = new TalonFX(motorConfig.CAN_ID());
+        this.ratio = motorConfig.ratio();
         this.flywheel = flywheel;
         this.model = model;
         this.poseSupplier = poseSupplier;
         this.targetPose = targetPose;
-        this.shooterOffset = shooterOffset;
+        this.shooterOffset = motorConfig.robotToMechanism();
 
         this.kinematics = new ShooterKinematics(shooterOffset);
 
-        configureBLUPID();
-    }
-
-    // ------------------------------------------------------------
-    // PID Configuration
-    // ------------------------------------------------------------
-
-    /**
-     * Applies PID and feedforward gains from {@link kShooter.kGains}
-     * to the TalonFX Slot0 configuration.
-     */
-    private void configureBLUPID() {
-        TalonFXConfiguration cfg = new TalonFXConfiguration();
-
-        cfg.Slot0.kP = BLU.kGains.KP;
-        cfg.Slot0.kI = BLU.kGains.KI;
-        cfg.Slot0.kD = BLU.kGains.KD;
-
-        cfg.Slot0.kV = BLU.kGains.KV;
-        cfg.Slot0.kS = BLU.kGains.KS;
-        cfg.Slot0.kA = BLU.kGains.KA;
-
-        shooterMotor.getConfigurator().apply(cfg);
+        configureFXMotor(motorConfig, shooterMotor);
     }
 
     /**
@@ -477,9 +408,9 @@ public class ShooterSubsystem extends SubsystemBase {
         // 3. Phoenix-like control law
         double errorRPS = simMotorRpsCommanded - simMotorRpsMeasured;
 
-        double ffVolts = BLU.kGains.KV * simMotorRpsCommanded;
-        double ksVolts = BLU.kGains.KS * Math.signum(simMotorRpsCommanded);
-        double fbVolts = BLU.kGains.KP * errorRPS;
+        double ffVolts = kShooter.BLU_CONFIG.KV() * simMotorRpsCommanded;
+        double ksVolts = kShooter.BLU_CONFIG.KS() * Math.signum(simMotorRpsCommanded);
+        double fbVolts = kShooter.BLU_CONFIG.KP() * errorRPS;
 
         double desiredVolts = ffVolts + ksVolts + fbVolts;
 

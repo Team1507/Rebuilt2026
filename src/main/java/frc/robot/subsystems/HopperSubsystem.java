@@ -8,29 +8,26 @@
 
 package frc.robot.subsystems;
 
-// WPI Imports
-import static edu.wpi.first.units.Units.Volts;
-
 // CTRE Imports
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFXS;
 
-
-
 // Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
+
+// Utilities
 import frc.robot.utilities.MotorConfig;
 
 public class HopperSubsystem extends Subsystems1507 {
+    private final TalonFXS hopperMotor;
 
-  private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
+    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
 
-  private final TalonFXS hopperMotor;
-  /** Creates a new HopperSubsystem. */
-  public HopperSubsystem(MotorConfig motor) {
-    this.hopperMotor = new TalonFXS(motor.CAN_ID());
-    //declare dependencies
-    configureFXSMotor(motor, hopperMotor);
+    /** Creates a new HopperSubsystem. */
+    public HopperSubsystem(MotorConfig motor) {
+        this.hopperMotor = new TalonFXS(motor.CAN_ID());
+        
+        configureFXSMotor(motor, hopperMotor);
     } 
 
     public void setPosition(double degrees){
@@ -45,8 +42,4 @@ public class HopperSubsystem extends Subsystems1507 {
         //double outputRot = ratio.toOutput(motorRot);
         return motorRot * 360.0;
     }
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
 }

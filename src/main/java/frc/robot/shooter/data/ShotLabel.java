@@ -8,4 +8,4 @@
 
 package frc.robot.shooter.data;
 
-public record ShotLabel(boolean made, double missAmount) {}
+public record ShotLabel(boolean made) {}

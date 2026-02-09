@@ -8,19 +8,15 @@
 
 package frc.robot.subsystems;
 
-// WPI Imports
-import static edu.wpi.first.units.Units.Volts;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 // CTRE Imports
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 // Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
+
+// Extras
 import frc.robot.utilities.MotorConfig;
-// Constants
 import frc.robot.mechanics.GearRatio;
 
 public class IntakeSubsystem extends Subsystems1507 {
@@ -35,10 +31,7 @@ public class IntakeSubsystem extends Subsystems1507 {
         configureFXMotor(config, intakeMotor);
     }
 
-  
-
     public void run(double dutyCycle) {
-        SmartDashboard.putNumber("Intake/Roller Target Duty Cycle", dutyCycle);
         intakeMotor.setControl(dutyRequest.withOutput(dutyCycle));
     }
 
@@ -52,11 +45,5 @@ public class IntakeSubsystem extends Subsystems1507 {
 
     public double getDutyCycle(){
         return intakeMotor.getDutyCycle().getValueAsDouble();
-    }
-
-    @Override
-    public void periodic() {
-        // This method will be called once per scheduler run
-        SmartDashboard.putNumber("Intake/Roller Duty Cycle", getDutyCycle());
     }
 }

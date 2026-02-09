@@ -8,7 +8,6 @@
 
 package frc.robot.subsystems.lib;
 
-import static edu.wpi.first.units.Units.Volt;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -20,15 +19,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utilities.MotorConfig;
 
 public abstract class Subsystems1507 extends SubsystemBase {
-    // Common functionality for all subsystems can be added here
-    /*
-     * pseudocode:
-     * 
-     * 
-     */
-protected void configureFXMotor(MotorConfig config, TalonFX motor) {
+   
+    protected void configureFXMotor(MotorConfig config, TalonFX motor) {
         
-         TalonFXConfiguration cfg = new TalonFXConfiguration();
+        TalonFXConfiguration cfg = new TalonFXConfiguration();
 
         cfg.Slot0.kP = config.KP();
         cfg.Slot0.kI = config.KI();
@@ -38,15 +32,16 @@ protected void configureFXMotor(MotorConfig config, TalonFX motor) {
         cfg.Slot0.kS = config.KS();
         cfg.Slot0.kA = config.KA();
 
-         // --- VOLTAGE LIMITS ---
+        // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(config.peakForwardVoltage()))
-                    .withPeakReverseVoltage(Volts.of(config.peakReverseVoltage()));
+            .withPeakReverseVoltage(Volts.of(config.peakReverseVoltage()));
+
         motor.getConfigurator().apply(cfg);
     }
 
     protected void configureFXSMotor(MotorConfig config, TalonFXS motor) {
-        
-         TalonFXSConfiguration cfg = new TalonFXSConfiguration();
+    
+        TalonFXSConfiguration cfg = new TalonFXSConfiguration();
 
         cfg.Slot0.kP = config.KP();
         cfg.Slot0.kI = config.KI();
@@ -56,9 +51,9 @@ protected void configureFXMotor(MotorConfig config, TalonFX motor) {
         cfg.Slot0.kS = config.KS();
         cfg.Slot0.kA = config.KA();
 
-         // --- VOLTAGE LIMITS ---
+        // --- VOLTAGE LIMITS ---
         cfg.Voltage.withPeakForwardVoltage(Volts.of(config.peakForwardVoltage()))
-                    .withPeakReverseVoltage(Volts.of(config.peakReverseVoltage()));
+            .withPeakReverseVoltage(Volts.of(config.peakReverseVoltage()));
         motor.getConfigurator().apply(cfg);
     }
 

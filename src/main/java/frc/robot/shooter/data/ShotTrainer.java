@@ -105,7 +105,7 @@ public class ShotTrainer {
 
             // Parse real label
             ShotLabel parsed = ShotLabelParser.parse(label);
-            r.setLabel(parsed.made(), parsed.missAmount());
+            r.setLabel(parsed.made());
 
             CSVWriter.writeSingleRecord(r);
 

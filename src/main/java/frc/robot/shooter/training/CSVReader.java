@@ -37,11 +37,10 @@ public class CSVReader {
 
                 double distance = Double.parseDouble(parts[5]);
                 boolean made = Boolean.parseBoolean(parts[6]);
-                double missAmount = Double.parseDouble(parts[7]);
 
                 // NEW FIELDS
-                double pressDuration = Double.parseDouble(parts[8]);
-                int shotsInBurst = Integer.parseInt(parts[9]);
+                double pressDuration = Double.parseDouble(parts[7]);
+                int shotsInBurst = Integer.parseInt(parts[8]);
 
                 // Pose is not stored in CSV → use dummy pose
                 Pose2d dummyPose = new Pose2d();
@@ -56,7 +55,7 @@ public class CSVReader {
                     distance
                 );
 
-                r.setLabel(made, missAmount);
+                r.setLabel(made);
                 r.setPressData(pressDuration, shotsInBurst);
 
                 records.add(r);
