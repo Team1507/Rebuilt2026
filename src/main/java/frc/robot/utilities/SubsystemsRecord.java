@@ -1,13 +1,6 @@
 package frc.robot.utilities;
 
-import frc.robot.subsystems.AgitatorSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.FeederSubsystem;
-import frc.robot.subsystems.HopperSubsystem;
-import frc.robot.subsystems.IntakeArmSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.*;
 
 public record SubsystemsRecord(
      CommandSwerveDrivetrain drivetrain,
@@ -17,8 +10,6 @@ public record SubsystemsRecord(
      FeederSubsystem YELfeeder,
      HopperSubsystem hopper,
      IntakeArmSubsystem intakeArm,
-     IntakeSubsystem intakeRoller,
+     IntakeRollerSubsystem intakeRoller,
      ShooterSubsystem shooter
-) {
-    
-}
+) {}

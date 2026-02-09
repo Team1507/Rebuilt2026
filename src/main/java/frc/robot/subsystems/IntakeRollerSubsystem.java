@@ -19,13 +19,13 @@ import frc.robot.subsystems.lib.Subsystems1507;
 import frc.robot.utilities.MotorConfig;
 import frc.robot.mechanics.GearRatio;
 
-public class IntakeSubsystem extends Subsystems1507 {
+public class IntakeRollerSubsystem extends Subsystems1507 {
     private final TalonFX intakeMotor;
     private final DutyCycleOut dutyRequest = new DutyCycleOut(0);
     private final GearRatio ratio;
 
     /** Creates a new IntakeSubsystem. */
-    public IntakeSubsystem(MotorConfig config) {
+    public IntakeRollerSubsystem(MotorConfig config) {
         this.intakeMotor = new TalonFX (config.CAN_ID());
         this.ratio = config.ratio();
         configureFXMotor(config, intakeMotor);

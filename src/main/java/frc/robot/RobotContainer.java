@@ -6,69 +6,48 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-//reorganize imports later
 package frc.robot;
 
 import java.util.function.Supplier;
 
 // CTRE Imports
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.*;
 
 // WPI libraries
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj.smartdashboard.*;
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.*;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.*;
 
-import frc.robot.commands.climb.CmdClimberRatchet;
-import frc.robot.commands.climb.CmdClimberReset;
-import frc.robot.commands.feed.CmdFeederFeed;
-import frc.robot.commands.intake.CmdIntakeDeploy;
-import frc.robot.commands.shoot.CmdShoot;
-import frc.robot.commands.shoot.CmdShooterPIDTuner;
-// Shooter
-import frc.robot.shooter.data.ShotTrainer;
-import frc.robot.shooter.model.ModelLoader;
-import frc.robot.shooter.model.ShooterModel;
+// Commands
+import frc.robot.commands.agitate.*;
+import frc.robot.commands.climb.*;
+import frc.robot.commands.drive.*;
+import frc.robot.commands.feed.*;
+import frc.robot.commands.hopper.*;
+import frc.robot.commands.intake.*;
+import frc.robot.commands.shoot.*;
+
+// Shooter Model
+import frc.robot.shooter.data.*;
+import frc.robot.shooter.model.*;
 
 // Subsytem Imports
-import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.FeederSubsystem;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.IntakeArmSubsystem;
-import frc.robot.subsystems.AgitatorSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.HopperSubsystem;
+import frc.robot.subsystems.*;
+import frc.robot.subsystems.vision.*;
 
-// Vision
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
-
-// Robot Extra
-import frc.robot.utilities.Telemetry;
+// Robot Utilities
+import frc.robot.utilities.*;
 import frc.robot.navigation.Nodes.Hub;
-import frc.robot.generated.TunerConstants;
-import frc.robot.Constants.kAgitator;
-import frc.robot.utilities.SubsystemsRecord;
+import frc.robot.generated.*;
 
 // Constants
-import frc.robot.Constants.kFeeder;
-import frc.robot.Constants.kIntake;
-import frc.robot.Constants.kShooter;
-import frc.robot.Constants.kVision;
-import frc.robot.Constants.kClimber;
-import frc.robot.Constants.kHopper;
+import frc.robot.Constants.*;
 
 // Autos
-import frc.robot.auto.routines.AutoSample;
+import frc.robot.auto.routines.*;
 
 
 public class RobotContainer {
@@ -89,7 +68,7 @@ public class RobotContainer {
         new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1)
             .withRotationalDeadband(MaxAngularRate * 0.1)
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+            .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
 
     // Main swerve drivetrain instance generated from Phoenix Tuner configs
     public final CommandSwerveDrivetrain drivetrain =
@@ -99,8 +78,9 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     // Primary Xbox controller for driver input
-    private final CommandXboxController joystick = new CommandXboxController(0);
-private final CommandXboxController topstick = new CommandXboxController(1);
+    private final CommandXboxController driver = new CommandXboxController(0);
+    private final CommandXboxController topstick = new CommandXboxController(1);
+
     // -----------------------------
     // Vision
     // -----------------------------
@@ -157,36 +137,32 @@ private final CommandXboxController topstick = new CommandXboxController(1);
     // -----------------------------
     public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
-            kFeeder.BLU_CONFIG
-        );
+            kFeeder.BLU_CONFIG);
 
     public final FeederSubsystem feederYELsystem =
         new FeederSubsystem(
-            kFeeder.YEL_CONFIG
-        ); 
+            kFeeder.YEL_CONFIG); 
+
     private double feederTargetRPM = 500.0;
 
     // -----------------------------
     // intake
     // -----------------------------
-    public final IntakeSubsystem intakeSubsystem =
-        new IntakeSubsystem(
-            kIntake.ROLLER_CONFIG
-        );
+    public final IntakeRollerSubsystem intakeRollerSubsystem =
+        new IntakeRollerSubsystem(
+            kIntake.ROLLER_CONFIG);
 
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
             kIntake.kArm.BLU_CONFIG,
-            kIntake.kArm.YEL_CONFIG
-        );
+            kIntake.kArm.YEL_CONFIG);
 
     // -----------------------------
     // Agitator
     // -----------------------------
      public final AgitatorSubsystem agitatorSubsystem =
         new AgitatorSubsystem(
-            kAgitator.CONFIG
-        );
+            kAgitator.CONFIG);
 
 
     // -----------------------------
@@ -195,16 +171,14 @@ private final CommandXboxController topstick = new CommandXboxController(1);
     public final ClimberSubsystem climberSubsystem =
         new ClimberSubsystem(
             kClimber.CONFIG,
-            kClimber.SERVO_PORT
-        );
+            kClimber.SERVO_PORT);
 
     // -----------------------------
     // hopper
     // -----------------------------
     public final HopperSubsystem hopperSubsystem =
         new HopperSubsystem(
-            kHopper.CONFIG
-        );
+            kHopper.CONFIG);
 
     /**
      * Constructs the {@code RobotContainer}, the central configuration hub for the robot.
@@ -243,9 +217,9 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -253,8 +227,7 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
+            drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
         shooterBLUsystem.setDefaultCommand(
             Commands.run(
@@ -287,37 +260,39 @@ private final CommandXboxController topstick = new CommandXboxController(1);
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        driver.back().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        driver.back().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        driver.start().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        driver.start().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        joystick.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driver.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
 
-        joystick.leftBumper().whileTrue(new InstantCommand(() -> {
+        driver.leftBumper().whileTrue(new InstantCommand(() -> {
             MaxSpeed = 0.2 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
             MaxAngularRate = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
         }));
-        joystick.leftBumper().whileFalse(new InstantCommand(() -> {
+
+        driver.leftBumper().whileFalse(new InstantCommand(() -> {
             MaxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
             MaxAngularRate = RotationsPerSecond.of(.75).in(RadiansPerSecond);
         }));
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        joystick.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+
+        driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driver.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        driver.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
 
         // When button is pressed, set to full speed
         // true = button pressed
-        joystick.leftBumper().onTrue(new InstantCommand(() -> {
+        driver.leftBumper().onTrue(new InstantCommand(() -> {
             MaxSpeed = 0.3 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
             MaxAngularRate = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
         }));
 
         // When button is released, go back to slow mode
         // false = button released
-        joystick.leftBumper().onFalse(new InstantCommand(() -> {
+        driver.leftBumper().onFalse(new InstantCommand(() -> {
             MaxSpeed = 0.65 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
             MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
         }));
@@ -326,26 +301,31 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         // Feeder
         // ---------------------------------
 
-        joystick.b()
+        driver.b()
             .whileTrue(new CmdFeederFeed(feederTargetRPM, feederBLUsystem));
-        joystick.b()
+        driver.b()
             .whileTrue(new CmdFeederFeed(feederTargetRPM, feederYELsystem));
 
         // ---------------------------------
         // Intake
         // ---------------------------------
 
-        joystick.leftTrigger()
-            .whileTrue(new CmdIntakeDeploy(intakeArmSubsystem, intakeSubsystem));
+        driver.leftTrigger()
+            .whileTrue(new CmdIntakeDeploy(intakeArmSubsystem, intakeRollerSubsystem));
 
         // ---------------------------------
         // Shooter
         // ---------------------------------
 
-        joystick.rightTrigger()
+        driver.rightTrigger()
             .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterBLUsystem));
         
-            topstick.a().onTrue (new CmdClimberRatchet(climberSubsystem));
+        // ---------------------------------
+        // Climber
+        // ---------------------------------
+
+        topstick.a()
+            .onTrue(new CmdClimberRatchet(climberSubsystem));
     }
 
     /**
@@ -393,10 +373,10 @@ private final CommandXboxController topstick = new CommandXboxController(1);
             feederYELsystem,
             hopperSubsystem,
             intakeArmSubsystem,
-            intakeSubsystem,
+            intakeRollerSubsystem,
             shooterBLUsystem
-
         );
+
         // Default auto
         autoChooser.setDefaultOption(
             "Auto Do Nothing",
@@ -463,12 +443,15 @@ private final CommandXboxController topstick = new CommandXboxController(1);
         // Feeder
         // ---------------------------------
         SmartDashboard.putNumber("Feeder/Target RPM", feederTargetRPM);
+        SmartDashboard.putNumber("Feeder/BLU/Current RPM", feederBLUsystem.getVelocityRPM());
+        SmartDashboard.putNumber("Feeder/YEL/Current RPM", feederYELsystem.getVelocityRPM());
 
         // ---------------------------------
         // Intake
         // ---------------------------------
-        SmartDashboard.putNumber("Intake/Arm/Blue/Angle", intakeArmSubsystem.getBLUPositionDegrees());
-        SmartDashboard.putNumber("Intake/Arm/Yellow/Angle", intakeArmSubsystem.getYELPositionDegrees());
+        SmartDashboard.putNumber("Intake/Roller/Duty Cycle", intakeRollerSubsystem.getDutyCycle());
+        SmartDashboard.putNumber("Intake/Arm/BLU/Angle", intakeArmSubsystem.getBLUPositionDegrees());
+        SmartDashboard.putNumber("Intake/Arm/YEL/Angle", intakeArmSubsystem.getYELPositionDegrees());
 
         // ---------------------------------
         // Agitator
