@@ -6,23 +6,23 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.commands.feed;
 
-// WPI Libraries
+package frc.robot.commands.agitate;
+
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.kFeeder;
-// Subsystems
-import frc.robot.subsystems.FeederSubsystem;  
+import frc.robot.Constants.kAgitator;
+import frc.robot.subsystems.AgitatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class CmdFeederFeed extends Command {
- 
-  public final FeederSubsystem feederSubsystem;
-  public CmdFeederFeed(FeederSubsystem feederSubsystem) {
+public class CmdAgitateToIntake extends Command {
+  public final AgitatorSubsystem agitatorSubsystem;
+  
+  /** Creates a new CmdAgitateToShooter. */
+  public CmdAgitateToIntake(AgitatorSubsystem agitatorSubsystem) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.feederSubsystem = feederSubsystem;
+    this.agitatorSubsystem = agitatorSubsystem;
 
-    addRequirements(feederSubsystem);
+    addRequirements(agitatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -32,13 +32,13 @@ public class CmdFeederFeed extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    feederSubsystem.run(kFeeder.FEED_RPM);
+    agitatorSubsystem.run(kAgitator.AGITATE_TO_INTAKE_DUTY);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-  feederSubsystem.stopMotor();
+    agitatorSubsystem.stop();
   }
 
   // Returns true when the command should end.

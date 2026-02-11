@@ -14,6 +14,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.signals.MotorArrangementValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utilities.MotorConfig;
@@ -42,7 +43,7 @@ public abstract class Subsystems1507 extends SubsystemBase {
     protected void configureFXSMotor(MotorConfig config, TalonFXS motor) {
     
         TalonFXSConfiguration cfg = new TalonFXSConfiguration();
-
+        cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
         cfg.Slot0.kP = config.KP();
         cfg.Slot0.kI = config.KI();
         cfg.Slot0.kD = config.KD();

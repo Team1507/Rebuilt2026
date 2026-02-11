@@ -40,7 +40,7 @@ public class FeederSubsystem extends Subsystems1507 {
     // ------------------------------------------------------------
 
    
-    public void setVelocityRPM(double rpm) {
+    public void run(double rpm) {
         double motorRPM = ratio.toMotor(rpm);
         double motorRPS = motorRPM / 60.0;
         feedermotor.setControl(velocityRequest.withVelocity(motorRPS));

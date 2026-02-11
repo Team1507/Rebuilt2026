@@ -9,8 +9,6 @@
 package frc.robot.commands.shoot;
 
 import edu.wpi.first.wpilibj2.command.Command;
-
-// Subsystems
 import frc.robot.subsystems.AgitatorSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -67,9 +65,9 @@ public class CmdShoot extends Command {
     }
 
     if(shooterReachedTarget){
-      feederBLUsystem.setVelocityRPM(feederTargetRPM);
-      feederYELsystem.setVelocityRPM(feederTargetRPM);
-      agitatorSubsystem.setVelocityRPM(agitatorTargetRPM);
+      feederBLUsystem.run(feederTargetRPM);
+      feederYELsystem.run(feederTargetRPM);
+      agitatorSubsystem.run(agitatorTargetRPM);
     }
 
   }
@@ -77,9 +75,9 @@ public class CmdShoot extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    feederBLUsystem.setVelocityRPM(0.0);
-    feederYELsystem.setVelocityRPM(0.0);
-    agitatorSubsystem.setVelocityRPM(0.0);
+    feederBLUsystem.run(0.0);
+    feederYELsystem.run(0.0);
+    agitatorSubsystem.run(0.0);
     shooterSubsystem.setTargetRPM(2000);
   }
 

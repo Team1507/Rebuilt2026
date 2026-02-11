@@ -131,6 +131,10 @@ public class Constants {
     // ║             (Mana‑Driven Material Uplift System)              ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kFeeder {
+        //adjust later
+        public static final double FEED_RPM = 500.0;
+        public static final double VOMIT_RPM = -250.0;
+
         public static final MotorConfig BLU_CONFIG = new MotorConfig(
             20,
             0.11,
@@ -161,8 +165,12 @@ public class Constants {
     // ║                 (Soul‑Siphon Acquisition Arm)                 ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kIntake {
+        //adjust later
+        public static final double INTAKE_ROLLER_DUTY = 0.5;
+        public static final double OUTTAKE_ROLLER_DUTY = -0.5;
+
         public static final MotorConfig ROLLER_CONFIG = new MotorConfig(
-            13, 
+            27, 
             0.013,
             0.0,
             0.0,
@@ -183,23 +191,23 @@ public class Constants {
             public static final double DEPLOYED_ANGLE_DEGREES = 75.0;
             public static final double RETRACTED_ANGLE_DEGREES = 0.0;
             public static final MotorConfig BLU_CONFIG = new MotorConfig(
-                14, 
-                1.0,
+                13,
+                0.001,
                 0.0,
                 0.0,
-                0.0929007,
-                0.018,
+                0.12,
+                0.1,
                 0.0,
                 8, -8,
                 GearRatio.gearBox(100, 1));
 
             public static final MotorConfig YEL_CONFIG = new MotorConfig(
-                27, 
-                1.0,
+                14, 
+                0.001,
                 0.0,
                 0.0,
-                0.0929007,
-                0.018,
+                0.12,
+                0.1,
                 0.0,
                 8, -8,
                 GearRatio.gearBox(100, 1));
@@ -220,6 +228,10 @@ public class Constants {
             0.018, 0.0,
             8, -8,
             GearRatio.gearBox(1, 1));
+
+            //change later
+        public static final double AGITATE_TO_SHOOTER_DUTY = 0.5;
+        public static final double AGITATE_TO_INTAKE_DUTY = -0.5;
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -253,7 +265,7 @@ public class Constants {
     public static final class kHopper {
 
         public static final MotorConfig CONFIG = new MotorConfig(
-            23, 
+            16, 
             0.11,
             0.0,
             0.0,

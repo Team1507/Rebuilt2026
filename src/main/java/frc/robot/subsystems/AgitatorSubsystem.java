@@ -9,18 +9,16 @@
 package frc.robot.subsystems;
 
 // CTRE Imports
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFXS;
 
-// Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
-
 // Utilities
 import frc.robot.utilities.MotorConfig;
 
 public class AgitatorSubsystem extends Subsystems1507 {
     private final TalonFXS agitatorMotor;
-    private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
+    private final DutyCycleOut dutyRequest = new DutyCycleOut(0);
     
     /** Creates a new HopperSubsystem. */
     public AgitatorSubsystem(MotorConfig motor) {
@@ -29,19 +27,16 @@ public class AgitatorSubsystem extends Subsystems1507 {
         configureFXSMotor(motor, agitatorMotor);
     }
  
-    public void setVelocityRPM(double rpm) {
-        double agitatorRPS = rpm / 60.0;
-        agitatorMotor.setControl(velocityRequest.withVelocity(agitatorRPS));
-    }
-
-    private double getTargetRPM() {
-        double agitatorRPS = agitatorMotor.getVelocity().getValueAsDouble();
-        double agitatorRPM = agitatorRPS * 60.0;
-        return agitatorRPM;
+    public void run(double dutyCycle) {
+        agitatorMotor.setControl(dutyRequest.withOutput(dutyCycle));
     }
 
     /** Stop motor */
-    public void stopMotor() {
+    public void stop() {
         agitatorMotor.set(0);
+    }
+
+    public double getDutyCycle(){
+        return agitatorMotor.getDutyCycle().getValueAsDouble();
     }
 }

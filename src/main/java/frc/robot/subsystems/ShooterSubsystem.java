@@ -325,6 +325,9 @@ public class ShooterSubsystem extends Subsystems1507 {
         double wheelRPS = wheelRPM / 60.0;
         targetMotorRPS = ratio.toMotor(wheelRPS);
     }
+    public void stop() {
+        targetMotorRPS = 0;
+    }
 
     /**
      * @return current target wheel RPM

@@ -9,18 +9,16 @@
 package frc.robot.commands.intake;
 
 import edu.wpi.first.wpilibj2.command.Command;
-
+import frc.robot.Constants.kIntake;
 import frc.robot.subsystems.IntakeRollerSubsystem;
 
 public class CmdIntakeRollerIntake extends Command {
 
     public final IntakeRollerSubsystem intakeSubsystem;
-    public final double targetPower;
 
     /** Creates a new CmdIntakeRoller. */
-    public CmdIntakeRollerIntake(IntakeRollerSubsystem intakeSubsystem, double power) {
+    public CmdIntakeRollerIntake(IntakeRollerSubsystem intakeSubsystem) {
         this.intakeSubsystem = intakeSubsystem;
-        this.targetPower = power;
         // Use addRequirements() here to declare subsystem dependencies.
         addRequirements(intakeSubsystem);
     }
@@ -32,7 +30,7 @@ public class CmdIntakeRollerIntake extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        intakeSubsystem.setpower(targetPower);
+        intakeSubsystem.run(kIntake.INTAKE_ROLLER_DUTY);
     }
 
     // Called once the command ends or is interrupted.
