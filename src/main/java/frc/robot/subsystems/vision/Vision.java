@@ -1,10 +1,4 @@
-//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
-//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
-//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
-//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
-//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
-//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
-//                           TEAM 1507 WARLOCKS
+// Team 1507 Warlocks
 
 package frc.robot.subsystems.vision;
 
@@ -12,232 +6,373 @@ import static frc.robot.Constants.kVision.*;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.targeting.PhotonPipelineResult;
 
+// Uses the official v2026 PhotonPoseEstimator API. When the robot is enabled we use
+// estimatePnpDistanceTrigSolvePose for fast XY (it leans on the gyro for heading).
+// When disabled or at startup we use estimateCoprocMultiTagPose for a full 3D pose
+// from the coprocessor, with estimateLowestAmbiguityPose as a fallback when we only
+// see one tag. All valid observations from both cameras get fused into the drivetrain
+// each cycle. We scale std devs by average tag distance so closer tags are trusted more,
+// and multi-tag observations get a sqrt(tagCount) discount. At startup we prefer
+// multi-tag or lowest-ambiguity so the initial pose has its own heading instead of
+// just echoing the gyro. Vision pose is published to the VisionPose NetworkTable so
+// you can see it on the field in AdvantageScope.
 public class Vision extends SubsystemBase {
-    private final VisionConsumer consumer;
-    private final VisionIO[] io;
-    private final VisionIOInputsAutoLogged[] inputs;
-    private final Alert[] disconnectedAlerts;
 
-    /** Robot heading source (gyro). Vision never supplies rotation after startup. */
-    private final Supplier<Rotation2d> headingSupplier;
-
-    /** Startup pose seeder: resets drivetrain pose + gyro yaw. */
-    private final Consumer<Pose2d> poseSeeder;
-
-    private boolean startupPoseSeeded = false;
-
-    // Camera indices
-    private static final int CAM_BLU = 0;
-    private static final int CAM_YEL = 1;
-
-    private int activeCamera = CAM_YEL;
-
-    public Vision(
-        VisionConsumer consumer,
-        Supplier<Rotation2d> headingSupplier,
-        Consumer<Pose2d> poseSeeder,
-        VisionIO... io
-    ) {
-        this.consumer = consumer;
-        this.io = io;
-        this.headingSupplier = headingSupplier;
-        this.poseSeeder = poseSeeder;
-
-        this.inputs = new VisionIOInputsAutoLogged[io.length];
-        this.disconnectedAlerts = new Alert[io.length];
-
-        for (int i = 0; i < io.length; i++) {
-            inputs[i] = new VisionIOInputsAutoLogged();
-            disconnectedAlerts[i] =
-                new Alert("Vision camera " + io[i].getName() + " is disconnected.", AlertType.kWarning);
-        }
-    }
-
-    public Rotation2d getTargetX(int cameraIndex) {
-        return inputs[cameraIndex].latestTargetObservation.tx();
-    }
-
-    @Override
-    public void periodic() {
-
-        // Update camera inputs
-        for (int i = 0; i < io.length; i++) {
-            io[i].updateInputs(inputs[i]);
-            Logger.processInputs("Vision/" + io[i].getName(), inputs[i]);
-        }
-
-        Pose2d bluPose = null;
-        Pose2d yelPose = null;
-        double bluTimestamp = 0.0;
-        double yelTimestamp = 0.0;
-
-        List<Pose3d> allTagPoses = new LinkedList<>();
-        List<Pose3d> allRobotPoses = new LinkedList<>();
-        List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-        List<Pose3d> allRobotPosesRejected = new LinkedList<>();
-
-        // Process each camera
-        for (int cam = 0; cam < io.length; cam++) {
-
-            disconnectedAlerts[cam].set(!inputs[cam].connected);
-
-            List<Pose3d> tagPoses = new LinkedList<>();
-            List<Pose3d> robotPoses = new LinkedList<>();
-            List<Pose3d> robotPosesAccepted = new LinkedList<>();
-            List<Pose3d> robotPosesRejected = new LinkedList<>();
-
-            for (int tagId : inputs[cam].tagIds) {
-                APRILTAG_LAYOUT.getTagPose(tagId).ifPresent(tagPoses::add);
-            }
-
-            for (var obs : inputs[cam].poseObservations) {
-
-                boolean reject =
-                    obs.tagCount() == 0 ||
-                    (obs.tagCount() == 1 && obs.ambiguity() > maxAmbiguity) ||
-                    Math.abs(obs.pose().getZ()) > maxZError ||
-                    obs.pose().getX() < 0.0 ||
-                    obs.pose().getX() > APRILTAG_LAYOUT.getFieldLength() ||
-                    obs.pose().getY() < 0.0 ||
-                    obs.pose().getY() > APRILTAG_LAYOUT.getFieldWidth();
-
-                robotPoses.add(obs.pose());
-
-                if (reject) {
-                    robotPosesRejected.add(obs.pose());
-                    continue;
-                }
-
-                robotPosesAccepted.add(obs.pose());
-
-                // Build translation-only pose using gyro heading
-                Pose2d xyOnly = new Pose2d(
-                    obs.pose().toPose2d().getTranslation(),
-                    headingSupplier.get()
-                );
-
-                if (cam == CAM_BLU) {
-                    bluPose = xyOnly;
-                    bluTimestamp = obs.timestamp();
-                } else if (cam == CAM_YEL) {
-                    yelPose = xyOnly;
-                    yelTimestamp = obs.timestamp();
-                }
-            }
-
-            // --- SMARTDASHBOARD PER-CAMERA TELEMETRY ---
-            String camName = io[cam].getName();
-
-            // Connection status
-            SmartDashboard.putBoolean("Vision/" + camName + "/Connected", inputs[cam].connected);
-
-            // Tag count
-            SmartDashboard.putNumber("Vision/" + camName + "/TagCount", inputs[cam].tagIds.length);
-
-            // Has target
-            boolean hasTarget = inputs[cam].latestTargetObservation != null;
-            SmartDashboard.putBoolean("Vision/" + camName + "/HasTarget", hasTarget);
-
-            // Accepted / rejected counts
-            SmartDashboard.putNumber("Vision/" + camName + "/AcceptedCount", robotPosesAccepted.size());
-            SmartDashboard.putNumber("Vision/" + camName + "/RejectedCount", robotPosesRejected.size());
-
-
-                        Logger.recordOutput("Vision/" + io[cam].getName() + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
-            Logger.recordOutput("Vision/" + camName + "/RobotPoses", robotPoses.toArray(new Pose3d[0]));
-            Logger.recordOutput("Vision/" + camName + "/RobotPosesAccepted", robotPosesAccepted.toArray(new Pose3d[0]));
-            Logger.recordOutput("Vision/" + camName + "/RobotPosesRejected", robotPosesRejected.toArray(new Pose3d[0]));
-
-            allTagPoses.addAll(tagPoses);
-            allRobotPoses.addAll(robotPoses);
-            allRobotPosesAccepted.addAll(robotPosesAccepted);
-            allRobotPosesRejected.addAll(robotPosesRejected);
-        }
-
-        // If YEL missing but BLU present, use BLU
-        if (yelPose == null && bluPose != null) {
-            activeCamera = CAM_BLU;
-        }
-
-        // If YEL present, prefer YEL
-        if (yelPose != null) {
-            activeCamera = CAM_YEL;
-        }
-
-        // Select final pose
-        Pose2d finalPose = null;
-        double finalTimestamp = 0.0;
-
-        if (activeCamera == CAM_YEL && yelPose != null) {
-            finalPose = yelPose;
-            finalTimestamp = yelTimestamp;
-        } else if (activeCamera == CAM_BLU && bluPose != null) {
-            finalPose = bluPose;
-            finalTimestamp = bluTimestamp;
-        }
-
-        // If no pose, nothing to do
-        if (finalPose == null) {
-            return;
-        }
-
-        // --- STARTUP POSE SEEDING ---
-        if (!startupPoseSeeded) {
-
-            // PhotonVision 2026.2.1 changed coordinate frame → apply -90° correction
-            Rotation2d correctedHeading =
-                finalPose.getRotation().minus(Rotation2d.fromDegrees(0));
-
-            Pose2d correctedPose = new Pose2d(
-                finalPose.getTranslation(),
-                correctedHeading
-            );
-
-            poseSeeder.accept(correctedPose);
-            startupPoseSeeded = true;
-
-            Logger.recordOutput("Vision/StartupPoseSeeded", correctedPose);
-            return; // Do NOT fuse this frame
-        }
-
-        // --- NORMAL VISION FUSION (translation only) ---
-        consumer.accept(
-            finalPose,
-            finalTimestamp,
-            VecBuilder.fill(0.8, 0.8, Double.POSITIVE_INFINITY)
-        );
-
-        Logger.recordOutput("Vision/FusedPose", finalPose);
-        Logger.recordOutput("Vision/ActiveCamera", activeCamera);
-        Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
-        Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
-        Logger.recordOutput("Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
-        Logger.recordOutput("Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
-    }
+    public static record CameraConfig(String name, Transform3d robotToCamera) {}
 
     @FunctionalInterface
     public static interface VisionConsumer {
         void accept(
             Pose2d visionRobotPoseMeters,
             double timestampSeconds,
-            Matrix<N3, N1> visionMeasurementStdDevs
-        );
+            Matrix<N3, N1> visionMeasurementStdDevs);
+    }
+
+    private final VisionConsumer consumer;
+    private final Supplier<Rotation2d> headingSupplier;
+    private final Consumer<Pose2d> poseSeeder;
+    private final Camera[] cameras;
+
+    private boolean startupPoseSeeded = false;
+
+    private final NetworkTableInstance ntInst = NetworkTableInstance.getDefault();
+    private final NetworkTable visionPoseTable = ntInst.getTable("VisionPose");
+
+    // Field2d-compatible so it shows up in AdvantageScope and Shuffleboard
+    private final DoubleArrayPublisher visionFieldPub =
+        visionPoseTable.getDoubleArrayTopic("robotPose").publish();
+    private final StringPublisher visionFieldTypePub =
+        visionPoseTable.getStringTopic(".type").publish();
+
+    // Exact Pose2d for consumers that want the full struct
+    private final StructPublisher<Pose2d> visionPosePub =
+        visionPoseTable.getStructTopic("Pose", Pose2d.struct).publish();
+
+    // One publisher per camera for debugging
+    @SuppressWarnings("unchecked")
+    private StructPublisher<Pose2d>[] cameraPosePubs = new StructPublisher[0];
+
+    public Vision(
+        VisionConsumer consumer,
+        Supplier<Rotation2d> headingSupplier,
+        Consumer<Pose2d> poseSeeder,
+        CameraConfig... configs
+    ) {
+        this.consumer = consumer;
+        this.headingSupplier = headingSupplier;
+        this.poseSeeder = poseSeeder;
+
+        this.cameras = new Camera[configs.length];
+
+        @SuppressWarnings("unchecked")
+        StructPublisher<Pose2d>[] pubs = new StructPublisher[configs.length];
+        for (int i = 0; i < configs.length; i++) {
+            cameras[i] = new Camera(configs[i]);
+            pubs[i] = visionPoseTable
+                .getStructTopic(configs[i].name() + "/Pose", Pose2d.struct)
+                .publish();
+        }
+        this.cameraPosePubs = pubs;
+    }
+
+    // Call after resetting pose or gyro. Clears the heading buffer and seeds it with current heading.
+    public void resetHeadingData() {
+        double now = Timer.getFPGATimestamp();
+        Rotation2d heading = headingSupplier.get();
+        for (var cam : cameras) {
+            cam.estimator.resetHeadingData(now, heading);
+        }
+    }
+
+    // Yaw to best target on this camera, used for aiming
+    public Rotation2d getTargetX(int cameraIndex) {
+        return cameras[cameraIndex].latestTargetYaw;
+    }
+
+    // Pitch to best target on this camera
+    public Rotation2d getTargetY(int cameraIndex) {
+        return cameras[cameraIndex].latestTargetPitch;
+    }
+
+    // True if this camera currently sees at least one target
+    public boolean hasTarget(int cameraIndex) {
+        return cameras[cameraIndex].hasTarget;
+    }
+
+    @Override
+    public void periodic() {
+        double now = Timer.getFPGATimestamp();
+        Rotation2d heading = headingSupplier.get();
+
+        // Must feed heading every frame for trig solve and constrained PnP
+        for (var cam : cameras) {
+            cam.estimator.addHeadingData(now, heading);
+        }
+
+        List<Pose3d> allTagPoses = new LinkedList<>();
+        List<Pose3d> allAccepted = new LinkedList<>();
+        List<Pose3d> allRejected = new LinkedList<>();
+
+        // Best candidate we've seen so far for startup seeding
+        Pose2d seedPose = null;
+        double seedScore = Double.NEGATIVE_INFINITY;
+
+        // Most recent accepted pose, for publishing
+        Pose2d latestVisionPose = null;
+
+        int totalFused = 0;
+
+        for (int i = 0; i < cameras.length; i++) {
+            Camera cam = cameras[i];
+
+            // Before we've seeded pose we want multi-tag or lowest-ambiguity so we get
+            // a real heading instead of echoing the gyro. After that, when enabled we use
+            // trig solve for fast XY. When disabled we stick with multi-tag for full pose.
+            boolean usingTrig;
+            if (!startupPoseSeeded) {
+                usingTrig = false;
+            } else {
+                // Wait 5 seconds after disable before switching strategies so we don't flicker
+                usingTrig = cam.disabledDebounce.calculate(DriverStation.isEnabled());
+            }
+
+            boolean connected = cam.photonCamera.isConnected();
+            cam.disconnectedAlert.set(!connected);
+
+            int acceptedCount = 0;
+            int rejectedCount = 0;
+            int resultCount = 0;
+            int targetResultCount = 0;
+            cam.hasTarget = false;
+
+            var allResults = cam.photonCamera.getAllUnreadResults();
+            resultCount = allResults.size();
+
+            for (PhotonPipelineResult result : allResults) {
+
+                // Grab yaw and pitch for aiming
+                if (result.hasTargets()) {
+                    cam.hasTarget = true;
+                    targetResultCount++;
+                    cam.latestTargetYaw =
+                        Rotation2d.fromDegrees(result.getBestTarget().getYaw());
+                    cam.latestTargetPitch =
+                        Rotation2d.fromDegrees(result.getBestTarget().getPitch());
+                }
+
+                // Pose estimation via the v2026 PhotonPoseEstimator methods
+                Optional<EstimatedRobotPose> estimate = Optional.empty();
+
+                if (usingTrig) {
+                    // Trig solve uses gyro for heading and gives us good XY fast
+                    estimate = cam.estimator.estimatePnpDistanceTrigSolvePose(result);
+                    if (estimate.isEmpty()) {
+                        estimate = cam.estimator.estimateLowestAmbiguityPose(result);
+                    }
+                } else {
+                    // Multi-tag runs on the coprocessor and gives us full 3D pose with its own heading
+                    estimate = cam.estimator.estimateCoprocMultiTagPose(result);
+                    if (estimate.isEmpty()) {
+                        estimate = cam.estimator.estimateLowestAmbiguityPose(result);
+                    }
+                }
+
+                if (estimate.isEmpty() || estimate.get().targetsUsed.isEmpty()) continue;
+
+                var est = estimate.get();
+                Pose3d robotPose3d = est.estimatedPose;
+                int tagCount = est.targetsUsed.size();
+
+                // Average distance to all tags we used
+                double totalDist = 0.0;
+                for (var target : est.targetsUsed) {
+                    totalDist +=
+                        target.getBestCameraToTarget().getTranslation().getNorm();
+                }
+                double avgDistance = totalDist / tagCount;
+
+                var primaryTarget = est.targetsUsed.get(0);
+
+                // Reject obviously bogus poses
+                boolean reject =
+                    Math.abs(robotPose3d.getZ()) > maxZError
+                        || robotPose3d.getX() < 0.0
+                        || robotPose3d.getX() > APRILTAG_LAYOUT.getFieldLength()
+                        || robotPose3d.getY() < 0.0
+                        || robotPose3d.getY() > APRILTAG_LAYOUT.getFieldWidth();
+
+                // Tag too far away to trust
+                if (avgDistance > maxTagDistance) {
+                    reject = true;
+                }
+
+                // Single-tag with high ambiguity tends to be wrong
+                if (tagCount == 1 && primaryTarget.getPoseAmbiguity() > maxAmbiguity) {
+                    reject = true;
+                }
+
+                if (reject) {
+                    rejectedCount++;
+                    allRejected.add(robotPose3d);
+                    continue;
+                }
+
+                acceptedCount++;
+                allAccepted.add(robotPose3d);
+
+                // Track which tags contributed
+                for (var target : est.targetsUsed) {
+                    APRILTAG_LAYOUT.getTagPose(target.getFiducialId())
+                        .ifPresent(allTagPoses::add);
+                }
+
+                // Send this camera's pose to NT so we can debug
+                if (i < cameraPosePubs.length) {
+                    cameraPosePubs[i].set(robotPose3d.toPose2d());
+                }
+                latestVisionPose = robotPose3d.toPose2d();
+
+                // Before first seed we just pick the best candidate; don't fuse yet
+                if (!startupPoseSeeded) {
+                    double score = tagCount * 100.0 - avgDistance * 10.0;
+                    if (score > seedScore) {
+                        seedScore = score;
+                        seedPose = robotPose3d.toPose2d();
+                    }
+                    continue;
+                }
+
+                // Fuse into the drivetrain estimator. Std devs scale with distance so
+                // close tags are trusted more. Trig solve is great for XY but doesn't
+                // give heading so we use a huge angular std dev there.
+                double xyStd =
+                    (usingTrig ? trigXyStdBase : constrainedPnpXyStdBase) * avgDistance;
+                double angStd =
+                    (usingTrig ? 1e5 : constrainedPnpAngStdBase) * avgDistance;
+
+                // Multi-tag is more reliable so we tighten the std devs
+                if (tagCount > 1) {
+                    double discount = Math.sqrt(tagCount);
+                    xyStd /= discount;
+                    angStd /= discount;
+                }
+
+                // Apply per-camera trust factor
+                if (i < cameraStdDevFactors.length) {
+                    xyStd *= cameraStdDevFactors[i];
+                    angStd *= cameraStdDevFactors[i];
+                }
+
+                Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStd, xyStd, angStd);
+                consumer.accept(robotPose3d.toPose2d(), est.timestampSeconds, stdDevs);
+                totalFused++;
+            }
+
+            // Dashboard values for debugging. Connected false usually means camera name doesn't
+            // match the PhotonVision UI. ResultCount 0 means no frames at all (name or NT). 
+            // TargetResultCount 0 means frames came through but no AprilTags were seen. 
+            // If AcceptedCount is 0 but RejectedCount is high, poses are being thrown out.
+            String camName = cam.name;
+            SmartDashboard.putBoolean("Vision/" + camName + "/Connected", connected);
+            SmartDashboard.putBoolean("Vision/" + camName + "/HasTarget", cam.hasTarget);
+            SmartDashboard.putNumber("Vision/" + camName + "/ResultCount", resultCount);
+            SmartDashboard.putNumber("Vision/" + camName + "/TargetResultCount", targetResultCount);
+            SmartDashboard.putNumber(
+                "Vision/" + camName + "/AcceptedCount", acceptedCount);
+            SmartDashboard.putNumber(
+                "Vision/" + camName + "/RejectedCount", rejectedCount);
+            SmartDashboard.putBoolean("Vision/" + camName + "/UsingTrig", usingTrig);
+        }
+
+        // On first valid pose we seed the drivetrain. We use multi-tag or lowest-ambiguity
+        // so we get a real heading instead of echoing the gyro. Then reset the heading
+        // buffer since the gyro was just reset.
+        if (!startupPoseSeeded && seedPose != null) {
+            poseSeeder.accept(seedPose);
+            resetHeadingData();
+            startupPoseSeeded = true;
+
+            Logger.recordOutput("Vision/StartupPoseSeeded", seedPose);
+        }
+
+        // Publish overall vision pose so we can see it on the field in AdvantageScope
+        // or Shuffleboard next to the drivetrain pose.
+        if (latestVisionPose != null) {
+            visionPosePub.set(latestVisionPose);
+            visionFieldTypePub.set("Field2d");
+            visionFieldPub.set(new double[] {
+                latestVisionPose.getX(),
+                latestVisionPose.getY(),
+                latestVisionPose.getRotation().getDegrees()
+            });
+        }
+
+        // AdvantageKit logging
+        Logger.recordOutput("Vision/FusedObservationCount", totalFused);
+        Logger.recordOutput("Vision/TagPoses", allTagPoses.toArray(new Pose3d[0]));
+        Logger.recordOutput(
+            "Vision/AcceptedPoses", allAccepted.toArray(new Pose3d[0]));
+        Logger.recordOutput(
+            "Vision/RejectedPoses", allRejected.toArray(new Pose3d[0]));
+    }
+
+    // One PhotonCamera plus its pose estimator
+    private class Camera {
+        final String name;
+        final PhotonCamera photonCamera;
+        final PhotonPoseEstimator estimator;
+        final Debouncer disabledDebounce;
+        final Alert disconnectedAlert;
+
+        Rotation2d latestTargetYaw = Rotation2d.kZero;
+        Rotation2d latestTargetPitch = Rotation2d.kZero;
+        boolean hasTarget = false;
+
+        Camera(CameraConfig config) {
+            this.name = config.name();
+            this.photonCamera = new PhotonCamera(config.name());
+
+            // v2026 PhotonPoseEstimator. We pick strategy per-result with the estimate*Pose methods.
+            this.estimator = new PhotonPoseEstimator(
+                APRILTAG_LAYOUT,
+                config.robotToCamera());
+
+            // Wait 5 seconds after disable before we switch away from trig
+            this.disabledDebounce = new Debouncer(5.0, DebounceType.kFalling);
+
+            this.disconnectedAlert = new Alert(
+                "Vision camera " + config.name() + " is disconnected.",
+                AlertType.kWarning);
+        }
     }
 }

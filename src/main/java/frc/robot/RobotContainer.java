@@ -91,10 +91,8 @@ public class RobotContainer {
             drivetrain::addVisionMeasurement,
             drivetrain::getHeading,          // Supplier<Rotation2d>
             drivetrain::seedPoseFromVision,
-            new VisionIOPhotonVision(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
-            new VisionIOPhotonVision(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
-
-    public final QuestNavSubsystem quest = new QuestNavSubsystem(drivetrain);
+            new Vision.CameraConfig(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
+            new Vision.CameraConfig(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
 
     // -----------------------------
     // Shooter + Model

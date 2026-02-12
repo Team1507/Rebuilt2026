@@ -11,12 +11,12 @@ package frc.robot;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import frc.robot.mechanics.GearRatio;
 import frc.robot.utilities.MotorConfig;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 
 /**
  * Central location for all robot-wide constants.
@@ -35,25 +35,26 @@ public class Constants {
 
         /** AprilTag field layout for the current game */
         public static AprilTagFieldLayout APRILTAG_LAYOUT =
-            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
-        // Basic filtering thresholds
-        public static double maxAmbiguity = 0.3;
+        // Rejection thresholds
+        public static double maxAmbiguity = 0.3; 
         public static double maxZError = 0.75;
+        public static double maxTagDistance = 6.0; // meters — tags beyond this are rejected
 
-        // Baseline standard deviations (scaled by distance and tag count)
-        public static double linearStdDevBaseline = 0.02;   // meters
-        public static double angularStdDevBaseline = 0.06;  // radians
+        // Standard deviation bases (multiplied by average tag distance in Vision.java).
+        // Multi-tag observations get a sqrt(tagCount) discount on top of this.
+        // Trig solve is very accurate for XY (uses gyro heading directly).
+        // Constrained PnP is less precise but also estimates heading.
+        public static double trigXyStdBase = 0.3;
+        public static double constrainedPnpXyStdBase = 0.6;
+        public static double constrainedPnpAngStdBase = 0.25;
 
-        // Per-camera trust multipliers
+        // Per-camera trust multipliers (applied to std devs)
         public static double[] cameraStdDevFactors = {
-            1.0, // Camera 0
-            1.0  // Camera 1
+            1.0, // Camera 0 (BLU)
+            1.0  // Camera 1 (YEL)
         };
-
-        // MegaTag2 multipliers
-        public static double linearStdDevMegatag2Factor = 0.5;
-        public static double angularStdDevMegatag2Factor = Double.POSITIVE_INFINITY;
 
         /** Blue-side camera configuration */
         public static final class BLU {
