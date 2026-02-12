@@ -86,11 +86,14 @@ public class RobotContainer {
     // Vision
     // -----------------------------
 
+    private final QuestNavSubsystem questNav = new QuestNavSubsystem(drivetrain);
+
     public final Vision PVManager =
         new Vision(
             drivetrain::addVisionMeasurement,
             drivetrain::getHeading,          // Supplier<Rotation2d>
             drivetrain::seedPoseFromVision,
+            questNav::setQuestNavPose,
             new Vision.CameraConfig(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
             new Vision.CameraConfig(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
 

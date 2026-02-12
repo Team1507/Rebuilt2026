@@ -67,7 +67,7 @@ public class QuestNavSubsystem extends SubsystemBase{
                 );
 
                 // Add the measurement to our estimator
-                drivetrain.addVisionMeasurement(correctedPose, timestamp, kQuest.QUESTNAV_STD_DEVS);
+                drivetrain.addVisionMeasurement(correctedPose, timestamp, kQuest.STD_DEVS);
             }
         }
     }
