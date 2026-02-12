@@ -17,7 +17,7 @@ public class CmdAgitateToShooter extends Command {
 
   public final AgitatorSubsystem agitatorSubsystem;
   public boolean FeederFeeding = true;
-  public CmdAgitateToShooter(double RPM, AgitatorSubsystem agitatorSubsystem) {
+  public CmdAgitateToShooter(AgitatorSubsystem agitatorSubsystem) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.agitatorSubsystem = agitatorSubsystem;
 

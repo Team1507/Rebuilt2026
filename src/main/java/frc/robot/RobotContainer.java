@@ -40,6 +40,7 @@ import frc.robot.subsystems.vision.*;
 // Robot Utilities
 import frc.robot.utilities.*;
 import frc.robot.navigation.Nodes.Hub;
+import frc.robot.navigation.Nodes.Tower;
 import frc.robot.generated.*;
 
 // Constants
@@ -77,8 +78,8 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     // Primary Xbox controller for driver input
-    private final CommandXboxController driver = new CommandXboxController(0);
-    private final CommandXboxController topstick = new CommandXboxController(1);
+    private final CommandXboxController bottomDriver = new CommandXboxController(0);
+    private final CommandXboxController topDriver = new CommandXboxController(1);
 
     private boolean manualMode = false;
     // -----------------------------
@@ -236,9 +237,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-bottomDriver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-bottomDriver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-bottomDriver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -249,18 +250,15 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
         
-            shooterBLUsystem.setDefaultCommand(
-                Commands.run(
-                    () -> 
-                        // Build telemetry → ask model → set RPM
-                        //shooterSubsystem.updateShooterFromModel();
-                        shooterBLUsystem.setTargetRPM(shooterRPM),
-                    shooterBLUsystem
-                )
-            );
-        
-        
-
+        shooterBLUsystem.setDefaultCommand(
+            Commands.run(
+                () -> 
+                    // Build telemetry → ask model → set RPM
+                    //shooterSubsystem.updateShooterFromModel();
+                    shooterBLUsystem.setTargetRPM(shooterRPM),
+                shooterBLUsystem
+            )
+        );
     }
 
     /**
@@ -283,77 +281,91 @@ public class RobotContainer {
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        driver.back().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        driver.back().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        driver.start().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        driver.start().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        bottomDriver.back().and(bottomDriver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        bottomDriver.back().and(bottomDriver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        bottomDriver.start().and(bottomDriver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        bottomDriver.start().and(bottomDriver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        driver.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        bottomDriver.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
 
-        driver.leftBumper().whileTrue(new InstantCommand(() -> {
+        bottomDriver.leftBumper().whileTrue(new InstantCommand(() -> {
             MaxSpeed = 0.2 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
             MaxAngularRate = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
         }));
 
-        driver.leftBumper().whileFalse(new InstantCommand(() -> {
+        bottomDriver.leftBumper().whileFalse(new InstantCommand(() -> {
             MaxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
             MaxAngularRate = RotationsPerSecond.of(.75).in(RadiansPerSecond);
         }));
 
-        driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        driver.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        driver.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        bottomDriver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        bottomDriver.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        bottomDriver.b().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
 
         // When button is pressed, set to full speed
         // true = button pressed
-        driver.leftBumper().onTrue(new InstantCommand(() -> {
+        bottomDriver.leftBumper().onTrue(new InstantCommand(() -> {
             MaxSpeed = 0.3 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
             MaxAngularRate = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
         }));
 
         // When button is released, go back to slow mode
         // false = button released
-        driver.leftBumper().onFalse(new InstantCommand(() -> {
+        bottomDriver.leftBumper().onFalse(new InstantCommand(() -> {
             MaxSpeed = 0.65 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
             MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
         }));
+
+        bottomDriver.povDown()
+            .onTrue(new CmdMoveToPose(drivetrain, Tower.APPROACH_LEFT, MaxSpeed, MaxAngularRate));
+        
+        bottomDriver.povLeft()
+            .onTrue(new CmdMoveToPose(drivetrain, Hub.APPROACH_LEFT, MaxSpeed, MaxAngularRate));
+
+        bottomDriver.povRight()
+            .onTrue(new CmdMoveToPose(drivetrain, Hub.APPROACH_RIGHT, MaxSpeed, MaxAngularRate));
 
         // ---------------------------------
         // Feeder
         // ---------------------------------
 
-        driver.b()
-            .whileTrue(new CmdFeederFeed(feederBLUsystem));
-        driver.b()
-            .whileTrue(new CmdFeederFeed(feederYELsystem));
+        
 
         // ---------------------------------
         // Intake
         // ---------------------------------
 
-        driver.leftTrigger()
+        bottomDriver.leftTrigger(0.5)
             .whileTrue(new CmdIntakeDeploy(intakeArmSubsystem, intakeRollerSubsystem));
 
         // ---------------------------------
         // Shooter
         // ---------------------------------
 
-        driver.rightTrigger()
-            .whileTrue(new CmdShoot(shooterShootRPM, 500, 100, agitatorSubsystem, feederYELsystem, feederBLUsystem, shooterBLUsystem));
+        bottomDriver.rightTrigger()
+            .whileTrue(new CmdShoot(manualBLUShooterRPM, manualBLUFeederRPM, agitatorManualDuty, agitatorSubsystem, feederBLUsystem, feederYELsystem, shooterBLUsystem));
         
         // ---------------------------------
         // Climber
         // ---------------------------------
 
-        topstick.a()
-            .onTrue(new CmdClimberRatchet(climberSubsystem));
+            topDriver.y()
+                .onTrue(new CmdClimberRobotUp(climberSubsystem));
+
+            topDriver.x()
+                .onTrue(new CmdClimberRobotDown(climberSubsystem));
 
         // ---------------------------------
         // Agitator
         // ---------------------------------
 
+            topDriver.povUp()
+                .whileTrue(new CmdAgitateToShooter(agitatorSubsystem));
+
+            topDriver.povDown()
+                .whileTrue(new CmdAgitateToIntake(agitatorSubsystem));
     }
 
     /**

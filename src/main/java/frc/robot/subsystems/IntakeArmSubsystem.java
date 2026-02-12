@@ -60,7 +60,7 @@ public class IntakeArmSubsystem extends Subsystems1507 {
         double outputRot = BLUratio.toOutput(motorRot);
         //double rightOutputRot = -ratio.toOutput(rightMotorRot);
 
-        return outputRot;
+        return motorRot;
     }
 
     public double getYELPositionDegrees() {
@@ -69,6 +69,6 @@ public class IntakeArmSubsystem extends Subsystems1507 {
         double outputRot = YELratio.toOutput(motorRot);
         //double rightOutputRot = -ratio.toOutput(rightMotorRot);
 
-        return outputRot;
+        return motorRot;
     }
 }
