@@ -94,6 +94,8 @@ public class RobotContainer {
             new VisionIOPhotonVision(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
             new VisionIOPhotonVision(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
 
+    public final QuestNavSubsystem quest = new QuestNavSubsystem(drivetrain);
+
     // -----------------------------
     // Shooter + Model
     // -----------------------------    

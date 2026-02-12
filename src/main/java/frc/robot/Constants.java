@@ -10,7 +10,11 @@ package frc.robot;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import frc.robot.mechanics.GearRatio;
 import frc.robot.utilities.MotorConfig;
 
@@ -314,6 +318,33 @@ public class Constants {
         // Stall detection
         public static final double STALL_THRESHOLD = 0.02;
         public static final double STALL_TIMEOUT = 1.0;
+    }
+
+    // ╔═══════════════════════════════════════════════════════════════╗
+    // ║                            QuestNav                           ║
+    // ║                                                               ║
+    // ╚═══════════════════════════════════════════════════════════════╝
+    public static final class kQuest {
+        public static final Transform2d ROBOT_TO_QUEST_TRANSFORM =
+            new Transform2d(
+                -0.381,
+                0.0,
+                Rotation2d.kCCW_90deg);
+
+        public static final Matrix<N3, N1> STD_DEVS = VecBuilder.fill(0, 0, 0);
+
+        public static final double ACCEPTABLE_DISTANCE_TOLERANCE = 0.1;
+        
+        // Mount transform: robot origin -> QuestNav sensor
+        public static final Transform3d ROBOT_TO_QUEST =
+            new Transform3d(-0.381, 0.0, 0.3048, new Rotation3d(0.0, 0.0, -180.0));
+
+        // Standard deviations for measurement trust
+        public static final Matrix<N3, N1> QUESTNAV_STD_DEVS = VecBuilder.fill(
+            0.2,
+            0.2,
+            0.05
+        );
     }
 }
    
