@@ -345,6 +345,13 @@ public class ShooterSubsystem extends Subsystems1507 {
         this.targetPose = newTarget;
     }
 
+    /**
+     * Returns the target pose used by the ShooterModel.
+     */
+    public Pose2d getTargetPose() {
+        return targetPose;
+    }
+
     // ------------------------------------------------------------
     // Simulation reset
     // ------------------------------------------------------------
