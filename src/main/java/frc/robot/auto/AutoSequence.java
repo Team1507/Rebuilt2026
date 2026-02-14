@@ -155,7 +155,8 @@ public class AutoSequence {
      * steps.add(new ScoreCommand(shooterSubsystem));
      */
     public AutoSequence shoot() {
-        steps.add(new CmdShoot(200.0, 
+        steps.add(new CmdShoot(
+            500.0, 
             200.0, 
             200.0, 
             record.agitator(), 
@@ -206,6 +207,45 @@ public class AutoSequence {
     // - moveRRT()
     // etc.
 
+
+    public AutoSequence race(AutoSequenceBuilder... builders) {
+        List<Command> commands = new ArrayList<>();
+
+        for (AutoSequenceBuilder builder : builders) {
+            AutoSequence sub = new AutoSequence(record, MaxSpeed, MaxAngularRate);
+            builder.build(sub);
+            commands.add(sub.build());
+        }
+        steps.add(Commands.race(commands.toArray(Command[]::new)));
+        return this;
+    }
+
+    public AutoSequence parallel(AutoSequenceBuilder... builders) {
+        List<Command> commands = new ArrayList<>();
+
+        for (AutoSequenceBuilder builder : builders) {
+            AutoSequence sub = new AutoSequence(record, MaxSpeed, MaxAngularRate);
+            builder.build(sub);
+            commands.add(sub.build());
+        }
+        steps.add(Commands.parallel(commands.toArray(Command[]::new)));
+        return this;
+    }
+
+    public AutoSequence deadline(AutoSequenceBuilder deadlineBuilder, AutoSequenceBuilder... others) {
+        AutoSequence deadlineSeq = new AutoSequence(record, MaxSpeed, MaxAngularRate);
+        deadlineBuilder.build(deadlineSeq);
+
+        List<Command> otherCMD = new ArrayList<>();
+        for (AutoSequenceBuilder builder : others) {
+            AutoSequence sub = new AutoSequence(record, MaxSpeed, MaxAngularRate);
+            builder.build(sub);
+            otherCMD.add(sub.build());
+        }
+        steps.add(Commands.deadline(deadlineSeq.build(), otherCMD.toArray(Command[]::new)));
+        return this;
+    }
+
     /**
      * Finalizes the autonomous routine by assembling all queued steps into a
      * single sequential command.
@@ -223,5 +263,10 @@ public class AutoSequence {
      */
     public Command build() {
         return Commands.sequence(steps.toArray(Command[]::new));
+    }
+
+    @ FunctionalInterface
+    public interface AutoSequenceBuilder {
+        void build(AutoSequence sequence);
     }
 }
