@@ -11,36 +11,36 @@ import frc.robot.subsystems.AgitatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CmdAgitatorManual extends Command {
-  public final AgitatorSubsystem agitatorSubsystem;
-  public final Supplier<Double> dcSupplier;
-  /** Creates a new CmdAgitatorManual. */
-  public CmdAgitatorManual(AgitatorSubsystem agitatorSubsystem, Supplier<Double> dutyCycle) {
-    // Use addRequirements() here to declare subsystem dependencies.
-    this.agitatorSubsystem = agitatorSubsystem;
-    this.dcSupplier = dutyCycle;
+    public final AgitatorSubsystem agitatorSubsystem;
+    public final Supplier<Double> dcSupplier;
+    /** Creates a new CmdAgitatorManual. */
+    public CmdAgitatorManual(AgitatorSubsystem agitatorSubsystem, Supplier<Double> dcSupplier) {
+        // Use addRequirements() here to declare subsystem dependencies.
+        this.agitatorSubsystem = agitatorSubsystem;
+        this.dcSupplier = dcSupplier;
 
-    addRequirements(agitatorSubsystem);
-  }
+        addRequirements(agitatorSubsystem);
+    }
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {}
+    // Called when the command is initially scheduled.
+    @Override
+    public void initialize() {}
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-    agitatorSubsystem.run(dcSupplier.get());
-  }
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+        agitatorSubsystem.run(dcSupplier.get());
+    }
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-    agitatorSubsystem.stop();
-  }
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+        agitatorSubsystem.stop();
+    }
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return false;
-  }
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }

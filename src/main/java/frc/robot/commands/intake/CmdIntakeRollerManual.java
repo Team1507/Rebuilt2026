@@ -4,42 +4,38 @@
 
 package frc.robot.commands.intake;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeRollerSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CmdIntakeRollerManual extends Command {
-  public final IntakeRollerSubsystem intakeRollerSubsystem;
-  public final boolean manualMode;
-  public final double dutyCycle;
-  /** Creates a new CmdIntakeRollerManual. */
-  public CmdIntakeRollerManual(IntakeRollerSubsystem intakeRollerSubsystem, boolean manualMode, double dutyCycle) {
-    this.intakeRollerSubsystem = intakeRollerSubsystem;
-    this.manualMode = manualMode;
-    this.dutyCycle = dutyCycle;
-    // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(intakeRollerSubsystem);
-  }
+    public final IntakeRollerSubsystem intakeRollerSubsystem;
+    public final Supplier<Double> dcSupplier;
+    /** Creates a new CmdIntakeRollerManual. */
+    public CmdIntakeRollerManual(IntakeRollerSubsystem intakeRollerSubsystem, Supplier<Double> dutyCycle) {
+        this.intakeRollerSubsystem = intakeRollerSubsystem;
+        this.dcSupplier = dutyCycle;
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {}
+        addRequirements(intakeRollerSubsystem);
+    }
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-    intakeRollerSubsystem.run(dutyCycle);
-  }
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+        intakeRollerSubsystem.run(dcSupplier.get());
+    }
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-    intakeRollerSubsystem.stop();
-  }
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+        intakeRollerSubsystem.stop();
+    }
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return !manualMode;
-  }
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }

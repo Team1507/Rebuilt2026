@@ -4,40 +4,37 @@
 
 package frc.robot.commands.climb;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ClimberSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CmdClimberManual extends Command {
-  public final ClimberSubsystem climberSubsystem;
-  public final boolean manualMode;
-  public final double targetPosition;  
-  /** Creates a new CmdClimberManual. */
-  public CmdClimberManual(ClimberSubsystem climberSubsystem, boolean manualMode, double targetPosition) {
-    this.climberSubsystem = climberSubsystem;
-    this.manualMode = manualMode;
-    this.targetPosition = targetPosition;
+    public final ClimberSubsystem climberSubsystem;
+    public final Supplier<Double> positionSupplier;
 
-    addRequirements(climberSubsystem);
-  }
+    /** Creates a new CmdClimberManual. */
+    public CmdClimberManual(ClimberSubsystem climberSubsystem, Supplier<Double> targetPosition) {
+        this.climberSubsystem = climberSubsystem;
+        this.positionSupplier = targetPosition;
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {}
+        addRequirements(climberSubsystem);
+    }
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-    climberSubsystem.setPosition(targetPosition);
-  }
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+        climberSubsystem.setPosition(positionSupplier.get());
+    }
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {}
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {}
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return !manualMode;
-  }
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }

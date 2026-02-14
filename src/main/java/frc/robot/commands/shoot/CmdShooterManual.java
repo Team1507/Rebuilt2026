@@ -4,42 +4,39 @@
 
 package frc.robot.commands.shoot;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ShooterSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CmdShooterManual extends Command {
-  public final ShooterSubsystem shooterSubsystem;
-  public final boolean manualMode;
-  public final double targetRPM;
-  /** Creates a new CmdShooterManual. */
-  public CmdShooterManual(ShooterSubsystem shooterSubsystem, boolean manualMode, double targetRPM) {
-    this.shooterSubsystem = shooterSubsystem;
-    this.manualMode = manualMode;
-    this.targetRPM = targetRPM;
-    // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(shooterSubsystem);
-  }
+    public final ShooterSubsystem shooterSubsystem;
+    public final Supplier<Double> rpmSupplier;
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {}
+    /** Creates a new CmdShooterManual. */
+    public CmdShooterManual(ShooterSubsystem shooterSubsystem, Supplier<Double> rpmSupplier) {
+        this.shooterSubsystem = shooterSubsystem;
+        this.rpmSupplier = rpmSupplier;
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-    shooterSubsystem.setTargetRPM(targetRPM);
-  }
+        addRequirements(shooterSubsystem);
+    }
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-    shooterSubsystem.stop();
-  }
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+        shooterSubsystem.setTargetRPM(rpmSupplier.get());
+    }
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return !manualMode;
-  }
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+        shooterSubsystem.stop();
+    }
+
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }

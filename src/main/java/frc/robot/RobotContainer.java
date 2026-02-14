@@ -107,13 +107,12 @@ public class RobotContainer {
         ModelLoader.load("model.json", poseSupplier);
 
     //declare shooter RPM variable
-    public double shooterRPM ;
-    public double shooterShootRPM = 5000;
+    public double shooterIdleRPM;
+    public double shooterShootRPM;
 
-    public boolean runBLUShooterManual = false;
-    public double manualBLUShooterRPM = 0.0;
-    public boolean runYELShooterManual = false;
-    public double manualYELShooterRPM = 0.0;
+    public double manualBLUShooterRPM;
+    public double manualYELShooterRPM;
+
     public final ShooterSubsystem shooterBLUsystem =
         new ShooterSubsystem(
             kShooter.BLU_CONFIG,
@@ -150,13 +149,9 @@ public class RobotContainer {
     public final FeederSubsystem feederYELsystem =
         new FeederSubsystem(
             kFeeder.YEL_CONFIG); 
-
-    public boolean runFeederManual = false;
     
     public double manualBLUFeederRPM;
-    public double manualYELFeederRPM = 0.0;
-    //update through SD
-    private double feederTargetRPM = 500.0;
+    public double manualYELFeederRPM;
 
     // -----------------------------
     // intake
@@ -164,25 +159,24 @@ public class RobotContainer {
     public final IntakeRollerSubsystem intakeRollerSubsystem =
         new IntakeRollerSubsystem(
             kIntake.ROLLER_CONFIG);
-    public boolean runIntakeRollerManual = false;
-    public double intakeRollerManualDuty = 0.0;
+
+    public double manualIntakeRollerDuty;
 
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
             kIntake.kArm.BLU_CONFIG,
             kIntake.kArm.YEL_CONFIG);
-    public boolean runIntakeArmManual = false;
-    public double intakeArmManualTargetAngle;
+
+    public double manualIntakeArmAngle;
 
     // -----------------------------
     // Agitator
     // -----------------------------
-     public final AgitatorSubsystem agitatorSubsystem =
+    public final AgitatorSubsystem agitatorSubsystem =
         new AgitatorSubsystem(
             kAgitator.CONFIG);
-    public boolean runAgitatorManual = false;
-    public double agitatorManualDuty;
 
+    public double manualAgitatorDuty;
 
     // -----------------------------
     // climber
@@ -192,9 +186,7 @@ public class RobotContainer {
             kClimber.CONFIG,
             kClimber.SERVO_PORT);
 
-    public boolean runClimberManual = false;
-    //update through SD
-    public double targetManualClimberPosition = 0.0;
+    public double manualClimberPosition;
 
     // -----------------------------
     // hopper
@@ -258,7 +250,7 @@ public class RobotContainer {
                 () -> 
                     // Build telemetry → ask model → set RPM
                     //shooterSubsystem.updateShooterFromModel();
-                    shooterBLUsystem.setTargetRPM(shooterRPM),
+                    shooterBLUsystem.setTargetRPM(shooterIdleRPM),
                 shooterBLUsystem
             )
         );
@@ -467,30 +459,45 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Mode", autoChooser);
 
         // -----------------------------
-        // Shooter Inputs (editable)
+        // Manual Agitator Inputs (editable)
         // -----------------------------
-        SmartDashboard.putNumber("Shooter/Shooter Idle RPM", 0.0);
-        SmartDashboard.putNumber("Shooter/ShooterShootRPM", shooterShootRPM);
+        SmartDashboard.putNumber("Manual Mode/Agitator/Target DC", 0.0);
 
         SmartDashboard.putData(
-            "Run Shooter PID Tuner",
-            new CmdShooterPIDTuner(shooterBLUsystem, kShooter.MAX_RPM)
+            "Manual Mode/Agitator/Run",
+            new CmdAgitatorManual(
+                agitatorSubsystem,
+                () -> manualAgitatorDuty
+            )
+        );
+
+        // -----------------------------
+        // Manual Climber Inputs (editable)
+        // -----------------------------
+        SmartDashboard.putNumber("Manual Mode/Climber/Target Position", 0.0);
+
+        SmartDashboard.putData(
+            "Manual Mode/Climber/Run",
+            new CmdClimberManual(
+                climberSubsystem,
+                () -> manualClimberPosition
+            )
         );
 
         // -----------------------------
         // Manual Feeder Inputs (editable)
         // -----------------------------
         SmartDashboard.putNumber("Manual Mode/Feeder/BLU/Target RPM", 0.0);
-        SmartDashboard.putNumber("Manual Mode/Feeder/YEL/Target RPM", 0.0);
 
         SmartDashboard.putData(
             "Manual Mode/Feeder/BLU/Run",
             new CmdFeederManual(
                 feederBLUsystem,
                 () -> manualBLUFeederRPM
-                //manualMode
             )
         );
+
+        SmartDashboard.putNumber("Manual Mode/Feeder/YEL/Target RPM", 0.0);
 
         SmartDashboard.putData(
             "Manual Mode/Feeder/YEL/Run",
@@ -499,20 +506,60 @@ public class RobotContainer {
                 () -> manualYELFeederRPM
             )
         );
-
+        
         // -----------------------------
-        // Manual Agitator Inputs (editable)
+        // Manual Intake Inputs (editable)
         // -----------------------------
-        SmartDashboard.putNumber("Manual Mode/Agitator/Target Duty Cycle", 0.0);
+        SmartDashboard.putNumber("Manual Mode/Intake/Arm/Target Angle", 0.0);
 
         SmartDashboard.putData(
-            "Manual Mode/Agitator/Run",
-            new CmdAgitatorManual(
-                agitatorSubsystem,
-                () -> agitatorManualDuty
+            "Manual Mode/Intake/Arm/Run",
+            new CmdIntakeArmManual(
+                intakeArmSubsystem,
+                () -> manualIntakeArmAngle
             )
         );
 
+        SmartDashboard.putNumber("Manual Mode/Intake/Roller/Terget DC", 0.0);
+
+        SmartDashboard.putData(
+            "Manual Mode/Intake/Roller/Run",
+            new CmdIntakeRollerManual(
+                intakeRollerSubsystem,
+                () -> manualIntakeRollerDuty
+            )
+        );
+
+        // -----------------------------
+        // Shooter Inputs (editable)
+        // -----------------------------
+        SmartDashboard.putNumber("Shooter/Shooter Idle RPM", 0.0);
+        SmartDashboard.putNumber("Shooter/ShooterShootRPM", 0.0);
+
+        SmartDashboard.putData(
+            "Run Shooter PID Tuner",
+            new CmdShooterPIDTuner(shooterBLUsystem, kShooter.MAX_RPM)
+        );
+
+        SmartDashboard.putNumber("Manual Mode/Shooter/BLU/Terget RPM", 0.0);
+
+        SmartDashboard.putData(
+            "Manual Mode/Shooter/BLU/Run",
+            new CmdShooterManual(
+                shooterBLUsystem,
+                () -> manualBLUShooterRPM
+            )
+        );
+
+        SmartDashboard.putNumber("Manual Mode/Shooter/YEL/Terget RPM", 0.0);
+
+        SmartDashboard.putData(
+            "Manual Mode/Shooter/YEL/Run",
+            new CmdShooterManual(
+                shooterBLUsystem,
+                () -> manualYELShooterRPM
+            )
+        );
     }
 
 
@@ -529,11 +576,18 @@ public class RobotContainer {
         // -----------------------------
         // Read Operator Inputs
         // -----------------------------
-        manualMode =
-            SmartDashboard.getBoolean("Manual Mode Enabled", manualMode);
 
-        shooterRPM =
-            SmartDashboard.getNumber("Shooter/Shooter Idle RPM", shooterRPM);
+        manualAgitatorDuty =
+            SmartDashboard.getNumber(
+                "Manual Mode/Agitator/Target DC",
+                manualAgitatorDuty
+            );
+
+        manualClimberPosition =
+            SmartDashboard.getNumber(
+                "Manual Mode/Climber/Target Position",
+                manualClimberPosition
+            );
 
         manualBLUFeederRPM =
             SmartDashboard.getNumber(
@@ -547,10 +601,34 @@ public class RobotContainer {
                 manualYELFeederRPM
             );
 
-        agitatorManualDuty =
+        manualIntakeArmAngle =
             SmartDashboard.getNumber(
-                "Manual Mode/Agitator/Target Duty Cycle",
-                agitatorManualDuty
+                "Manual Mode/Intake/Arm/Target Angle",
+                manualIntakeArmAngle
+            );
+
+        manualIntakeRollerDuty =
+            SmartDashboard.getNumber(
+                "Manual Mode/Intake/Roller/Target DC",
+                manualIntakeRollerDuty
+            );
+
+        manualBLUShooterRPM =
+            SmartDashboard.getNumber(
+                "Manual Mode/Shooter/BLU/Terget RPM",
+                manualBLUShooterRPM
+            );
+
+        manualYELShooterRPM =
+            SmartDashboard.getNumber(
+                "Manual Mode/Shooter/YEL/Terget RPM",
+                manualYELShooterRPM
+            );
+
+        shooterIdleRPM =
+            SmartDashboard.getNumber(
+                "Shooter/Shooter Idle RPM",
+                shooterIdleRPM
             );
 
         // -----------------------------

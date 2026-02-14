@@ -327,13 +327,16 @@ public class Constants {
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kQuest {
 
-        public static final Matrix<N3, N1> STD_DEVS = VecBuilder.fill(0.5, 0.5, 0.1);
+        public static final Matrix<N3, N1> STD_DEVS = VecBuilder.fill(0.02, 0.02, Double.POSITIVE_INFINITY);
 
         public static final double ACCEPTABLE_DISTANCE_TOLERANCE = 0.1;
         
         // Mount transform: robot origin -> QuestNav sensor
         public static final Transform3d ROBOT_TO_QUEST =
-            new Transform3d(-0.381, 0.0, 0.3048, new Rotation3d(0.0, 0.0, 180.0));
+            new Transform3d(
+                -0.381, 0.0, 0.307,
+                new Rotation3d(0.0, 0.0, Math.toRadians(180.0))
+            );
     }
 }
    
