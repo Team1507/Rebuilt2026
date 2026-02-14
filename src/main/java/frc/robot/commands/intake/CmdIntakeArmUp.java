@@ -43,6 +43,6 @@ public final IntakeArmSubsystem intakeArmSubsystem;
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return true;
+    return intakeArmSubsystem.isAtPosition(RETRACTED_ANGLE_DEGREES,5.0);
   }
 }

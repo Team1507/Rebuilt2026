@@ -4,20 +4,20 @@
 
 package frc.robot.commands.agitate;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.AgitatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CmdAgitatorManual extends Command {
   public final AgitatorSubsystem agitatorSubsystem;
-  public final double dutyCycle;
-  public final boolean manualMode;
+  public final Supplier<Double> dcSupplier;
   /** Creates a new CmdAgitatorManual. */
-  public CmdAgitatorManual(AgitatorSubsystem agitatorSubsystem, double dutyCycle, boolean manualMode) {
+  public CmdAgitatorManual(AgitatorSubsystem agitatorSubsystem, Supplier<Double> dutyCycle) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.agitatorSubsystem = agitatorSubsystem;
-    this.dutyCycle = dutyCycle;
-    this.manualMode = manualMode;
+    this.dcSupplier = dutyCycle;
 
     addRequirements(agitatorSubsystem);
   }
@@ -29,7 +29,7 @@ public class CmdAgitatorManual extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    agitatorSubsystem.run(dutyCycle);
+    agitatorSubsystem.run(dcSupplier.get());
   }
 
   // Called once the command ends or is interrupted.
@@ -41,6 +41,6 @@ public class CmdAgitatorManual extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return !manualMode;
+    return false;
   }
 }

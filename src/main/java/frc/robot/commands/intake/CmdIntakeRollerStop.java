@@ -6,20 +6,41 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.auto.routines;
+package frc.robot.commands.intake;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.kIntake;
+import frc.robot.subsystems.IntakeRollerSubsystem;
 
-import frc.robot.auto.AutoSequence;
-import frc.robot.utilities.SubsystemsRecord;
-import frc.robot.navigation.Nodes;
+public class CmdIntakeRollerStop extends Command {
 
-public class AutoSample {
+    public final IntakeRollerSubsystem intakeSubsystem;
 
-    public static Command build(SubsystemsRecord record, double maxSpeed, double maxAngularSpeed) {
+    /** Creates a new CmdIntakeRoller. */
+    public CmdIntakeRollerStop(IntakeRollerSubsystem intakeSubsystem) {
+        this.intakeSubsystem = intakeSubsystem;
+        // Use addRequirements() here to declare subsystem dependencies.
+        addRequirements(intakeSubsystem);
+    }
 
-        return new AutoSequence(record, maxSpeed, maxAngularSpeed)
-            
-            .build();
+    // Called when the command is initially scheduled.
+    @Override
+    public void initialize() {}
+
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+        intakeSubsystem.stop();
+    }
+
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+    }
+
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return true;
     }
 }
