@@ -62,7 +62,7 @@ public class Constants {
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
                     new Translation3d(-0.281, 0.296, 0.2413),
-                    new Rotation3d(0, Math.toRadians(10), Math.toRadians(60))
+                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(70))
                 );
         }
 
@@ -72,7 +72,7 @@ public class Constants {
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
                     new Translation3d(-0.2985, -0.276, 0.2413),
-                    new Rotation3d(0, Math.toRadians(10), Math.toRadians(205))
+                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(210))
                 );
         }
     }
@@ -315,6 +315,22 @@ public class Constants {
         // Tolerances
         public static final double POSITION_TOLERANCE_METERS = 0.05;
         public static final double ANGLE_TOLERANCE_RADIANS = Math.toRadians(2.0);
+
+        // Stall detection
+        public static final double STALL_THRESHOLD = 0.02;
+        public static final double STALL_TIMEOUT = 1.0;
+    }
+
+    public static final class kMoveThroughPose {
+
+        // PID gains for X/Y translation
+        public static final double X_KP = 1.0;
+        public static final double X_KI = 0.0;
+        public static final double X_KD = 0.0;
+
+        public static final double Y_KP = 1.0;
+        public static final double Y_KI = 0.0;
+        public static final double Y_KD = 0.0;
 
         // Stall detection
         public static final double STALL_THRESHOLD = 0.02;

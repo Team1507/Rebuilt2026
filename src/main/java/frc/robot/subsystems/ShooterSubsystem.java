@@ -18,7 +18,6 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // Mechanics
 import frc.robot.mechanics.GearRatio;
@@ -388,11 +387,6 @@ public class ShooterSubsystem extends Subsystems1507 {
      */
     @Override
     public void periodic() {
-
-        // Debug: see what the subsystem thinks it's doing 
-        SmartDashboard.putNumber("Shooter/Target/Motor (RPS)", ratio.toOutput(targetMotorRPS));
-        SmartDashboard.putNumber("Shooter/Target/Motor (RPM)", ratio.toOutput(targetMotorRPS * 60)); 
-        SmartDashboard.putNumber("Shooter/MeasuredRPM", getShooterRPM());
 
         if (RobotBase.isReal()) {
             shooterMotor.setControl(velocityRequest.withVelocity(targetMotorRPS));

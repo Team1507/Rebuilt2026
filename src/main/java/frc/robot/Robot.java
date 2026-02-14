@@ -29,8 +29,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-        WriteToSmartDashboard();
-        m_robotContainer.shotBLUTrainer.update();
+        m_robotContainer.getDashboard().updateInputs();
     }
 
     @Override
@@ -80,9 +79,4 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void testExit() {}
-
-    public void WriteToSmartDashboard()
-    {
-        m_robotContainer.updateDashboardInputs();
-    }
 }
