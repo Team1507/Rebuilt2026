@@ -330,6 +330,12 @@ public class RobotContainer {
         bottomDriver.povRight()
             .onTrue(new CmdMoveToPose(drivetrain, Hub.APPROACH_RIGHT, MaxSpeed, MaxAngularRate));
 
+        bottomDriver.rightStick().whileTrue(new CmdMaintainHeadingToTarget(
+            drivetrain,
+            () -> shooterBLUsystem.getTargetPose(), // Target pose supplier
+            () -> -bottomDriver.getLeftY() * MaxSpeed, // X velocity supplier
+            () -> -bottomDriver.getLeftX() * MaxSpeed  // Y velocity supplier
+        ));
         // ---------------------------------
         // Feeder
         // ---------------------------------
