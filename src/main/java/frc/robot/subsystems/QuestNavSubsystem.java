@@ -24,8 +24,7 @@ public class QuestNavSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        QuestNav questNav = new QuestNav();
-
+        
         questNav.commandPeriodic();
 
         PoseFrame[] questFrames = questNav.getAllUnreadPoseFrames();
