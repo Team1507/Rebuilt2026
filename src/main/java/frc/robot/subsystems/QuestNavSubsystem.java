@@ -3,45 +3,31 @@ package frc.robot.subsystems;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-// WPI libraries
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-// Robot Utilities
 import frc.robot.subsystems.quest.PoseFrame;
 import frc.robot.subsystems.quest.QuestNav;
-
-// Constants
 import frc.robot.Constants.kQuest;
 
-/**
- * VisionSystem implementation for QuestNav.
- *
- * Responsible for:
- *  - Reading QuestNav pose frames
- *  - Transforming them into robot space
- *  - Updating latestPose for the VisionSystem base class
- *  - Providing QuestNav-specific utilities (battery %, timestamps, etc.)
- */
-public class QuestNavSubsystem extends SubsystemBase{
+public class QuestNavSubsystem extends SubsystemBase {
 
-    public final CommandSwerveDrivetrain drivetrain;
+    private final CommandSwerveDrivetrain drivetrain;
+    private final QuestNav questNav = new QuestNav();
 
     public QuestNavSubsystem(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
     }
 
-    private final QuestNav questNav = new QuestNav();
-
-    /**
-     * Updates the latest pose from QuestNav.
-     * Called automatically by VisionSystem.periodic().
-     */
     @Override
     public void periodic() {
-        // Get the latest pose data frames from the Quest
+        QuestNav questNav = new QuestNav();
+
+        questNav.commandPeriodic();
+
         PoseFrame[] questFrames = questNav.getAllUnreadPoseFrames();
 
         // Loop over the pose data frames and send them to the pose estimator
@@ -72,10 +58,6 @@ public class QuestNavSubsystem extends SubsystemBase{
         }
     }
 
-    // -------------------------
-    // QuestNav-specific helpers
-    // -------------------------
-
     public boolean isConnected() {
         return questNav.isConnected();
     }
@@ -88,9 +70,6 @@ public class QuestNavSubsystem extends SubsystemBase{
         return questNav.getAppTimestamp();
     }
 
-    /**
-     * Sets the internal QuestNav pose (useful when integrating PhotonVision).
-     */
     public void setQuestNavPose(Pose3d pose) {
         questNav.setPose(pose);
     }

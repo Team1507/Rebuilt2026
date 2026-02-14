@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.kAgitator;
 import frc.robot.Constants.kQuest;
 
 import java.util.LinkedList;
@@ -301,7 +300,6 @@ public class Vision extends SubsystemBase {
 
                 Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStd, xyStd, angStd);
                 consumer.accept(robotPose3d.toPose2d(), est.timestampSeconds, stdDevs);
-                questNavPoseSeeder.accept(robotPose3d.transformBy(kQuest.ROBOT_TO_QUEST));
                 totalFused++;
             }
 
@@ -326,6 +324,7 @@ public class Vision extends SubsystemBase {
         // buffer since the gyro was just reset.
         if (!startupPoseSeeded && seedPose != null) {
             poseSeeder.accept(seedPose);
+            questNavPoseSeeder.accept(new Pose3d(seedPose).transformBy(kQuest.ROBOT_TO_QUEST));
             resetHeadingData();
             startupPoseSeeded = true;
 
