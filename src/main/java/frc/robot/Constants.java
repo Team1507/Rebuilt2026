@@ -191,30 +191,30 @@ public class Constants {
         public static final class kArm {
 
             // Arm angle limits
-            public static final double MAX_ANGLE_DEGREES = 90.0;
+            public static final double MAX_ANGLE_DEGREES = 0.65;
             public static final double MIN_ANGLE_DEGREES = 0.0;
-            public static final double DEPLOYED_ANGLE_DEGREES = 75.0;
-            public static final double RETRACTED_ANGLE_DEGREES = 0.0;
+            public static final double DEPLOYED_ANGLE_DEGREES = 0.64;
+            public static final double RETRACTED_ANGLE_DEGREES = 0.15;
             public static final MotorConfig BLU_CONFIG = new MotorConfig(
                 13,
-                0.001,
+                0.01,
                 0.0,
                 0.0,
                 0.12,
                 0.1,
                 0.0,
-                8, -8,
+                4, -4,
                 GearRatio.gearBox(100, 1));
 
             public static final MotorConfig YEL_CONFIG = new MotorConfig(
                 14, 
-                0.001,
+                0.01,
                 0.0,
                 0.0,
                 0.12,
                 0.1,
                 0.0,
-                8, -8,
+                4, -4,
                 GearRatio.gearBox(100, 1));
         }
     }

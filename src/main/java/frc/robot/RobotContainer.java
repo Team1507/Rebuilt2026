@@ -86,16 +86,16 @@ public class RobotContainer {
     // Vision
     // -----------------------------
 
-    private final QuestNavSubsystem questNav = new QuestNavSubsystem(drivetrain);
+   // private final QuestNavSubsystem questNav = new QuestNavSubsystem(drivetrain);
 
-    public final Vision PVManager =
-        new Vision(
-            drivetrain::addVisionMeasurement,
-            drivetrain::getHeading,          // Supplier<Rotation2d>
-            drivetrain::seedPoseFromVision,
-            questNav::setQuestNavPose,
-            new Vision.CameraConfig(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
-            new Vision.CameraConfig(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
+   // public final Vision PVManager =
+    //    new Vision(
+    //        drivetrain::addVisionMeasurement,
+            // drivetrain::getHeading,          // Supplier<Rotation2d>
+            // drivetrain::seedPoseFromVision,
+            // questNav::setQuestNavPose,
+            // new Vision.CameraConfig(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
+            // new Vision.CameraConfig(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
 
     // -----------------------------
     // Shooter + Model
@@ -107,7 +107,7 @@ public class RobotContainer {
         ModelLoader.load("model.json", poseSupplier);
 
     //declare shooter RPM variable
-    public double shooterRPM = 3000;
+    public double shooterRPM ;
     public double shooterShootRPM = 5000;
 
     public boolean runBLUShooterManual = false;
@@ -354,7 +354,7 @@ public class RobotContainer {
         // ---------------------------------
 
         bottomDriver.rightTrigger()
-            .whileTrue(new CmdShoot(manualBLUShooterRPM, manualBLUFeederRPM, agitatorManualDuty, agitatorSubsystem, feederBLUsystem, feederYELsystem, shooterBLUsystem));
+            .whileTrue(new CmdShoot(200, 200, .35, agitatorSubsystem, feederBLUsystem, feederYELsystem, shooterBLUsystem));
         
         // ---------------------------------
         // Climber
@@ -474,24 +474,24 @@ public class RobotContainer {
         // BLU Shooter
         SmartDashboard.putNumber("Shooter/BLU/TargetRPM", shooterBLUsystem.getTargetRPM());
         SmartDashboard.putNumber("Shooter/BLU/ActualRPM", shooterBLUsystem.getShooterRPM());
-        SmartDashboard.putNumber("Shooter/BLU/TargetRPM", shooterRPM);
+        // SmartDashboard.putNumber("Shooter/BLU/TargetRPM", shooterRPM);
         SmartDashboard.putNumber("Shooter/BLU/Voltage", shooterBLUsystem.getShooterVoltage());
         SmartDashboard.putNumber("Shooter/BLU/StatorCurrent", shooterBLUsystem.getStatorCurrent());
         SmartDashboard.putNumber("Shooter/BLU/SupplyCurrent", shooterBLUsystem.getSupplyCurrent());
         SmartDashboard.putNumber("Shooter/BLU/ClosedLoopError", shooterBLUsystem.getClosedLoopError());
-        SmartDashboard.putNumber("Manual Mode/Shooter/BLU/Target RPM", manualBLUShooterRPM);
-        SmartDashboard.putData("Manual Mode/Shooter/BLU/Run", new CmdShooterManual(shooterBLUsystem, manualMode, manualBLUShooterRPM));
+        // SmartDashboard.putNumber("Manual Mode/Shooter/BLU/Target RPM", manualBLUShooterRPM);
+        // SmartDashboard.putData("Manual Mode/Shooter/BLU/Run", new CmdShooterManual(shooterBLUsystem, manualMode, manualBLUShooterRPM));
 
         // YEL Shooter
         SmartDashboard.putNumber("Shooter/YEL/TargetRPM", shooterYELsystem.getTargetRPM());
         SmartDashboard.putNumber("Shooter/YEL/ActualRPM", shooterYELsystem.getShooterRPM());
-        SmartDashboard.putNumber("Shooter/YEL/TargetRPM", shooterRPM);
+        // SmartDashboard.putNumber("Shooter/YEL/TargetRPM", shooterRPM);
         SmartDashboard.putNumber("Shooter/YEL/Voltage", shooterYELsystem.getShooterVoltage());
         SmartDashboard.putNumber("Shooter/YEL/StatorCurrent", shooterYELsystem.getStatorCurrent());
         SmartDashboard.putNumber("Shooter/YEL/SupplyCurrent", shooterYELsystem.getSupplyCurrent());
         SmartDashboard.putNumber("Shooter/YEL/ClosedLoopError", shooterYELsystem.getClosedLoopError());
-        SmartDashboard.putNumber("Manual Mode/Shooter/YEL/Target RPM", manualYELShooterRPM);
-        SmartDashboard.putData("Manual Mode/Shooter/YEL/Run", new CmdShooterManual(shooterYELsystem, manualMode, manualYELShooterRPM));
+        // SmartDashboard.putNumber("Manual Mode/Shooter/YEL/Target RPM", manualYELShooterRPM);
+        // SmartDashboard.putData("Manual Mode/Shooter/YEL/Run", new CmdShooterManual(shooterYELsystem, manualMode, manualYELShooterRPM));
 
         // ---------------------------------
         // Feeder
@@ -500,10 +500,10 @@ public class RobotContainer {
         SmartDashboard.putNumber("Feeder/BLU/Current RPM", feederBLUsystem.getVelocityRPM());
         SmartDashboard.putNumber("Feeder/YEL/Current RPM", feederYELsystem.getVelocityRPM());
 
-        SmartDashboard.putNumber("Manual Mode/Feeder/BLU/Target RPM", manualBLUFeederRPM);
-        SmartDashboard.putNumber("Manual Mode/Feeder/YEL/Target RPM", manualYELFeederRPM);
-        SmartDashboard.putData("Manual Mode/Feeder/BLU/Run", new CmdFeederManual(feederBLUsystem, manualMode, manualBLUFeederRPM));
-        SmartDashboard.putData("Manual Mode/Feeder/YEL/Run", new CmdFeederManual(feederYELsystem, manualMode, manualYELFeederRPM));
+        // SmartDashboard.putNumber("Manual Mode/Feeder/BLU/Target RPM", manualBLUFeederRPM);
+        // SmartDashboard.putNumber("Manual Mode/Feeder/YEL/Target RPM", manualYELFeederRPM);
+        // SmartDashboard.putData("Manual Mode/Feeder/BLU/Run", new CmdFeederManual(feederBLUsystem, manualMode, manualBLUFeederRPM));
+        // SmartDashboard.putData("Manual Mode/Feeder/YEL/Run", new CmdFeederManual(feederYELsystem, manualMode, manualYELFeederRPM));
         // ---------------------------------
         // Intake
         // ---------------------------------
@@ -512,24 +512,24 @@ public class RobotContainer {
         SmartDashboard.putNumber("Intake/Arm/BLU/Angle", intakeArmSubsystem.getBLUPositionDegrees());
         SmartDashboard.putNumber("Intake/Arm/YEL/Angle", intakeArmSubsystem.getYELPositionDegrees());
 
-        SmartDashboard.putNumber("Manual Mode/Intake/Roller/Duty Cycle", intakeRollerManualDuty);
-        SmartDashboard.putData("Manual Mode/Intake/Roller/Run", new CmdIntakeRollerManual(intakeRollerSubsystem, manualMode, intakeRollerManualDuty));
+        // SmartDashboard.putNumber("Manual Mode/Intake/Roller/Duty Cycle", intakeRollerManualDuty);
+        // SmartDashboard.putData("Manual Mode/Intake/Roller/Run", new CmdIntakeRollerManual(intakeRollerSubsystem, manualMode, intakeRollerManualDuty));
 
-        SmartDashboard.putNumber("Manual Mode/Intake/Arm/Target Angle", intakeArmManualTargetAngle);
-        SmartDashboard.putData("Manual Mode/Intake/Arm/Run", new CmdIntakeArmManual(intakeArmSubsystem, manualMode, intakeArmManualTargetAngle));
+        // SmartDashboard.putNumber("Manual Mode/Intake/Arm/Target Angle", intakeArmManualTargetAngle);
+        // SmartDashboard.putData("Manual Mode/Intake/Arm/Run", new CmdIntakeArmManual(intakeArmSubsystem, manualMode, intakeArmManualTargetAngle));
         // ---------------------------------
         // Agitator
         // ---------------------------------
-        SmartDashboard.putNumber("Manual Mode/Agitator/Duty Cycle", agitatorManualDuty);
-        SmartDashboard.putData("Manual Mode/Agitator/Run", new CmdAgitatorManual(agitatorSubsystem,agitatorManualDuty, manualMode));
+        // SmartDashboard.putNumber("Manual Mode/Agitator/Duty Cycle", agitatorManualDuty);
+        // SmartDashboard.putData("Manual Mode/Agitator/Run", new CmdAgitatorManual(agitatorSubsystem,agitatorManualDuty, manualMode));
         // ---------------------------------
         // Climber
         // ---------------------------------
-        SmartDashboard.putNumber("Climber Position", climberSubsystem.getPosition());
-        SmartDashboard.putData("Reset Climber", new CmdClimberReset(climberSubsystem));
+        // SmartDashboard.putNumber("Climber Position", climberSubsystem.getPosition());
+        // SmartDashboard.putData("Reset Climber", new CmdClimberReset(climberSubsystem));
 
-        SmartDashboard.putNumber("Manual Mode/Climber/Target Position", targetManualClimberPosition);
-        SmartDashboard.putData("Manual Mode/Climber/Run", new CmdClimberManual(climberSubsystem, runClimberManual, targetManualClimberPosition));        // ---------------------------------
+        // SmartDashboard.putNumber("Manual Mode/Climber/Target Position", targetManualClimberPosition);
+        // SmartDashboard.putData("Manual Mode/Climber/Run", new CmdClimberManual(climberSubsystem, runClimberManual, targetManualClimberPosition));        // ---------------------------------
         // Hooper
         // ---------------------------------
 
@@ -551,8 +551,8 @@ public class RobotContainer {
         manualMode = SmartDashboard.getBoolean("Manual Mode Enabled", manualMode);
         // Read operator input
         shooterRPM = SmartDashboard.getNumber("Shooter RPM", shooterRPM);
-        manualBLUShooterRPM = SmartDashboard.getNumber("Manual Mode/Shooter/BLU/Target RPM", manualBLUShooterRPM);
-        manualYELShooterRPM = SmartDashboard.getNumber("Manual Mode/Shooter/YEL/Target RPM", manualYELShooterRPM);
+        // manualBLUShooterRPM = SmartDashboard.getNumber("Manual Mode/Shooter/BLU/Target RPM", manualBLUShooterRPM);
+        // manualYELShooterRPM = SmartDashboard.getNumber("Manual Mode/Shooter/YEL/Target RPM", manualYELShooterRPM);
         // Publish live telemetry
         SmartDashboard.putNumber(
             "Pigeon heading",
@@ -560,20 +560,23 @@ public class RobotContainer {
         );
 
         // Update agitator manual duty cycle from dashboard
-        agitatorManualDuty = SmartDashboard.getNumber("Manual Mode/Agitator/Duty Cycle", agitatorManualDuty);
+        // agitatorManualDuty = SmartDashboard.getNumber("Manual Mode/Agitator/Duty Cycle", agitatorManualDuty);
 
         // Update climber manual target position from dashboard
-        targetManualClimberPosition = SmartDashboard.getNumber("Manual Mode/Climber/Target Position", targetManualClimberPosition);
+        // targetManualClimberPosition = SmartDashboard.getNumber("Manual Mode/Climber/Target Position", targetManualClimberPosition);
     
         // Update feeder target RPM from dashboard
-        manualBLUFeederRPM = SmartDashboard.getNumber("Manual Mode/Feeder/BLU/Target RPM", manualBLUFeederRPM);
-        manualYELFeederRPM = SmartDashboard.getNumber("Manual Mode/Feeder/YEL/Target RPM", manualYELFeederRPM);
+        // manualBLUFeederRPM = SmartDashboard.getNumber("Manual Mode/Feeder/BLU/Target RPM", manualBLUFeederRPM);
+        // manualYELFeederRPM = SmartDashboard.getNumber("Manual Mode/Feeder/YEL/Target RPM", manualYELFeederRPM);
 
         // Update intake roller manual duty cycle from dashboard
-        intakeRollerManualDuty = SmartDashboard.getNumber("Manual Mode/Intake/Roller/Duty Cycle", intakeRollerManualDuty);
+        // intakeRollerManualDuty = SmartDashboard.getNumber("Manual Mode/Intake/Roller/Duty Cycle", intakeRollerManualDuty);
 
         // Update intake arm manual target angle from dashboard
-        intakeArmManualTargetAngle = SmartDashboard.getNumber("Manual Mode/Intake/Arm/Target Angle", intakeArmManualTargetAngle);
+        // intakeArmManualTargetAngle = SmartDashboard.getNumber("Manual Mode/Intake/Arm/Target Angle", intakeArmManualTargetAngle);
+
+        SmartDashboard.putNumber("Intake/Arm/BLU/Angle", intakeArmSubsystem.getBLUPositionDegrees());
+        SmartDashboard.putNumber("Intake/Arm/YEL/Angle", intakeArmSubsystem.getYELPositionDegrees());
 
     }
 }

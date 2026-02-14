@@ -11,7 +11,8 @@ package frc.robot.subsystems;
 // CTRE Imports
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFXS;
-
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.controls.Follower;
 // Subsystems
 import frc.robot.subsystems.lib.Subsystems1507;
 
@@ -41,17 +42,18 @@ public class IntakeArmSubsystem extends Subsystems1507 {
 
         configureFXSMotor(motorBLU, intakeBLUArmMotor);
         configureFXSMotor(motorYEL, intakeYELArmMotor);
+        intakeYELArmMotor.setControl(new Follower(intakeBLUArmMotor.getDeviceID(), MotorAlignmentValue.Opposed));
     }
 
     public void setPosition(double degrees){
-        double BLUOutputRot = degrees / 360.0;
-        double YELOutputRot = -degrees / 360.0;
+        double BLUOutputRot = degrees;
+        double YELOutputRot = -degrees;
 
         double BLUMotorRot = BLUratio.toMotor(BLUOutputRot);
         double YELMotorRot = YELratio.toMotor(YELOutputRot);
 
         intakeBLUArmMotor.setControl(positionRequest.withPosition(BLUMotorRot));
-        intakeYELArmMotor.setControl(positionRequest.withPosition(YELMotorRot));
+        //intakeYELArmMotor.setControl(positionRequest.withPosition(YELMotorRot));
     }
 
     public double getBLUPositionDegrees() {
@@ -60,7 +62,7 @@ public class IntakeArmSubsystem extends Subsystems1507 {
         double outputRot = BLUratio.toOutput(motorRot);
         //double rightOutputRot = -ratio.toOutput(rightMotorRot);
 
-        return motorRot;
+        return outputRot;
     }
 
     public double getYELPositionDegrees() {
@@ -69,6 +71,15 @@ public class IntakeArmSubsystem extends Subsystems1507 {
         double outputRot = YELratio.toOutput(motorRot);
         //double rightOutputRot = -ratio.toOutput(rightMotorRot);
 
-        return motorRot;
+        return outputRot;
+    }
+
+    // degrees is the target position, toleranceDegrees is how close we need to be to count as "at position"
+    public boolean isAtPosition(double degrees, double toleranceDegrees){
+        double currentBLUPos = getBLUPositionDegrees();
+        double currentYELPos = getYELPositionDegrees();
+
+        return Math.abs(currentBLUPos - degrees) < toleranceDegrees
+            && Math.abs(currentYELPos + degrees) < toleranceDegrees;
     }
 }

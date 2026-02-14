@@ -19,9 +19,10 @@ public class AutoSample {
     public static Command build(SubsystemsRecord record, double maxSpeed, double maxAngularSpeed) {
 
         return new AutoSequence(record, maxSpeed, maxAngularSpeed)
-            .moveTo(Nodes.Start.CENTER)
-            .waitSeconds(2.0)
-            .withSpeed(6.0).moveTo(Nodes.Start.LEFT)
+            .intakeDeploy()
+            .moveTo(Nodes.Hub.CENTER)
+            .intakeRetract()
+            .shoot()
             .build();
     }
 }

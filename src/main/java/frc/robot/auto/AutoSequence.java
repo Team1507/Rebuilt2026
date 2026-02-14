@@ -8,6 +8,9 @@
 
 package frc.robot.auto;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 // Java
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +21,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.math.geometry.Pose2d;
 
 // Robot Commands
-import frc.robot.commands.drive.CmdMoveToPose;
-import frc.robot.commands.hopper.CmdHopperExtension;
-import frc.robot.commands.intake.CmdIntakeDeploy;
-import frc.robot.commands.shoot.CmdShoot;
+import frc.robot.commands.agitate.*;
+import frc.robot.commands.climb.*;
+import frc.robot.commands.drive.*;
+import frc.robot.commands.feed.*;
+import frc.robot.commands.hopper.*;
+import frc.robot.commands.intake.*;
+import frc.robot.commands.shoot.*;
 
 // Utilities
 import frc.robot.utilities.SubsystemsRecord;
@@ -40,7 +46,7 @@ public class AutoSequence {
 
     // Required subsystem reference for movement commands
     private final SubsystemsRecord record;
-    private final double maxSpeed;
+    private final double MaxSpeed;
     private final double MaxAngularRate;
 
     private Double nextSpeedOverride = null;
@@ -50,16 +56,16 @@ public class AutoSequence {
      * Creates a new AutoSequence builder.
      *
      * @param drivetrain        The drivetrain subsystem used for all movement commands.
-     * @param maxSpeed          The default translational speed used for move actions.
+     * @param MaxSpeed          The default translational speed used for move actions.
      * @param MaxAngularRate    The default rotational rate used for move actions.
      *
      * <p>This constructor defines the baseline speed profile for the entire
      * autonomous routine. Individual steps may override these values using
      * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}.</p>
      */
-    public AutoSequence(SubsystemsRecord record, double maxSpeed, double MaxAngularRate) {
+    public AutoSequence(SubsystemsRecord record, double MaxSpeed, double MaxAngularRate) {
         this.record = record;
-        this.maxSpeed = maxSpeed;
+        this.MaxSpeed = MaxSpeed;
         this.MaxAngularRate = MaxAngularRate;
     }
 
@@ -95,6 +101,18 @@ public class AutoSequence {
         return this;
     }
 
+    public AutoSequence creep(){
+        this.nextSpeedOverride = 0.3 * MaxSpeed;
+        this.nextAngularOverride = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
+        return this;
+    }
+
+    public AutoSequence slow(){
+        this.nextSpeedOverride = 0.5 * MaxSpeed;
+        this.nextAngularOverride = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
+        return this;
+    }
+
    /**
      * Adds a movement step that drives the robot to the specified target pose.
      * <p>
@@ -117,7 +135,7 @@ public class AutoSequence {
 
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
-            : maxSpeed;
+            : MaxSpeed;
 
         double angularToUse = (nextAngularOverride != null)
             ? nextAngularOverride
@@ -137,9 +155,9 @@ public class AutoSequence {
      * steps.add(new ScoreCommand(shooterSubsystem));
      */
     public AutoSequence shoot() {
-        steps.add(new CmdShoot(67.0, 
-            67.0, 
-            67.0, 
+        steps.add(new CmdShoot(200.0, 
+            200.0, 
+            200.0, 
             record.agitator(), 
             record.BLUfeeder(), 
             record.YELfeeder(), 
@@ -157,8 +175,15 @@ public class AutoSequence {
      * Example:
      * steps.add(new IntakeCommand(intakeSubsystem));
      */
-    public AutoSequence intake() {
-        steps.add(new CmdIntakeDeploy(record.intakeArm(), record.intakeRoller()));
+    public AutoSequence intakeDeploy() {
+        steps.add(new CmdIntakeArmDown(record.intakeArm()));
+        steps.add(new CmdIntakeRollerIntake(record.intakeRoller()));
+        return this;
+    }
+
+    public AutoSequence intakeRetract(){
+        steps.add(new CmdIntakeArmUp(record.intakeArm()));
+        steps.add(new CmdIntakeRollerStop(record.intakeRoller()));
         return this;
     }
 
