@@ -426,8 +426,13 @@ public class RobotContainer {
 
         // --- Example autos using the new builder ---
         autoChooser.addOption(
-            "One Piece Auto",
-            AutoSample.build(record, MaxSpeed, MaxAngularRate)
+            "Auto Subway Right",
+            AutoBlueSubwayRight.build(record, MaxSpeed, MaxAngularRate)
+        );
+
+        autoChooser.addOption(
+            "Auto Subway Left",
+            AutoBlueSubwayLeft.build(record, MaxSpeed, MaxAngularRate)
         );
 
         // Publish to dashboard
