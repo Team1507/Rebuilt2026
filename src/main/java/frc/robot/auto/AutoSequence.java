@@ -115,15 +115,15 @@ public class AutoSequence {
 
    /**
      * Adds a movement step that drives the robot to the specified target pose.
-     * <p>
-     * This method automatically applies any temporary speed overrides set by
+     *
+     * <p>This method automatically applies any temporary speed overrides set by
      * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}. If no
-     * override is active, the default {@code maxSpeed} and {@code maxAngularRate}
-     * provided in the constructor are used.
-     * <p>
-     * Speed overrides apply to <em>only this movement command</em> and are cleared
+     * override is active, the default maxSpeed and maxAngularRate provided in the
+     * constructor are used.</p>
+     *
+     * <p>Speed overrides apply to only this movement command and are cleared
      * immediately afterward, ensuring later steps return to the default speed
-     * profile unless explicitly overridden again.
+     * profile unless explicitly overridden again.</p>
      *
      * @param target The desired end pose for the robot.
      * @return This AutoSequence instance for fluent chaining.
@@ -162,7 +162,7 @@ public class AutoSequence {
             record.agitator(), 
             record.BLUfeeder(), 
             record.YELfeeder(), 
-            record.shooter()));
+            record.BLUshooter()));
         return this;
     }
 
@@ -208,6 +208,24 @@ public class AutoSequence {
     // etc.
 
 
+    /**
+     * Adds a parallel race group to the autonomous sequence.
+     *
+     * <p>Each provided {@link AutoSequenceBuilder} creates its own temporary
+     * {@link AutoSequence}. All resulting commands are run in parallel, and the
+     * entire group ends as soon as any command finishes. All other commands in the
+     * group are interrupted.</p>
+     *
+     * <p>This is useful for behaviors such as "drive until intake detects a note,"
+     * where one command acts as the terminating condition for the others.</p>
+     *
+     * @param builders  One or more builders that define the commands to run in
+     *                  parallel as part of the race group.
+     * @return          This AutoSequence for fluent chaining.
+     *
+     * <p><strong>Note:</strong> Each builder receives a fresh AutoSequence instance,
+     * ensuring its steps are isolated from the parent sequence.</p>
+     */
     public AutoSequence race(AutoSequenceBuilder... builders) {
         List<Command> commands = new ArrayList<>();
 
@@ -220,6 +238,24 @@ public class AutoSequence {
         return this;
     }
 
+    /**
+     * Adds a parallel command group to the autonomous sequence.
+     *
+     * <p>Each provided {@link AutoSequenceBuilder} constructs a temporary
+     * {@link AutoSequence}. All resulting commands run simultaneously, and the
+     * group completes only when all commands have finished.</p>
+     *
+     * <p>This is useful for actions such as "drive while running intake," where
+     * multiple robot subsystems operate concurrently until each completes its
+     * task.</p>
+     *
+     * @param builders  One or more builders that define the commands to run in
+     *                  parallel.
+     * @return          This AutoSequence for fluent chaining.
+     *
+     * <p><strong>Note:</strong> Each builder receives its own isolated AutoSequence
+     * instance, preventing interference with the parent sequence.</p>
+     */
     public AutoSequence parallel(AutoSequenceBuilder... builders) {
         List<Command> commands = new ArrayList<>();
 
@@ -232,6 +268,26 @@ public class AutoSequence {
         return this;
     }
 
+    /**
+     * Adds a deadline command group to the autonomous sequence.
+     *
+     * <p>The deadlineBuilder defines the "deadline" command -- the command that
+     * controls when the group ends. All other builders define commands that run in
+     * parallel alongside the deadline. The group finishes when the deadline command
+     * completes, and all other commands are interrupted.</p>
+     *
+     * <p>This is useful for behaviors such as "run intake and agitator until the
+     * drive command reaches its target," where one command dictates the duration
+     * of the others.</p>
+     *
+     * @param deadlineBuilder  The builder that defines the deadline command.
+     * @param others           Additional builders whose commands run in parallel
+     *                         but do not control group termination.
+     * @return                 This AutoSequence for fluent chaining.
+     *
+     * <p><strong>Note:</strong> Each builder receives a fresh AutoSequence instance,
+     * ensuring its steps remain isolated from the parent sequence.</p>
+     */
     public AutoSequence deadline(AutoSequenceBuilder deadlineBuilder, AutoSequenceBuilder... others) {
         AutoSequence deadlineSeq = new AutoSequence(record, MaxSpeed, MaxAngularRate);
         deadlineBuilder.build(deadlineSeq);
@@ -249,11 +305,11 @@ public class AutoSequence {
     /**
      * Finalizes the autonomous routine by assembling all queued steps into a
      * single sequential command.
-     * <p>
-     * Each step added through the fluent API (such as {@code moveTo()},
+     *
+     * <p>Each step added through the fluent API (such as {@code moveTo()},
      * {@code waitSeconds()}, or future high-level actions) is executed in the
      * order it was added. The resulting command is ready to be scheduled by the
-     * robot during the autonomous period.
+     * robot during the autonomous period.</p>
      *
      * @return A fully constructed {@link Command} representing the autonomous
      *         sequence.

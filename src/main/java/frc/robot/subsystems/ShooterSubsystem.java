@@ -21,18 +21,15 @@ import edu.wpi.first.wpilibj.RobotBase;
 
 // Mechanics
 import frc.robot.mechanics.GearRatio;
+import frc.robot.tools.shooterModel.data.ShotRecord;
+import frc.robot.tools.shooterModel.model.ShooterModel;
 import frc.robot.mechanics.FlywheelModel;
-
-// Shooter Model
-import frc.robot.shooter.data.ShotRecord;
-import frc.robot.shooter.model.ShooterModel;
-
-// Extras
-import frc.robot.subsystems.lib.Subsystems1507;
 import frc.robot.utilities.MotorConfig;
+import frc.robot.utilities.Telemetry;
 
 // Constants
 import frc.robot.Constants.kShooter;
+import frc.robot.framework.base.Subsystems1507;
 
 /**
  * ShooterSubsystem provides a unified interface for controlling a flywheel‑based shooter.
@@ -81,6 +78,7 @@ public class ShooterSubsystem extends Subsystems1507 {
     // Hardware
     // ------------------------------------------------------------
 
+    private final MotorConfig motorConfig;
     private final TalonFX shooterMotor;
     private final VelocityVoltage velocityRequest =
         new VelocityVoltage(0).withSlot(0);
@@ -117,6 +115,13 @@ public class ShooterSubsystem extends Subsystems1507 {
     private double simMotorRpsCommanded = 0.0;
 
     // ------------------------------------------------------------
+    // Telemetry Logger
+    // ------------------------------------------------------------
+
+    private final Telemetry telemetry;
+    private final String shooterKey;
+
+    // ------------------------------------------------------------
     // Constructor Tier 1 — Basic shooter
     // ------------------------------------------------------------
 
@@ -126,13 +131,15 @@ public class ShooterSubsystem extends Subsystems1507 {
      *
      * @param shooterMotor the TalonFX controlling the shooter
      */
-    public ShooterSubsystem(MotorConfig motorConfig) {
+    public ShooterSubsystem(MotorConfig motorConfig, Telemetry telemetry, String shooterKey) {
         this(
             motorConfig,
             DEFAULT_FLYWHEEL,
             DEFAULT_MODEL,
             DEFAULT_POSE_SUPPLIER,
-            DEFAULT_TARGET_POSE
+            DEFAULT_TARGET_POSE,
+            telemetry,
+            shooterKey
         );
     }
 
@@ -152,14 +159,18 @@ public class ShooterSubsystem extends Subsystems1507 {
         MotorConfig motorConfig,
         ShooterModel model,
         Supplier<Pose2d> poseSupplier,
-        Pose2d targetPose
+        Pose2d targetPose,
+        Telemetry telemetry,
+        String shooterKey
     ) {
         this(
             motorConfig,
             DEFAULT_FLYWHEEL,
             model,
             poseSupplier,
-            targetPose
+            targetPose,
+            telemetry,
+            shooterKey
         );
     }
 
@@ -188,8 +199,11 @@ public class ShooterSubsystem extends Subsystems1507 {
         FlywheelModel flywheel,
         ShooterModel model,
         Supplier<Pose2d> poseSupplier,
-        Pose2d targetPose
+        Pose2d targetPose,
+        Telemetry telemetry,
+        String shooterKey
     ) {
+        this.motorConfig = motorConfig;
         this.shooterMotor = new TalonFX(motorConfig.CAN_ID());
         this.ratio = motorConfig.ratio();
         this.flywheel = flywheel;
@@ -197,8 +211,12 @@ public class ShooterSubsystem extends Subsystems1507 {
         this.poseSupplier = poseSupplier;
         this.targetPose = targetPose;
         this.shooterOffset = motorConfig.robotToMechanism();
-
         this.kinematics = new ShooterKinematics(shooterOffset);
+
+        this.telemetry = telemetry;
+        this.shooterKey = shooterKey;
+
+        telemetry.registerShooterSource(shooterKey);
 
         configureFXMotor(motorConfig, shooterMotor);
     }
@@ -269,6 +287,15 @@ public class ShooterSubsystem extends Subsystems1507 {
     public Pose2d getShooterPose() {
         return kinematics.shooterPose(poseSupplier.get());
     }
+
+    /**
+     * @return disntance to target
+     */
+    private double getDistanceToTarget() {
+        Pose2d shooterPose = getShooterPose();
+        return shooterPose.getTranslation().getDistance(targetPose.getTranslation());
+    }
+
 
     // ------------------------------------------------------------
     // Model-driven shooter update
@@ -388,6 +415,21 @@ public class ShooterSubsystem extends Subsystems1507 {
     @Override
     public void periodic() {
 
+        // -----------------------------
+        // AdvantageKit Shooter Logging
+        // -----------------------------
+        telemetry.logShooter(
+            shooterKey,
+            getShooterRPM(),
+            getTargetRPM(),
+            getShooterVoltage(),
+            getStatorCurrent(),
+            getSupplyCurrent(),
+            getClosedLoopError(),
+            getShooterPose(),
+            getDistanceToTarget()
+        );
+
         if (RobotBase.isReal()) {
             shooterMotor.setControl(velocityRequest.withVelocity(targetMotorRPS));
             return;
@@ -412,9 +454,9 @@ public class ShooterSubsystem extends Subsystems1507 {
         // 3. Phoenix-like control law
         double errorRPS = simMotorRpsCommanded - simMotorRpsMeasured;
 
-        double ffVolts = kShooter.BLU_CONFIG.KV() * simMotorRpsCommanded;
-        double ksVolts = kShooter.BLU_CONFIG.KS() * Math.signum(simMotorRpsCommanded);
-        double fbVolts = kShooter.BLU_CONFIG.KP() * errorRPS;
+        double ffVolts = motorConfig.kV() * simMotorRpsCommanded;
+        double ksVolts = motorConfig.kS() * Math.signum(simMotorRpsCommanded);
+        double fbVolts = motorConfig.kP() * errorRPS;
 
         double desiredVolts = ffVolts + ksVolts + fbVolts;
 

@@ -14,6 +14,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.*;
 import frc.robot.mechanics.GearRatio;
 import frc.robot.utilities.MotorConfig;
+import frc.robot.utilities.MotorConfig.ControlMode;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -26,56 +27,6 @@ import edu.wpi.first.math.numbers.N3;
  * maintainability across the project.
  */
 public class Constants {
-
-    // ╔═══════════════════════════════════════════════════════════════╗
-    // ║                       VISION CONSTANTS                        ║
-    // ║                (Warlocks Arcane Optics Suite)                 ║
-    // ╚═══════════════════════════════════════════════════════════════╝
-    public static final class kVision {
-
-        /** AprilTag field layout for the current game */
-        public static AprilTagFieldLayout APRILTAG_LAYOUT =
-            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
-
-        // Rejection thresholds
-        public static double maxAmbiguity = 0.3; 
-        public static double maxZError = 0.75;
-        public static double maxTagDistance = 6.0; // meters — tags beyond this are rejected
-
-        // Standard deviation bases (multiplied by average tag distance in Vision.java).
-        // Multi-tag observations get a sqrt(tagCount) discount on top of this.
-        // Trig solve is very accurate for XY (uses gyro heading directly).
-        // Constrained PnP is less precise but also estimates heading.
-        public static double trigXyStdBase = 0.3;
-        public static double constrainedPnpXyStdBase = 0.6;
-        public static double constrainedPnpAngStdBase = 0.25;
-
-        // Per-camera trust multipliers (applied to std devs)
-        public static double[] cameraStdDevFactors = {
-            1.0, // Camera 0 (BLU)
-            1.0  // Camera 1 (YEL)
-        };
-
-        /** Blue-side camera configuration */
-        public static final class BLU {
-            public static final String NAME = "Bluecam";
-            public static final Transform3d ROBOT_TO_CAMERA =
-                new Transform3d(
-                    new Translation3d(-0.281, 0.296, 0.2413),
-                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(70))
-                );
-        }
-
-        /** Yellow-side camera configuration */
-        public static final class YEL {
-            public static final String NAME = "Yellowcam";
-            public static final Transform3d ROBOT_TO_CAMERA =
-                new Transform3d(
-                    new Translation3d(-0.2985, -0.276, 0.2413),
-                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(210))
-                );
-        }
-    }
 
     // ╔═══════════════════════════════════════════════════════════════╗
     // ║                       SHOOTER CONSTANTS                       ║
@@ -142,26 +93,34 @@ public class Constants {
 
         public static final MotorConfig BLU_CONFIG = new MotorConfig(
             20,
+
             0.11,
             0.0,
             0.0,
+
             0.09375,
             0.245, 
             0.0, 
+            
             8, -8,
+
             GearRatio.gearBox(1, 1));
 
 
         /** Yellow feeder motor */
         public static final MotorConfig YEL_CONFIG = new MotorConfig(
             18,
+
             0.11,
             0.0,
             0.0,
+
             0.09375,
             0.245,
             0.0,
+
             8, -8,
+
             GearRatio.gearBox(1, 1));
     }
 
@@ -175,15 +134,8 @@ public class Constants {
         public static final double OUTTAKE_ROLLER_DUTY = -0.5;
 
         public static final MotorConfig ROLLER_CONFIG = new MotorConfig(
-            27, 
-            0.013,
-            0.0,
-            0.0,
-            0.10333857939,
-            0.025,
-            0.0,
-            8, -8,
-            GearRatio.gearBox(1, 1));
+            27,
+            8, -8);
 
         /** Roller motor */
 
@@ -197,24 +149,24 @@ public class Constants {
             public static final double RETRACTED_ANGLE_DEGREES = 0.15;
             public static final MotorConfig BLU_CONFIG = new MotorConfig(
                 13,
+
                 0.01,
                 0.0,
                 0.0,
-                0.12,
-                0.1,
-                0.0,
+
                 4, -4,
+
                 GearRatio.gearBox(100, 1));
 
             public static final MotorConfig YEL_CONFIG = new MotorConfig(
-                14, 
+                14,
+
                 0.01,
                 0.0,
                 0.0,
-                0.12,
-                0.1,
-                0.0,
+                
                 4, -4,
+
                 GearRatio.gearBox(100, 1));
         }
     }
@@ -226,13 +178,7 @@ public class Constants {
     public static final class kAgitator {
         public static final MotorConfig CONFIG = new MotorConfig(
             15, 
-            0.11,
-            0.0,
-            0.0,
-            0.245,
-            0.018, 0.0,
-            8, -8,
-            GearRatio.gearBox(1, 1));
+            8, -8);
 
             //change later
         public static final double AGITATE_TO_SHOOTER_DUTY = 0.5;
@@ -253,12 +199,18 @@ public class Constants {
         public static final double ROBOT_DOWN = UP;
         public static final int SERVO_PORT = 0;
         public static final MotorConfig CONFIG = new MotorConfig(
-            23, 
+            23,
+
+            ControlMode.MOTION_MAGIC,
+
             0.11,
             0.0,
             0.0,
+
             0.09375,
-            0.245, 0.0,
+            0.245,
+            0.0,
+
             8, -8,
             GearRatio.gearBox(64, 1));
     }
@@ -271,11 +223,11 @@ public class Constants {
 
         public static final MotorConfig CONFIG = new MotorConfig(
             16, 
+            
             0.11,
             0.0,
             0.0,
-            0.09375,
-            0.245, 0.0,
+
             8, -8,
             GearRatio.gearBox(1, 1));
     }
@@ -335,6 +287,56 @@ public class Constants {
         // Stall detection
         public static final double STALL_THRESHOLD = 0.02;
         public static final double STALL_TIMEOUT = 1.0;
+    }
+
+    // ╔═══════════════════════════════════════════════════════════════╗
+    // ║                       VISION CONSTANTS                        ║
+    // ║                (Warlocks Arcane Optics Suite)                 ║
+    // ╚═══════════════════════════════════════════════════════════════╝
+    public static final class kVision {
+
+        /** AprilTag field layout for the current game */
+        public static AprilTagFieldLayout APRILTAG_LAYOUT =
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+
+        // Rejection thresholds
+        public static double maxAmbiguity = 0.3; 
+        public static double maxZError = 0.75;
+        public static double maxTagDistance = 6.0; // meters — tags beyond this are rejected
+
+        // Standard deviation bases (multiplied by average tag distance in Vision.java).
+        // Multi-tag observations get a sqrt(tagCount) discount on top of this.
+        // Trig solve is very accurate for XY (uses gyro heading directly).
+        // Constrained PnP is less precise but also estimates heading.
+        public static double trigXyStdBase = 0.3;
+        public static double constrainedPnpXyStdBase = 0.6;
+        public static double constrainedPnpAngStdBase = 0.25;
+
+        // Per-camera trust multipliers (applied to std devs)
+        public static double[] cameraStdDevFactors = {
+            1.0, // Camera 0 (BLU)
+            1.0  // Camera 1 (YEL)
+        };
+
+        /** Blue-side camera configuration */
+        public static final class BLU {
+            public static final String NAME = "Bluecam";
+            public static final Transform3d ROBOT_TO_CAMERA =
+                new Transform3d(
+                    new Translation3d(-0.281, 0.296, 0.2413),
+                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(70))
+                );
+        }
+
+        /** Yellow-side camera configuration */
+        public static final class YEL {
+            public static final String NAME = "Yellowcam";
+            public static final Transform3d ROBOT_TO_CAMERA =
+                new Transform3d(
+                    new Translation3d(-0.2985, -0.276, 0.2413),
+                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(210))
+                );
+        }
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗

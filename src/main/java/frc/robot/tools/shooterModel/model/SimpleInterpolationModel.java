@@ -6,38 +6,18 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.subsystems;
+package frc.robot.tools.shooterModel.model;
 
-// CTRE Imports
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.hardware.TalonFXS;
+import frc.robot.tools.shooterModel.data.ShotRecord;
 
-import frc.robot.framework.base.Subsystems1507;
-// Utilities
-import frc.robot.utilities.MotorConfig;
+public class SimpleInterpolationModel implements ShooterModel {
 
-public class HopperSubsystem extends Subsystems1507 {
-    private final TalonFXS hopperMotor;
+    @Override
+    public double getRPM(ShotRecord telemetry) {
 
-    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
+        double distance = telemetry.distanceToTarget;
 
-    /** Creates a new HopperSubsystem. */
-    public HopperSubsystem(MotorConfig motor) {
-        this.hopperMotor = new TalonFXS(motor.CAN_ID());
-        
-        configureFXSMotor(motor, hopperMotor);
-    } 
-
-    public void setPosition(double degrees){
-        double outputRot = degrees / 360.0;
-        //double motorRot = ratio.toMotor(outputRot);
-
-        hopperMotor.setControl(positionRequest.withPosition(outputRot));
-    }
-
-    public double getPositionDegrees() {
-        double motorRot = hopperMotor.getPosition().getValueAsDouble();
-        //double outputRot = ratio.toOutput(motorRot);
-        return motorRot * 360.0;
+        // Simple linear fallback curve
+        return 3000 + (distance * 200);
     }
 }

@@ -12,7 +12,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFXS;
 
-import frc.robot.subsystems.lib.Subsystems1507;
+import frc.robot.framework.base.Subsystems1507;
 // Utilities
 import frc.robot.utilities.MotorConfig;
 

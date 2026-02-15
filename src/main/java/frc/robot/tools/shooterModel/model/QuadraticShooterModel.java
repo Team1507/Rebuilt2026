@@ -6,38 +6,29 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.subsystems;
+package frc.robot.tools.shooterModel.model;
 
-// CTRE Imports
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.hardware.TalonFXS;
+import frc.robot.tools.shooterModel.data.ShotRecord;
 
-import frc.robot.framework.base.Subsystems1507;
-// Utilities
-import frc.robot.utilities.MotorConfig;
+public class QuadraticShooterModel implements ShooterModel {
 
-public class HopperSubsystem extends Subsystems1507 {
-    private final TalonFXS hopperMotor;
+    private final double a; // linear distance
+    private final double b; // quadratic distance^2
+    private final double g; // bias
 
-    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
-
-    /** Creates a new HopperSubsystem. */
-    public HopperSubsystem(MotorConfig motor) {
-        this.hopperMotor = new TalonFXS(motor.CAN_ID());
-        
-        configureFXSMotor(motor, hopperMotor);
-    } 
-
-    public void setPosition(double degrees){
-        double outputRot = degrees / 360.0;
-        //double motorRot = ratio.toMotor(outputRot);
-
-        hopperMotor.setControl(positionRequest.withPosition(outputRot));
+    public QuadraticShooterModel(ModelConfig config) {
+        this.a = config.a;
+        this.b = config.b;
+        this.g = config.g;
     }
 
-    public double getPositionDegrees() {
-        double motorRot = hopperMotor.getPosition().getValueAsDouble();
-        //double outputRot = ratio.toOutput(motorRot);
-        return motorRot * 360.0;
+    @Override
+    public double getRPM(ShotRecord telemetry) {
+
+        double d = telemetry.distanceToTarget;
+
+        // Quadratic model:
+        // rpm = b*d^2 + a*d + g
+        return (b * d * d) + (a * d) + g;
     }
 }

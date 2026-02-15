@@ -6,38 +6,27 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.subsystems;
+package frc.robot.tools.shooterModel.model;
 
-// CTRE Imports
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.hardware.TalonFXS;
+public class ModelConfig {
 
-import frc.robot.framework.base.Subsystems1507;
-// Utilities
-import frc.robot.utilities.MotorConfig;
+    public double a; // distance
+    public double b; // stator current
+    public double c; // supply current
+    public double d; // closed-loop error
+    public double e; // pressDuration
+    public double f; // shotsInBurst
+    public double g; // bias
 
-public class HopperSubsystem extends Subsystems1507 {
-    private final TalonFXS hopperMotor;
-
-    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
-
-    /** Creates a new HopperSubsystem. */
-    public HopperSubsystem(MotorConfig motor) {
-        this.hopperMotor = new TalonFXS(motor.CAN_ID());
-        
-        configureFXSMotor(motor, hopperMotor);
-    } 
-
-    public void setPosition(double degrees){
-        double outputRot = degrees / 360.0;
-        //double motorRot = ratio.toMotor(outputRot);
-
-        hopperMotor.setControl(positionRequest.withPosition(outputRot));
-    }
-
-    public double getPositionDegrees() {
-        double motorRot = hopperMotor.getPosition().getValueAsDouble();
-        //double outputRot = ratio.toOutput(motorRot);
-        return motorRot * 360.0;
+    public String toJson() {
+        return "{\n" +
+            "  \"a\": " + a + ",\n" +
+            "  \"b\": " + b + ",\n" +
+            "  \"c\": " + c + ",\n" +
+            "  \"d\": " + d + ",\n" +
+            "  \"e\": " + e + ",\n" +
+            "  \"f\": " + f + ",\n" +
+            "  \"g\": " + g + "\n" +
+            "}";
     }
 }

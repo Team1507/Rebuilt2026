@@ -6,38 +6,28 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.subsystems;
+package frc.robot.tools.shooterModel.data;
 
-// CTRE Imports
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.hardware.TalonFXS;
+public class ShotLabelParser {
 
-import frc.robot.framework.base.Subsystems1507;
-// Utilities
-import frc.robot.utilities.MotorConfig;
+    public static ShotLabel parse(String label) {
+        if (label == null) return new ShotLabel(false);
 
-public class HopperSubsystem extends Subsystems1507 {
-    private final TalonFXS hopperMotor;
+        switch (label.toLowerCase()) {
+            case "scored":
+            case "made":
+            case "went in":
+                return new ShotLabel(true);
 
-    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
+            case "missed":
+            case "miss":
+            case "no":
+            case "did not score":
+                return new ShotLabel(false);
 
-    /** Creates a new HopperSubsystem. */
-    public HopperSubsystem(MotorConfig motor) {
-        this.hopperMotor = new TalonFXS(motor.CAN_ID());
-        
-        configureFXSMotor(motor, hopperMotor);
-    } 
-
-    public void setPosition(double degrees){
-        double outputRot = degrees / 360.0;
-        //double motorRot = ratio.toMotor(outputRot);
-
-        hopperMotor.setControl(positionRequest.withPosition(outputRot));
-    }
-
-    public double getPositionDegrees() {
-        double motorRot = hopperMotor.getPosition().getValueAsDouble();
-        //double outputRot = ratio.toOutput(motorRot);
-        return motorRot * 360.0;
+            default:
+                return new ShotLabel(false);
+        }
     }
 }
+

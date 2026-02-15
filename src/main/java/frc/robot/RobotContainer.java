@@ -1,3 +1,11 @@
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
+
 package frc.robot;
 
 import java.util.function.Supplier;
@@ -8,7 +16,6 @@ import com.ctre.phoenix6.swerve.*;
 // WPI libraries
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -25,21 +32,17 @@ import frc.robot.commands.feed.*;
 import frc.robot.commands.hopper.*;
 import frc.robot.commands.intake.*;
 import frc.robot.commands.shoot.*;
-
-// Shooter Model
-import frc.robot.shooter.data.*;
-import frc.robot.shooter.model.*;
-
 // Subsystems
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.vision.*;
-
+import frc.robot.tools.shooterModel.data.*;
+import frc.robot.tools.shooterModel.model.*;
 // Robot Utilities
 import frc.robot.utilities.*;
-import frc.robot.navigation.Nodes.Hub;
-import frc.robot.navigation.Nodes.Tower;
 import frc.robot.generated.*;
-
+import frc.robot.localization.PhotonVision.PVManager;
+import frc.robot.localization.nodes.Nodes.Hub;
+import frc.robot.localization.nodes.Nodes.Tower;
+import frc.robot.localization.quest.QuestNavSubsystem;
 // Constants
 import frc.robot.Constants.*;
 
@@ -48,36 +51,33 @@ import frc.robot.auto.routines.*;
 
 public class RobotContainer {
 
-    // -----------------------------
+    // ----------------------------------------------------------
     // Autonomous chooser
-    // -----------------------------
+    // ----------------------------------------------------------
     private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
-    // -----------------------------
+    // ----------------------------------------------------------
     // Controllers
-    // -----------------------------
+    // ----------------------------------------------------------
     private final CommandXboxController bottomDriver = new CommandXboxController(0);
     private final CommandXboxController topDriver = new CommandXboxController(1);
 
-    // -----------------------------
+    // ----------------------------------------------------------
+    // Telemetry Looger for all data being logged
+    // ----------------------------------------------------------
+    private final Telemetry logger = new Telemetry();
+
+    // ----------------------------------------------------------
     // Drive configuration
-    // -----------------------------
+    // ----------------------------------------------------------
     public static double MaxSpeed =
         0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
 
     public static double MaxAngularRate =
         RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
-    private final SwerveRequest.FieldCentric drive =
-        new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1)
-            .withRotationalDeadband(MaxAngularRate * 0.1)
-            .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
-
     public final CommandSwerveDrivetrain drivetrain =
         TunerConstants.createDrivetrain();
-
-    private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final SwerveRequest.FieldCentric driveRequest =
         new SwerveRequest.FieldCentric()
@@ -91,19 +91,24 @@ public class RobotContainer {
             .withVelocityY(-bottomDriver.getLeftX() * MaxSpeed)
             .withRotationalRate(-bottomDriver.getRightX() * MaxAngularRate));
 
+    // ----------------------------------------------------------
+    // Subsystems
+    // ----------------------------------------------------------
+
     // -----------------------------
     // Vision
     // -----------------------------
-    private final QuestNavSubsystem questNav = new QuestNavSubsystem(drivetrain);
+    private final QuestNavSubsystem questNav = new QuestNavSubsystem(drivetrain, logger);
 
-    public final Vision PVManager =
-        new Vision(
+    public final PVManager PVManager =
+        new PVManager(
+            logger,
             drivetrain::addVisionMeasurement,
             drivetrain::getHeading,
             drivetrain::seedPoseFromVision,
             questNav::setQuestNavPose,
-            new Vision.CameraConfig(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
-            new Vision.CameraConfig(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
+            new PVManager.CameraConfig(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
+            new PVManager.CameraConfig(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
 
     // -----------------------------
     // Shooter + Model
@@ -118,7 +123,9 @@ public class RobotContainer {
             kShooter.BLU_CONFIG,
             shooterModelConfig,
             poseSupplier,
-            Hub.CENTER);
+            Hub.CENTER,
+            logger,
+            "Shooter-BLU");
 
     public final ShotTrainer shotBLUTrainer =
         new ShotTrainer(
@@ -131,7 +138,9 @@ public class RobotContainer {
             kShooter.YEL_CONFIG,
             shooterModelConfig,
             poseSupplier,
-            Hub.CENTER);
+            Hub.CENTER,
+            logger,
+            "Shooter-YEL");
 
     public final ShotTrainer shotYELTrainer =
         new ShotTrainer(
@@ -179,25 +188,34 @@ public class RobotContainer {
     public final HopperSubsystem hopperSubsystem =
         new HopperSubsystem(kHopper.CONFIG);
 
-    // -----------------------------
+    // ----------------------------------------------------------
+    // Recording Subsystems
+    // ----------------------------------------------------------
+    private final SubsystemsRecord subsystemsRecord = new SubsystemsRecord(
+        drivetrain,
+        agitatorSubsystem,
+        climberSubsystem,
+        feederBLUsystem,
+        feederYELsystem,
+        hopperSubsystem,
+        intakeArmSubsystem,
+        intakeRollerSubsystem,
+        shooterBLUsystem,
+        shooterYELsystem,
+        PVManager,
+        questNav);
+
+    // ----------------------------------------------------------
     // Dashboard manager
-    // -----------------------------
+    // ----------------------------------------------------------
     private final DashboardManager dashboardManager =
         new DashboardManager(
-            drivetrain,
-            shooterBLUsystem,
-            shooterYELsystem,
-            feederBLUsystem,
-            feederYELsystem,
-            intakeArmSubsystem,
-            intakeRollerSubsystem,
-            agitatorSubsystem,
-            climberSubsystem,
+            subsystemsRecord,
             autoChooser);
 
-    // -----------------------------
+    // ----------------------------------------------------------
     // Pre-created commands for whileTrue bindings
-    // -----------------------------
+    // ----------------------------------------------------------
     private final Command maintainHeadingToTargetCommand =
         new CmdMaintainHeadingToTarget(
             drivetrain,
@@ -216,18 +234,22 @@ public class RobotContainer {
             feederYELsystem,
             shooterBLUsystem);
 
+    // ----------------------------------------------------------
+    // Robot Container Constructor
+    // ----------------------------------------------------------
     public RobotContainer() {
         configureTelemetry();
         configureDefaultCommands();
         configureDriverControls();
-        configureVision();
         configureAutos();
-        dashboardManager.initDashboard(); // preserves all existing NT keys
+
+        // Manager of all NT and Dashboard data
+        dashboardManager.initDashboard();
     }
 
-    // -----------------------------
+    // ----------------------------------------------------------
     // Default commands
-    // -----------------------------
+    // ----------------------------------------------------------
     private void configureDefaultCommands() {
 
         drivetrain.setDefaultCommand(driveCommand);
@@ -237,9 +259,9 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true));
     }
 
-    // -----------------------------
+    // ----------------------------------------------------------
     // Driver controls
-    // -----------------------------
+    // ----------------------------------------------------------
     private void configureDriverControls() {
 
         // Drivetrain SysId
@@ -307,38 +329,21 @@ public class RobotContainer {
             .whileTrue(new CmdAgitateToIntake(agitatorSubsystem));
     }
 
-    // -----------------------------
-    // Vision
-    // -----------------------------
-    private void configureVision() {
-        // Vision runs autonomously for now
-    }
-
-    // -----------------------------
+    // ----------------------------------------------------------
     // Telemetry
-    // -----------------------------
+    // ----------------------------------------------------------
     private void configureTelemetry() {
         logger.registerVisionPoseSource("PhotonVisionManager");
         logger.registerVisionPoseSource("Photon-BLU");
         logger.registerVisionPoseSource("Photon-YEL");
 
-        drivetrain.registerTelemetry(logger::telemeterize);
+        drivetrain.registerTelemetry(logger::logDriveState);
     }
 
-    // -----------------------------
+    // ----------------------------------------------------------
     // Autos
-    // -----------------------------
+    // ----------------------------------------------------------
     private void configureAutos() {
-        SubsystemsRecord record = new SubsystemsRecord(
-            drivetrain,
-            agitatorSubsystem,
-            climberSubsystem,
-            feederBLUsystem,
-            feederYELsystem,
-            hopperSubsystem,
-            intakeArmSubsystem,
-            intakeRollerSubsystem,
-            shooterBLUsystem);
 
         autoChooser.setDefaultOption(
             "Auto Do Nothing",
@@ -346,18 +351,16 @@ public class RobotContainer {
 
         autoChooser.addOption(
             "One Piece Auto",
-            AutoSample.build(record, MaxSpeed, MaxAngularRate));
-
-        SmartDashboard.putData("Auto Mode", autoChooser);
+            AutoSample.build(subsystemsRecord, MaxSpeed, MaxAngularRate));
     }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
     }
 
-    // -----------------------------
+    // ----------------------------------------------------------
     // Dashboard access for Robot.java
-    // -----------------------------
+    // ----------------------------------------------------------
     public DashboardManager getDashboard() {
         return dashboardManager;
     }

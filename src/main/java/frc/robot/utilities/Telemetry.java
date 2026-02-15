@@ -1,127 +1,83 @@
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
+
 package frc.robot.utilities;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.ctre.phoenix6.SignalLogger;
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringPublisher;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class Telemetry {
 
-    private final double maxSpeed;
+    /* ---------------- Vision Pose Sources ---------------- */
 
-    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    private final Map<String, Boolean> registeredVisionSources = new HashMap<>();
 
-    /* ---------------- Drive State ---------------- */
+    public void registerVisionPoseSource(String sourceKey) {
+        registeredVisionSources.put(sourceKey, true);
+    }
 
-    private final NetworkTable driveStateTable = inst.getTable("DriveState");
+    public void logVisionPose(String sourceKey, Pose2d pose) {
+        if (registeredVisionSources.containsKey(sourceKey)) {
+            Logger.recordOutput("Vision/" + sourceKey + "/Pose", pose);
+        }
+    }
 
-    private final StructPublisher<Pose2d> drivePose =
-        driveStateTable.getStructTopic("Pose", Pose2d.struct).publish();
+    /* ---------------- Vision Cloud Logging ---------------- */
 
-    private final StructPublisher<ChassisSpeeds> driveSpeeds =
-        driveStateTable.getStructTopic("Speeds", ChassisSpeeds.struct).publish();
+    public void logVisionAccepted(Pose3d[] poses) {
+        Logger.recordOutput("Vision/AcceptedPoses", poses);
+    }
 
-    private final StructArrayPublisher<SwerveModuleState> driveModuleStates =
-        driveStateTable.getStructArrayTopic("ModuleStates", SwerveModuleState.struct).publish();
+    public void logVisionRejected(Pose3d[] poses) {
+        Logger.recordOutput("Vision/RejectedPoses", poses);
+    }
 
-    private final StructArrayPublisher<SwerveModuleState> driveModuleTargets =
-        driveStateTable.getStructArrayTopic("ModuleTargets", SwerveModuleState.struct).publish();
+    public void logVisionTagPoses(Pose3d[] poses) {
+        Logger.recordOutput("Vision/TagPoses", poses);
+    }
 
-    private final StructArrayPublisher<SwerveModulePosition> driveModulePositions =
-        driveStateTable.getStructArrayTopic("ModulePositions", SwerveModulePosition.struct).publish();
+    public void logVisionFusedCount(int count) {
+        Logger.recordOutput("Vision/FusedObservationCount", count);
+    }
 
-    private final DoublePublisher driveTimestamp =
-        driveStateTable.getDoubleTopic("Timestamp").publish();
-
-    private final DoublePublisher driveOdometryFrequency =
-        driveStateTable.getDoubleTopic("OdometryFrequency").publish();
-
-    /* ---------------- Field Pose ---------------- */
-
-    private final NetworkTable poseTable = inst.getTable("Pose");
-    private final DoubleArrayPublisher fieldPub =
-        poseTable.getDoubleArrayTopic("robotPose").publish();
-    private final StringPublisher fieldTypePub =
-        poseTable.getStringTopic(".type").publish();
-
-    /* ---------------- Vision Pose Publishers ---------------- */
-
-    private final Map<String, StructPublisher<Pose2d>> visionPosePublishers = new HashMap<>();
+    public void logVisionStartupSeed(Pose2d seed) {
+        Logger.recordOutput("Vision/StartupPoseSeeded", seed);
+    }
 
     /* ---------------- Photon Diagnostics ---------------- */
 
-    private final NetworkTable visionTable = inst.getTable("Vision");
+    private static class PhotonDiagKeys {
+        final String hasTarget;
+        final String tagCount;
+        final String bestAmbiguity;
+        final String bestTagId;
+        final String poseAccepted;
 
-    private static class PhotonDiagPublishers {
-        final BooleanPublisher hasTarget;
-        final DoublePublisher tagCount;
-        final DoublePublisher bestAmbiguity;
-        final DoublePublisher bestTagId;
-        final BooleanPublisher poseAccepted;
-
-        PhotonDiagPublishers(NetworkTable table) {
-            hasTarget = table.getBooleanTopic("HasTarget").publish();
-            tagCount = table.getDoubleTopic("TagCount").publish();
-            bestAmbiguity = table.getDoubleTopic("BestAmbiguity").publish();
-            bestTagId = table.getDoubleTopic("BestTagID").publish();
-            poseAccepted = table.getBooleanTopic("PoseAccepted").publish();
+        PhotonDiagKeys(String cam) {
+            hasTarget = "Vision/" + cam + "/HasTarget";
+            tagCount = "Vision/" + cam + "/TagCount";
+            bestAmbiguity = "Vision/" + cam + "/BestAmbiguity";
+            bestTagId = "Vision/" + cam + "/BestTagID";
+            poseAccepted = "Vision/" + cam + "/PoseAccepted";
         }
     }
 
-    private final Map<String, PhotonDiagPublishers> photonDiagPublishers = new HashMap<>();
+    private final Map<String, PhotonDiagKeys> photonDiagKeys = new HashMap<>();
 
-    /* ---------------- Construction ---------------- */
-
-    public Telemetry(double maxSpeed) {
-        this.maxSpeed = maxSpeed;
-        SignalLogger.start();
-    }
-
-    /* ---------------- Vision Pose API ---------------- */
-
-    /** Register a vision pose source (call once during robot init). */
-    public void registerVisionPoseSource(String sourceKey) {
-        visionPosePublishers.put(
-            sourceKey,
-            driveStateTable
-                .getStructTopic(sourceKey + "Pose", Pose2d.struct)
-                .publish()
-        );
-    }
-
-    /** Publish a vision pose for a registered source. */
-    public void publishVisionPose(String sourceKey, Pose2d pose) {
-        StructPublisher<Pose2d> pub = visionPosePublishers.get(sourceKey);
-        if (pub != null) {
-            pub.set(pose);
-        }
-    }
-
-    /* ---------------- Photon Diagnostics API ---------------- */
-
-    public void publishPhotonCameraDiagnostics(
+    public void logPhotonCameraDiagnostics(
         String cameraName,
         boolean hasTarget,
         int tagCount,
@@ -129,110 +85,104 @@ public class Telemetry {
         int bestTagId,
         boolean poseAccepted
     ) {
-        PhotonDiagPublishers pubs =
-            photonDiagPublishers.computeIfAbsent(cameraName, name -> {
-                NetworkTable camTable =
-                    visionTable.getSubTable("Photon").getSubTable(name);
-                return new PhotonDiagPublishers(camTable);
-            });
+        PhotonDiagKeys keys = photonDiagKeys.computeIfAbsent(
+            cameraName,
+            PhotonDiagKeys::new
+        );
 
-        pubs.hasTarget.set(hasTarget);
-        pubs.tagCount.set(tagCount);
-        pubs.bestAmbiguity.set(bestAmbiguity);
-        pubs.bestTagId.set(bestTagId);
-        pubs.poseAccepted.set(poseAccepted);
+        Logger.recordOutput(keys.hasTarget, hasTarget);
+        Logger.recordOutput(keys.tagCount, tagCount);
+        Logger.recordOutput(keys.bestAmbiguity, bestAmbiguity);
+        Logger.recordOutput(keys.bestTagId, bestTagId);
+        Logger.recordOutput(keys.poseAccepted, poseAccepted);
     }
 
-    /* ---------------- Drive Telemetry ---------------- */
+    /* ---------------- Shooter Telemetry ---------------- */
 
-    private final double[] poseArray = new double[3];
-    private final double[] moduleStatesArray = new double[8];
-    private final double[] moduleTargetsArray = new double[8];
+    private final Map<String, Boolean> registeredShooterSources = new HashMap<>();
 
-    public void telemeterize(SwerveDriveState state) {
-
-        drivePose.set(state.Pose);
-        driveSpeeds.set(state.Speeds);
-        driveModuleStates.set(state.ModuleStates);
-        driveModuleTargets.set(state.ModuleTargets);
-        driveModulePositions.set(state.ModulePositions);
-        driveTimestamp.set(state.Timestamp);
-        driveOdometryFrequency.set(1.0 / state.OdometryPeriod);
-
-        poseArray[0] = state.Pose.getX();
-        poseArray[1] = state.Pose.getY();
-        poseArray[2] = state.Pose.getRotation().getDegrees();
-
-        for (int i = 0; i < 4; i++) {
-            moduleStatesArray[i * 2] = state.ModuleStates[i].angle.getRadians();
-            moduleStatesArray[i * 2 + 1] = state.ModuleStates[i].speedMetersPerSecond;
-            moduleTargetsArray[i * 2] = state.ModuleTargets[i].angle.getRadians();
-            moduleTargetsArray[i * 2 + 1] = state.ModuleTargets[i].speedMetersPerSecond;
-        }
-
-        SignalLogger.writeDoubleArray("DriveState/Pose", poseArray);
-        SignalLogger.writeDoubleArray("DriveState/ModuleStates", moduleStatesArray);
-        SignalLogger.writeDoubleArray("DriveState/ModuleTargets", moduleTargetsArray);
-        SignalLogger.writeDouble("DriveState/OdometryPeriod", state.OdometryPeriod, "seconds");
-
-        fieldTypePub.set("Field2d");
-        fieldPub.set(poseArray);
-
-        updateMechanisms(state);
+    public void registerShooterSource(String name) {
+        registeredShooterSources.put(name, true);
     }
 
-    /* ---------------- Mechanisms ---------------- */
+    public void logShooter(
+        String name,
+        double rpm,
+        double targetRpm,
+        double voltage,
+        double statorCurrent,
+        double supplyCurrent,
+        double closedLoopError,
+        Pose2d shooterPose,
+        double distanceToTarget
+    ) {
+        if (!registeredShooterSources.containsKey(name)) return;
 
-    private final Mechanism2d[] moduleMechanisms = {
-        new Mechanism2d(1, 1),
-        new Mechanism2d(1, 1),
-        new Mechanism2d(1, 1),
-        new Mechanism2d(1, 1)
-    };
+        String base = "Shooter/" + name;
 
-    private final MechanismLigament2d[] moduleSpeeds = {
-        moduleMechanisms[0].getRoot("RootSpeed", 0.5, 0.5)
-            .append(new MechanismLigament2d("Speed", 0.5, 0)),
-        moduleMechanisms[1].getRoot("RootSpeed", 0.5, 0.5)
-            .append(new MechanismLigament2d("Speed", 0.5, 0)),
-        moduleMechanisms[2].getRoot("RootSpeed", 0.5, 0.5)
-            .append(new MechanismLigament2d("Speed", 0.5, 0)),
-        moduleMechanisms[3].getRoot("RootSpeed", 0.5, 0.5)
-            .append(new MechanismLigament2d("Speed", 0.5, 0))
-    };
-
-    private final MechanismLigament2d[] moduleDirections = {
-        moduleMechanisms[0].getRoot("RootDirection", 0.5, 0.5)
-            .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-        moduleMechanisms[1].getRoot("RootDirection", 0.5, 0.5)
-            .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-        moduleMechanisms[2].getRoot("RootDirection", 0.5, 0.5)
-            .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-        moduleMechanisms[3].getRoot("RootDirection", 0.5, 0.5)
-            .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite)))
-    };
-
-    private void updateMechanisms(SwerveDriveState state) {
-        for (int i = 0; i < 4; i++) {
-            moduleSpeeds[i].setAngle(state.ModuleStates[i].angle);
-            moduleDirections[i].setAngle(state.ModuleStates[i].angle);
-            moduleSpeeds[i].setLength(
-                state.ModuleStates[i].speedMetersPerSecond / (2 * maxSpeed)
-            );
-            SmartDashboard.putData("Module " + i, moduleMechanisms[i]);
-        }
+        Logger.recordOutput(base + "/RPM", rpm);
+        Logger.recordOutput(base + "/TargetRPM", targetRpm);
+        Logger.recordOutput(base + "/Voltage", voltage);
+        Logger.recordOutput(base + "/StatorCurrent", statorCurrent);
+        Logger.recordOutput(base + "/SupplyCurrent", supplyCurrent);
+        Logger.recordOutput(base + "/ClosedLoopError", closedLoopError);
+        Logger.recordOutput(base + "/Pose", shooterPose);
+        Logger.recordOutput(base + "/DistanceToTarget", distanceToTarget);
     }
 
-    /* ---------------- Field Overlay ---------------- */
+    /* ---------------- QuestNav Telemetry ---------------- */
 
-    private final Field2d fieldOverlay = new Field2d();
+    public void logQuestNavRawPose(Pose3d pose) {
+        Logger.recordOutput("QuestNav/RawPose", pose);
+    }
 
-    public void publishPolygon(String name, java.util.List<Translation2d> polygon) {
+    public void logQuestNavCorrectedPose(Pose2d pose) {
+        Logger.recordOutput("QuestNav/CorrectedPose", pose);
+    }
+
+    public void logQuestNavTracking(boolean tracking) {
+        Logger.recordOutput("QuestNav/Tracking", tracking);
+    }
+
+    public void logQuestNavBattery(int percent) {
+        Logger.recordOutput("QuestNav/BatteryPercent", percent);
+    }
+
+    public void logQuestNavAppTimestamp(double timestamp) {
+        Logger.recordOutput("QuestNav/AppTimestamp", timestamp);
+    }
+
+    public void logQuestNavFrameTimestamp(double timestamp) {
+        Logger.recordOutput("QuestNav/FrameTimestamp", timestamp);
+    }
+
+    public void logQuestNavLatency(double latencyMs) {
+        Logger.recordOutput("QuestNav/LatencyMs", latencyMs);
+    }
+
+    public void logQuestNavConnected(boolean connected) {
+        Logger.recordOutput("QuestNav/Connected", connected);
+    }
+
+    /* ---------------- Drivetrain Telemetry ---------------- */
+
+    public void logDriveState(SwerveDriveState state) {
+        Logger.recordOutput("Drive/Pose", state.Pose);
+        Logger.recordOutput("Drive/Speeds", state.Speeds);
+        Logger.recordOutput("Drive/ModuleStates", state.ModuleStates);
+        Logger.recordOutput("Drive/ModuleTargets", state.ModuleTargets);
+        Logger.recordOutput("Drive/ModulePositions", state.ModulePositions);
+        Logger.recordOutput("Drive/Timestamp", state.Timestamp);
+        Logger.recordOutput("Drive/OdometryPeriod", state.OdometryPeriod);
+    }
+
+    /* ---------------- Optional: Field Overlay Logging ---------------- */
+
+    public void logPolygon(String name, java.util.List<Translation2d> polygon) {
+        Pose2d[] pts = new Pose2d[polygon.size()];
         for (int i = 0; i < polygon.size(); i++) {
-            Translation2d pt = polygon.get(i);
-            fieldOverlay.getObject(name + "_pt" + i)
-                .setPose(new Pose2d(pt, new Rotation2d()));
+            pts[i] = new Pose2d(polygon.get(i), new edu.wpi.first.math.geometry.Rotation2d());
         }
-        SmartDashboard.putData("FieldOverlay", fieldOverlay);
+        Logger.recordOutput("Field/" + name, pts);
     }
 }

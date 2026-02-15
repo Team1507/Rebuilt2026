@@ -15,9 +15,7 @@ import edu.wpi.first.wpilibj.Servo;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 
-// Subsystems
-import frc.robot.subsystems.lib.Subsystems1507;
-
+import frc.robot.framework.base.Subsystems1507;
 // Extras
 import frc.robot.mechanics.GearRatio;
 import frc.robot.utilities.MotorConfig;

@@ -13,9 +13,8 @@ import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.controls.Follower;
-// Subsystems
-import frc.robot.subsystems.lib.Subsystems1507;
 
+import frc.robot.framework.base.Subsystems1507;
 // Extras
 import frc.robot.mechanics.GearRatio;
 import frc.robot.utilities.MotorConfig;
@@ -47,13 +46,10 @@ public class IntakeArmSubsystem extends Subsystems1507 {
 
     public void setPosition(double degrees){
         double BLUOutputRot = degrees;
-        double YELOutputRot = -degrees;
 
         double BLUMotorRot = BLUratio.toMotor(BLUOutputRot);
-        double YELMotorRot = YELratio.toMotor(YELOutputRot);
 
         intakeBLUArmMotor.setControl(positionRequest.withPosition(BLUMotorRot));
-        //intakeYELArmMotor.setControl(positionRequest.withPosition(YELMotorRot));
     }
 
     public double getBLUPositionDegrees() {

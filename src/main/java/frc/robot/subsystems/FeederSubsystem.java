@@ -12,12 +12,9 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
+import frc.robot.framework.base.Subsystems1507;
 // Mechanics
 import frc.robot.mechanics.GearRatio;
-
-// Subsystems
-import frc.robot.subsystems.lib.Subsystems1507;
-
 // Utilities
 import frc.robot.utilities.MotorConfig;
 
