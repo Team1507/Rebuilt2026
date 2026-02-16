@@ -26,8 +26,10 @@ import frc.robot.commands.IntakeArmCommands;
 import frc.robot.commands.IntakeRollerCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.tuning.CmdShooterPIDTuner;
-import frc.robot.framework.LocalizationRecord;
-import frc.robot.framework.SubsystemsRecord;
+
+// Robot Framework
+import frc.robot.framework.*;
+
 // Robot Constants
 import frc.robot.Constants.kShooter;
 
@@ -54,6 +56,7 @@ public class DashboardManager {
     private final NetworkTable nt =
         NetworkTableInstance.getDefault().getTable("SmartDashboard");
 
+    // Manual control publishers
     private final DoublePublisher pubAgitatorDuty =
         nt.getDoubleTopic("Manual Mode/Agitator/Target DC").publish();
 
@@ -84,6 +87,7 @@ public class DashboardManager {
     private final DoublePublisher pubShooterIdleRPM =
         nt.getDoubleTopic("Shooter/Shooter Idle RPM").publish();
 
+    // Localization Publishers
     private final BooleanPublisher pubLocalizationSeeded =
         nt.getBooleanTopic("Localization/PoseSeeded").publish();
 
@@ -112,44 +116,10 @@ public class DashboardManager {
         // Auto chooser stays on SmartDashboard
         SmartDashboard.putData("Auto Mode", autoChooser);
 
-        // -------------------------
-        // Manual subsystem commands
-        // -------------------------
-
-        SmartDashboard.putData("Manual/Agitator/Run",
-            AgitatorCommands.manual(subsystems.agitator(), () -> manualAgitatorDuty));
-
-        SmartDashboard.putData("Manual/Climber/Run",
-            ClimberCommands.manual(subsystems.climber(), () -> manualClimberPosition));
-
-        SmartDashboard.putData("Manual/Feeder/BLU/Run",
-            FeederCommands.manual(subsystems.BLUfeeder(), () -> manualBLUFeederRPM));
-
-        SmartDashboard.putData("Manual/Feeder/YEL/Run",
-            FeederCommands.manual(subsystems.YELfeeder(), () -> manualYELFeederRPM));
-
-        SmartDashboard.putData("Manual/Hopper/Run",
-            HopperCommands.manual(subsystems.hopper(), () -> manualHopperAngle));
-
-        SmartDashboard.putData("Manual/Intake/Arm/Run",
-            IntakeArmCommands.manual(subsystems.intakeArm(), () -> manualIntakeArmAngle));
-
-        SmartDashboard.putData("Manual/Intake/Roller/Run",
-            IntakeRollerCommands.manual(subsystems.intakeRoller(), () -> manualIntakeRollerDuty));
-
-        SmartDashboard.putData("Manual/Shooter/BLU/Run",
-            ShooterCommands.manual(subsystems.BLUshooter(), () -> manualBLUShooterRPM));
-
-        SmartDashboard.putData("Manual/Shooter/YEL/Run",
-            ShooterCommands.manual(subsystems.YELshooter(), () -> manualYELShooterRPM));
-
-        // -------------------------
-        // PID Tuner (keep)
-        // -------------------------
-        SmartDashboard.putData("Shooter PID Tuner/BLU",
+        SmartDashboard.putData("Run Blue Shooter PID Tuner",
             new CmdShooterPIDTuner(subsystems.BLUshooter(), kShooter.MAX_RPM));
 
-        SmartDashboard.putData("Shooter PID Tuner/YEL",
+        SmartDashboard.putData("Run Yellow Shooter PID Tuner",
             new CmdShooterPIDTuner(subsystems.YELshooter(), kShooter.MAX_RPM));
     }
 
@@ -189,6 +159,36 @@ public class DashboardManager {
         // Publish Localization data to NT (Elastic UI)
         pubLocalizationSeeded.set(localization.localizationManager().isStartupSeeded());
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
+    
+        // -------------------------------------------------
+        // Manual command triggers (Elastic UI buttons)
+        // -------------------------------------------------
+        if (nt.getEntry("Manual Mode/Agitator/Run").getBoolean(false))
+            AgitatorCommands.manual(subsystems.agitator(), () -> manualAgitatorDuty).schedule();
+
+        if (nt.getEntry("Manual Mode/Climber/Run").getBoolean(false))
+            ClimberCommands.manual(subsystems.climber(), () -> manualClimberPosition).schedule();
+
+        if (nt.getEntry("Manual Mode/Feeder/BLU/Run").getBoolean(false))
+            FeederCommands.manual(subsystems.BLUfeeder(), () -> manualBLUFeederRPM).schedule();
+
+        if (nt.getEntry("Manual Mode/Feeder/YEL/Run").getBoolean(false))
+            FeederCommands.manual(subsystems.YELfeeder(), () -> manualYELFeederRPM).schedule();
+
+        if (nt.getEntry("Manual Mode/Hopper/Run").getBoolean(false))
+            HopperCommands.manual(subsystems.hopper(), () -> manualHopperAngle).schedule();
+
+        if (nt.getEntry("Manual Mode/Intake/Arm/Run").getBoolean(false))
+            IntakeArmCommands.manual(subsystems.intakeArm(), () -> manualIntakeArmAngle).schedule();
+
+        if (nt.getEntry("Manual Mode/Intake/Roller/Run").getBoolean(false))
+            IntakeRollerCommands.manual(subsystems.intakeRoller(), () -> manualIntakeRollerDuty).schedule();
+
+        if (nt.getEntry("Manual Mode/Shooter/BLU/Run").getBoolean(false))
+            ShooterCommands.manual(subsystems.BLUshooter(), () -> manualBLUShooterRPM).schedule();
+
+        if (nt.getEntry("Manual Mode/Shooter/YEL/Run").getBoolean(false))
+            ShooterCommands.manual(subsystems.YELshooter(), () -> manualYELShooterRPM).schedule();
     }
 
     public double getShooterIdleRPM() {
