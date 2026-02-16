@@ -12,8 +12,8 @@ import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFXS;
 
 import frc.lib.hardware.HopperHardware;
+import frc.lib.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
-import frc.robot.utilities.MotorConfig;
 
 /**
  * Real hardware implementation of HopperIO using a TalonFXS.

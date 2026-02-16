@@ -26,10 +26,8 @@ import frc.robot.commands.IntakeArmCommands;
 import frc.robot.commands.IntakeRollerCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.tuning.CmdShooterPIDTuner;
-import frc.robot.utilities.LocalizationRecord;
-// Utilities
-import frc.robot.utilities.SubsystemsRecord;
-
+import frc.robot.framework.LocalizationRecord;
+import frc.robot.framework.SubsystemsRecord;
 // Robot Constants
 import frc.robot.Constants.kShooter;
 

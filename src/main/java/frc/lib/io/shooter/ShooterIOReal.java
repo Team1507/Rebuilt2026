@@ -11,7 +11,7 @@ package frc.lib.io.shooter;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
-import frc.robot.utilities.MotorConfig;
+import frc.lib.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
 
 /**

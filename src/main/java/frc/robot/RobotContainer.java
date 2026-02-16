@@ -33,8 +33,8 @@ import frc.robot.subsystems.*;
 import frc.robot.localization.LocalizationManager;
 import frc.robot.localization.nodes.Nodes.Hub;
 import frc.robot.localization.nodes.Nodes.Tower;
-import frc.robot.localization.photonvision.PVManager;
-import frc.robot.localization.quest.QuestNavManager;
+import frc.robot.localization.vision.PVManager;
+import frc.robot.localization.vision.QuestNavManager;
 
 // IO Layer (Hardware Abstractions)
 import frc.lib.io.agitator.AgitatorIOReal;
@@ -56,10 +56,11 @@ import frc.lib.hardware.ShooterHardware;
 // Shooter ML Model
 import frc.lib.shooterML.data.*;
 import frc.lib.shooterML.model.*;
-
 // Utilities
 import frc.lib.logging.Telemetry;
-import frc.robot.utilities.*;
+
+// Framework
+import frc.robot.framework.*;
 
 // Constants
 import frc.robot.Constants.*;

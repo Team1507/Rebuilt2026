@@ -6,7 +6,7 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.utilities;
+package frc.lib.util;
 
 public record MotorConfig(
         MotorConfig.ControlMode mode,

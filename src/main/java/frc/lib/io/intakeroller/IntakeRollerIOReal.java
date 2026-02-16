@@ -12,8 +12,8 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import frc.lib.hardware.IntakeRollerHardware;
+import frc.lib.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
-import frc.robot.utilities.MotorConfig;
 
 /**
  * Real hardware implementation of IntakeRollerIO using a TalonFX.

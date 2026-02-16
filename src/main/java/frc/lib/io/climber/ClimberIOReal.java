@@ -15,8 +15,8 @@ import edu.wpi.first.wpilibj.Servo;
 
 import frc.lib.hardware.ClimberHardware;
 import frc.lib.math.GearRatio;
+import frc.lib.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
-import frc.robot.utilities.MotorConfig;
 
 /**
  * Real hardware implementation of ClimberIO.

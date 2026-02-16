@@ -6,7 +6,7 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.utilities;
+package frc.robot.framework;
 
 import frc.robot.subsystems.*;
 

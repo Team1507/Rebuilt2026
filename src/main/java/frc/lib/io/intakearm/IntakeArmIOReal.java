@@ -15,8 +15,8 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import frc.lib.hardware.IntakeArmHardware;
 import frc.lib.math.GearRatio;
+import frc.lib.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
-import frc.robot.utilities.MotorConfig;
 
 /**
  * Real hardware implementation of IntakeArmIO.

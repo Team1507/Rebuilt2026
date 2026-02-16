@@ -12,9 +12,8 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import frc.robot.localization.photonvision.PVManager;
-import frc.robot.localization.quest.QuestNavManager;
+import frc.robot.localization.vision.PVManager;
+import frc.robot.localization.vision.QuestNavManager;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.lib.logging.Telemetry;
 

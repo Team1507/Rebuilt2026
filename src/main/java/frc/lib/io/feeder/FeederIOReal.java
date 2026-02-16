@@ -13,8 +13,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import frc.lib.hardware.FeederHardware;
 import frc.lib.math.GearRatio;
+import frc.lib.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
-import frc.robot.utilities.MotorConfig;
 
 /**
  * Real hardware implementation of FeederIO using a TalonFX.

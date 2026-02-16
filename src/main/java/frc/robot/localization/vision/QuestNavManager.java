@@ -6,7 +6,7 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.localization.quest;
+package frc.robot.localization.vision;
 
 import java.util.OptionalDouble;
 import java.util.OptionalInt;

@@ -11,8 +11,8 @@ package frc.lib.io.agitator;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFXS;
 
-import frc.robot.utilities.MotorConfig;
 import frc.lib.hardware.AgitatorHardware;
+import frc.lib.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
 
 /**
