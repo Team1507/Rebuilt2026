@@ -4,8 +4,6 @@
 This branch introduces a **full‑system architectural overhaul** of the robot codebase, replacing legacy WPILib command patterns and vendor‑bound subsystems with a **clean, IO‑based, subsystem‑atomic architecture**.  
 The goal is long‑term maintainability, testability, and clarity for both students and mentors.
 
-This is the largest structural improvement to the codebase in years.
-
 ---
 
 # 🚀 **Overview**
