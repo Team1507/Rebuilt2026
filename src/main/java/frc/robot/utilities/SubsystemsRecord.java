@@ -9,11 +9,11 @@
 package frc.robot.utilities;
 
 import frc.robot.localization.PhotonVision.PVManager;
-import frc.robot.localization.quest.QuestNavSubsystem;
+import frc.robot.localization.quest.QuestNavManager;
 import frc.robot.subsystems.*;
 
 public record SubsystemsRecord(
-    CommandSwerveDrivetrain drivetrain,
+    SwerveSubsystem swerve,
     AgitatorSubsystem agitator,
     ClimberSubsystem climber,
     FeederSubsystem BLUfeeder,
@@ -24,5 +24,5 @@ public record SubsystemsRecord(
     ShooterSubsystem BLUshooter,
     ShooterSubsystem YELshooter,
     PVManager pvManager,
-    QuestNavSubsystem questNav
+    QuestNavManager questNav
 ) {}

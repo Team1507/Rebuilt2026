@@ -18,13 +18,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
 
 // Robot Manual Commands
-import frc.robot.commands.agitate.CmdAgitatorManual;
-import frc.robot.commands.climb.CmdClimberManual;
-import frc.robot.commands.feed.CmdFeederManual;
-import frc.robot.commands.intake.CmdIntakeArmManual;
-import frc.robot.commands.intake.CmdIntakeRollerManual;
-import frc.robot.commands.shoot.CmdShooterManual;
-import frc.robot.commands.shoot.CmdShooterPIDTuner;
+import frc.robot.commands.AgitatorCommands;
+import frc.robot.commands.ClimberCommands;
+import frc.robot.commands.FeederCommands;
+import frc.robot.commands.HopperCommands;
+import frc.robot.commands.IntakeArmCommands;
+import frc.robot.commands.IntakeRollerCommands;
+import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.tuning.CmdShooterPIDTuner;
 
 // Utilities
 import frc.robot.utilities.SubsystemsRecord;
@@ -43,6 +44,7 @@ public class DashboardManager {
     private double manualClimberPosition;
     private double manualBLUFeederRPM;
     private double manualYELFeederRPM;
+    private double manualHopperAngle;
     private double manualIntakeArmAngle;
     private double manualIntakeRollerDuty;
     private double manualBLUShooterRPM;
@@ -64,6 +66,9 @@ public class DashboardManager {
 
     private final DoublePublisher pubYELFeederRPM =
         nt.getDoubleTopic("Manual Mode/Feeder/YEL/Target RPM").publish();
+
+    private final DoublePublisher pubHopperAngle =
+        nt.getDoubleTopic("Manual Mode/Hopper/Target Angle").publish();
 
     private final DoublePublisher pubIntakeArmAngle =
         nt.getDoubleTopic("Manual Mode/Intake/Arm/Target Angle").publish();
@@ -107,36 +112,45 @@ public class DashboardManager {
         // Auto chooser stays on SmartDashboard
         SmartDashboard.putData("Auto Mode", autoChooser);
 
-        // Command buttons (SmartDashboard only)
-        SmartDashboard.putData("Manual Mode/Agitator/Run",
-            new CmdAgitatorManual(subsystems.agitator(), () -> manualAgitatorDuty));
+        // -------------------------
+        // Manual subsystem commands
+        // -------------------------
 
-        SmartDashboard.putData("Manual Mode/Climber/Run",
-            new CmdClimberManual(subsystems.climber(), () -> manualClimberPosition));
+        SmartDashboard.putData("Manual/Agitator/Run",
+            AgitatorCommands.manual(subsystems.agitator(), () -> manualAgitatorDuty));
 
-        SmartDashboard.putData("Manual Mode/Feeder/BLU/Run",
-            new CmdFeederManual(subsystems.BLUfeeder(), () -> manualBLUFeederRPM));
+        SmartDashboard.putData("Manual/Climber/Run",
+            ClimberCommands.manual(subsystems.climber(), () -> manualClimberPosition));
 
-        SmartDashboard.putData("Manual Mode/Feeder/YEL/Run",
-            new CmdFeederManual(subsystems.YELfeeder(), () -> manualYELFeederRPM));
+        SmartDashboard.putData("Manual/Feeder/BLU/Run",
+            FeederCommands.manual(subsystems.BLUfeeder(), () -> manualBLUFeederRPM));
 
-        SmartDashboard.putData("Manual Mode/Intake/Arm/Run",
-            new CmdIntakeArmManual(subsystems.intakeArm(), () -> manualIntakeArmAngle));
+        SmartDashboard.putData("Manual/Feeder/YEL/Run",
+            FeederCommands.manual(subsystems.YELfeeder(), () -> manualYELFeederRPM));
 
-        SmartDashboard.putData("Manual Mode/Intake/Roller/Run",
-            new CmdIntakeRollerManual(subsystems.intakeRoller(), () -> manualIntakeRollerDuty));
+        SmartDashboard.putData("Manual/Hopper/Run",
+            HopperCommands.manual(subsystems.hopper(), () -> manualHopperAngle));
 
-        SmartDashboard.putData("Run Blue Shooter PID Tuner",
+        SmartDashboard.putData("Manual/Intake/Arm/Run",
+            IntakeArmCommands.manual(subsystems.intakeArm(), () -> manualIntakeArmAngle));
+
+        SmartDashboard.putData("Manual/Intake/Roller/Run",
+            IntakeRollerCommands.manual(subsystems.intakeRoller(), () -> manualIntakeRollerDuty));
+
+        SmartDashboard.putData("Manual/Shooter/BLU/Run",
+            ShooterCommands.manual(subsystems.BLUshooter(), () -> manualBLUShooterRPM));
+
+        SmartDashboard.putData("Manual/Shooter/YEL/Run",
+            ShooterCommands.manual(subsystems.YELshooter(), () -> manualYELShooterRPM));
+
+        // -------------------------
+        // PID Tuner (keep)
+        // -------------------------
+        SmartDashboard.putData("Shooter PID Tuner/BLU",
             new CmdShooterPIDTuner(subsystems.BLUshooter(), kShooter.MAX_RPM));
 
-        SmartDashboard.putData("Manual Mode/Shooter/BLU/Run",
-            new CmdShooterManual(subsystems.BLUshooter(), () -> manualBLUShooterRPM));
-
-        SmartDashboard.putData("Run Yellow Shooter PID Tuner",
+        SmartDashboard.putData("Shooter PID Tuner/YEL",
             new CmdShooterPIDTuner(subsystems.YELshooter(), kShooter.MAX_RPM));
-
-        SmartDashboard.putData("Manual Mode/Shooter/YEL/Run",
-            new CmdShooterManual(subsystems.YELshooter(), () -> manualYELShooterRPM));
     }
 
     // -------------------------------------------------
@@ -153,6 +167,7 @@ public class DashboardManager {
         manualClimberPosition = nt.getEntry("Manual Mode/Climber/Target Position").getDouble(manualClimberPosition);
         manualBLUFeederRPM = nt.getEntry("Manual Mode/Feeder/BLU/Target RPM").getDouble(manualBLUFeederRPM);
         manualYELFeederRPM = nt.getEntry("Manual Mode/Feeder/YEL/Target RPM").getDouble(manualYELFeederRPM);
+        manualHopperAngle = nt.getEntry("Manual Mode/Hopper/Target Angle").getDouble(manualHopperAngle);
         manualIntakeArmAngle = nt.getEntry("Manual Mode/Intake/Arm/Target Angle").getDouble(manualIntakeArmAngle);
         manualIntakeRollerDuty = nt.getEntry("Manual Mode/Intake/Roller/Target DC").getDouble(manualIntakeRollerDuty);
         manualBLUShooterRPM = nt.getEntry("Manual Mode/Shooter/BLU/Target RPM").getDouble(manualBLUShooterRPM);
@@ -164,6 +179,7 @@ public class DashboardManager {
         pubClimberPos.set(manualClimberPosition);
         pubBLUFeederRPM.set(manualBLUFeederRPM);
         pubYELFeederRPM.set(manualYELFeederRPM);
+        pubHopperAngle.set(manualHopperAngle);
         pubIntakeArmAngle.set(manualIntakeArmAngle);
         pubIntakeRollerDuty.set(manualIntakeRollerDuty);
         pubBLUShooterRPM.set(manualBLUShooterRPM);

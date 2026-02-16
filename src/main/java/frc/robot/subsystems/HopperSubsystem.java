@@ -8,36 +8,37 @@
 
 package frc.robot.subsystems;
 
-// CTRE Imports
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.hardware.TalonFXS;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.robot.framework.base.Subsystems1507;
-// Utilities
-import frc.robot.utilities.MotorConfig;
+import frc.lib.io.hopper.HopperIO;
+import frc.lib.io.hopper.HopperInputs;
 
-public class HopperSubsystem extends Subsystems1507 {
-    private final TalonFXS hopperMotor;
+/**
+ * Thin, IO-based hopper subsystem.
+ */
+public class HopperSubsystem extends SubsystemBase {
 
-    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
+    private final HopperIO io;
+    private final HopperInputs inputs = new HopperInputs();
 
-    /** Creates a new HopperSubsystem. */
-    public HopperSubsystem(MotorConfig motor) {
-        this.hopperMotor = new TalonFXS(motor.CAN_ID());
-        
-        configureFXSMotor(motor, hopperMotor);
-    } 
+    public HopperSubsystem(HopperIO io) {
+        this.io = io;
+    }
 
-    public void setPosition(double degrees){
-        double outputRot = degrees / 360.0;
-        //double motorRot = ratio.toMotor(outputRot);
+    @Override
+    public void periodic() {
+        io.updateInputs(inputs);
+    }
 
-        hopperMotor.setControl(positionRequest.withPosition(outputRot));
+    public void setPosition(double degrees) {
+        io.setPositionDeg(degrees);
     }
 
     public double getPositionDegrees() {
-        double motorRot = hopperMotor.getPosition().getValueAsDouble();
-        //double outputRot = ratio.toOutput(motorRot);
-        return motorRot * 360.0;
+        return inputs.positionDeg;
+    }
+
+    public void stop() {
+        io.stop();
     }
 }

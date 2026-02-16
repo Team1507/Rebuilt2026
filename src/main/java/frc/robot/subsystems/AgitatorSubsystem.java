@@ -8,35 +8,38 @@
 
 package frc.robot.subsystems;
 
-// CTRE Imports
-import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.hardware.TalonFXS;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.robot.framework.base.Subsystems1507;
-// Utilities
-import frc.robot.utilities.MotorConfig;
+import frc.lib.io.agitator.AgitatorIO;
+import frc.lib.io.agitator.AgitatorInputs;
 
-public class AgitatorSubsystem extends Subsystems1507 {
-    private final TalonFXS agitatorMotor;
-    private final DutyCycleOut dutyRequest = new DutyCycleOut(0);
-    
-    /** Creates a new HopperSubsystem. */
-    public AgitatorSubsystem(MotorConfig motor) {
-        this.agitatorMotor = new TalonFXS(motor.CAN_ID());
+/**
+ * Thin, IO-based agitator subsystem.
+ */
+public class AgitatorSubsystem extends SubsystemBase {
 
-        configureFXSMotor(motor, agitatorMotor);
+    private final AgitatorIO io;
+    private final AgitatorInputs inputs = new AgitatorInputs();
+
+    public AgitatorSubsystem(AgitatorIO io) {
+        this.io = io;
     }
- 
+
+    @Override
+    public void periodic() {
+        io.updateInputs(inputs);
+        // Optional: log telemetry
+    }
+
     public void run(double dutyCycle) {
-        agitatorMotor.setControl(dutyRequest.withOutput(dutyCycle));
+        io.run(dutyCycle);
     }
 
-    /** Stop motor */
     public void stop() {
-        agitatorMotor.set(0);
+        io.stop();
     }
 
-    public double getDutyCycle(){
-        return agitatorMotor.getDutyCycle().getValueAsDouble();
+    public double getDutyCycle() {
+        return inputs.dutyCycle;
     }
 }

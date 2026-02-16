@@ -10,189 +10,221 @@ package frc.robot;
 
 import java.util.function.Supplier;
 
-// CTRE Imports
-import com.ctre.phoenix6.swerve.*;
-
 // WPI libraries
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import static edu.wpi.first.units.Units.*;
 
 // Commands
-import frc.robot.commands.agitate.*;
-import frc.robot.commands.climb.*;
-import frc.robot.commands.drive.*;
-import frc.robot.commands.feed.*;
-import frc.robot.commands.hopper.*;
-import frc.robot.commands.intake.*;
-import frc.robot.commands.shoot.*;
+import frc.robot.commands.AgitatorCommands;
+import frc.robot.commands.ClimberCommands;
+import frc.robot.commands.DriveCommands;
+import frc.robot.commands.FeederCommands;
+import frc.robot.commands.HopperCommands;
+import frc.robot.commands.IntakeArmCommands;
+import frc.robot.commands.IntakeRollerCommands;
+import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.ShooterCoordinator;
+import frc.robot.commands.auto.routines.*;
+
 // Subsystems
 import frc.robot.subsystems.*;
-import frc.robot.tools.shooterModel.data.*;
-import frc.robot.tools.shooterModel.model.*;
+
 // Robot Utilities
 import frc.robot.utilities.*;
-import frc.robot.generated.*;
+import frc.robot.generated.ctre.CommandSwerveDrivetrain;
+import frc.robot.generated.ctre.TunerConstants;
 import frc.robot.localization.PhotonVision.PVManager;
 import frc.robot.localization.nodes.Nodes.Hub;
 import frc.robot.localization.nodes.Nodes.Tower;
-import frc.robot.localization.quest.QuestNavSubsystem;
+import frc.robot.localization.quest.QuestNavManager;
+import frc.lib.hardware.ShooterHardware;
+import frc.lib.io.agitator.AgitatorIOReal;
+import frc.lib.io.climber.ClimberIOReal;
+import frc.lib.io.feeder.FeederIOReal;
+import frc.lib.io.hopper.HopperIOReal;
+import frc.lib.io.intakearm.IntakeArmIOReal;
+import frc.lib.io.intakeroller.IntakeRollerIOReal;
+import frc.lib.io.photonvision.PhotonVisionIO;
+import frc.lib.io.photonvision.PhotonVisionIOReal;
+import frc.lib.io.shooter.*;
+import frc.lib.io.swerve.*;
+import frc.lib.logging.Telemetry;
+import frc.lib.shooterML.data.*;
+import frc.lib.shooterML.model.*;
+
 // Constants
 import frc.robot.Constants.*;
 
-// Autos
-import frc.robot.auto.routines.*;
-
 public class RobotContainer {
 
-    // ----------------------------------------------------------
-    // Autonomous chooser
-    // ----------------------------------------------------------
-    private final SendableChooser<Command> autoChooser = new SendableChooser<>();
-
-    // ----------------------------------------------------------
+    // ==========================================================
     // Controllers
-    // ----------------------------------------------------------
+    // ==========================================================
     private final CommandXboxController bottomDriver = new CommandXboxController(0);
     private final CommandXboxController topDriver = new CommandXboxController(1);
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // Telemetry Looger for all data being logged
-    // ----------------------------------------------------------
+    // ==========================================================
     private final Telemetry logger = new Telemetry();
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // Drive configuration
-    // ----------------------------------------------------------
-    public static double MaxSpeed =
-        0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    // ==========================================================
 
-    public static double MaxAngularRate =
-        RotationsPerSecond.of(0.75).in(RadiansPerSecond);
-
-    public final CommandSwerveDrivetrain drivetrain =
+    private final CommandSwerveDrivetrain ctreDrivetrain =
         TunerConstants.createDrivetrain();
 
-    private final SwerveRequest.FieldCentric driveRequest =
-        new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1)
-            .withRotationalDeadband(MaxAngularRate * 0.1)
-            .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
+    private final SwerveSubsystem swerve =
+        new SwerveSubsystem(new SwerveIOReal(ctreDrivetrain));
 
-    private final Command driveCommand =
-        drivetrain.applyRequest(() -> driveRequest
-            .withVelocityX(-bottomDriver.getLeftY() * MaxSpeed)
-            .withVelocityY(-bottomDriver.getLeftX() * MaxSpeed)
-            .withRotationalRate(-bottomDriver.getRightX() * MaxAngularRate));
+    private Command createDriveCommand() {
+        return swerve.run(() -> {
+            swerve.drive(new ChassisSpeeds(
+                -bottomDriver.getLeftY() * kSwerve.MAX_SPEED,
+                -bottomDriver.getLeftX() * kSwerve.MAX_SPEED,
+                -bottomDriver.getRightX() * kSwerve.MAX_ANGULAR_RATE
+            ));
+        });
+    }
 
-    // ----------------------------------------------------------
-    // Subsystems
-    // ----------------------------------------------------------
+    // ==========================================================
+    // Localization
+    // ==========================================================
+    private final QuestNavManager questNav = new QuestNavManager(swerve, logger);
 
-    // -----------------------------
-    // Vision
-    // -----------------------------
-    private final QuestNavSubsystem questNav = new QuestNavSubsystem(drivetrain, logger);
+    private final PhotonVisionIO photonVisionIO =
+        new PhotonVisionIOReal();
 
     public final PVManager PVManager =
         new PVManager(
             logger,
-            drivetrain::addVisionMeasurement,
-            drivetrain::getHeading,
-            drivetrain::seedPoseFromVision,
-            questNav::setQuestNavPose,
-            new PVManager.CameraConfig(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
-            new PVManager.CameraConfig(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA));
+            photonVisionIO,
+            swerve,
+            questNav::setQuestNavPose
+        );
 
-    // -----------------------------
+    // ==========================================================
     // Shooter + Model
-    // -----------------------------
-    private final Supplier<Pose2d> poseSupplier = () -> drivetrain.getState().Pose;
+    // ==========================================================
 
+    // Pose supplier for model-driven shooter + ShotTrainer
+    private final Supplier<Pose2d> poseSupplier = () -> ctreDrivetrain.getState().Pose;
+
+    // Load shooter model
     private final ShooterModel shooterModelConfig =
         ModelLoader.load("model.json", poseSupplier);
 
+    // -------------------
+    // Shooter IO (Real Hardware)
+    // -------------------
+    private final ShooterIO shooterBLUIO =
+        new ShooterIOReal(
+            ShooterHardware.BLU_ID,
+            kShooter.BLU_CONFIG
+        );
+
+    private final ShooterIO shooterYELIO =
+        new ShooterIOReal(
+            ShooterHardware.YEL_ID,
+            kShooter.YEL_CONFIG
+        );
+
+    // -------------------
+    // Shooter Subsystems
+    // -------------------
     public final ShooterSubsystem shooterBLUsystem =
         new ShooterSubsystem(
-            kShooter.BLU_CONFIG,
+            shooterBLUIO,
+            ShooterHardware.BLU_RATIO,
+            ShooterHardware.ROBOT_TO_BLU_SHOOTER,
             shooterModelConfig,
             poseSupplier,
             Hub.CENTER,
             logger,
-            "Shooter-BLU");
-
-    public final ShotTrainer shotBLUTrainer =
-        new ShotTrainer(
-            shooterBLUsystem.getShooterMotor(),
-            poseSupplier,
-            Hub.CENTER.getTranslation());
+            "Shooter-BLU"
+        );
 
     public final ShooterSubsystem shooterYELsystem =
         new ShooterSubsystem(
-            kShooter.YEL_CONFIG,
+            shooterYELIO,
+            ShooterHardware.YEL_RATIO,
+            ShooterHardware.ROBOT_TO_YEL_SHOOTER,
             shooterModelConfig,
             poseSupplier,
             Hub.CENTER,
             logger,
-            "Shooter-YEL");
+            "Shooter-YEL"
+        );
+
+    // -------------------
+    // Shot Trainers (IO-based)
+    // -------------------
+    public final ShotTrainer shotBLUTrainer =
+        new ShotTrainer(
+            shooterBLUsystem,
+            poseSupplier,
+            Hub.CENTER.getTranslation()
+        );
 
     public final ShotTrainer shotYELTrainer =
         new ShotTrainer(
-            shooterYELsystem.getShooterMotor(),
+            shooterYELsystem,
             poseSupplier,
-            Hub.CENTER.getTranslation());
+            Hub.CENTER.getTranslation()
+        );
 
-    // -----------------------------
-    // Feeder
-    // -----------------------------
-    public final FeederSubsystem feederBLUsystem =
-        new FeederSubsystem(kFeeder.BLU_CONFIG);
+    // ==========================================================
+    // Other subsystems
+    // ==========================================================
 
-    public final FeederSubsystem feederYELsystem =
-        new FeederSubsystem(kFeeder.YEL_CONFIG);
-
-    // -----------------------------
-    // Intake
-    // -----------------------------
-    public final IntakeRollerSubsystem intakeRollerSubsystem =
-        new IntakeRollerSubsystem(kIntake.ROLLER_CONFIG);
-
-    public final IntakeArmSubsystem intakeArmSubsystem =
-        new IntakeArmSubsystem(
-            kIntake.kArm.BLU_CONFIG,
-            kIntake.kArm.YEL_CONFIG);
-
-    // -----------------------------
     // Agitator
-    // -----------------------------
-    public final AgitatorSubsystem agitatorSubsystem =
-        new AgitatorSubsystem(kAgitator.CONFIG);
+    private final AgitatorSubsystem agitatorSubsystem =
+        new AgitatorSubsystem(
+            new AgitatorIOReal(kAgitator.CONFIG));
 
-    // -----------------------------
     // Climber
-    // -----------------------------
     public final ClimberSubsystem climberSubsystem =
         new ClimberSubsystem(
-            kClimber.CONFIG,
-            kClimber.SERVO_PORT);
+            new ClimberIOReal(kClimber.CONFIG));
 
-    // -----------------------------
+    // Feeder
+    public final FeederSubsystem feederBLUsystem =
+        new FeederSubsystem(
+            new FeederIOReal(kFeeder.CONFIG, true));  // BLUE
+
+
+    public final FeederSubsystem feederYELsystem =
+        new FeederSubsystem(
+            new FeederIOReal(kFeeder.CONFIG, false)); // YELLOW
+
     // Hopper
-    // -----------------------------
     public final HopperSubsystem hopperSubsystem =
-        new HopperSubsystem(kHopper.CONFIG);
+        new HopperSubsystem(
+            new HopperIOReal(kHopper.CONFIG));
 
-    // ----------------------------------------------------------
-    // Recording Subsystems
-    // ----------------------------------------------------------
+    // Intake Arm
+    public final IntakeArmSubsystem intakeArmSubsystem =
+        new IntakeArmSubsystem(
+            new IntakeArmIOReal(kIntake.kArm.BLU_CONFIG, kIntake.kArm.YEL_CONFIG));
+
+    // Intake Roller
+    public final IntakeRollerSubsystem intakeRollerSubsystem =
+        new IntakeRollerSubsystem(
+            new IntakeRollerIOReal(kIntake.ROLLER_CONFIG));
+
+    // ==========================================================
+    // SubsystemsRecord
+    // ==========================================================
     private final SubsystemsRecord subsystemsRecord = new SubsystemsRecord(
-        drivetrain,
+        swerve,
         agitatorSubsystem,
         climberSubsystem,
         feederBLUsystem,
@@ -205,38 +237,20 @@ public class RobotContainer {
         PVManager,
         questNav);
 
-    // ----------------------------------------------------------
+    // ==========================================================
+    // Autonomous chooser
+    // ==========================================================
+    private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+
+    // ==========================================================
     // Dashboard manager
-    // ----------------------------------------------------------
-    private final DashboardManager dashboardManager =
-        new DashboardManager(
-            subsystemsRecord,
-            autoChooser);
+    // ==========================================================
+     private final DashboardManager dashboardManager =
+        new DashboardManager(subsystemsRecord, autoChooser);
 
-    // ----------------------------------------------------------
-    // Pre-created commands for whileTrue bindings
-    // ----------------------------------------------------------
-    private final Command maintainHeadingToTargetCommand =
-        new CmdMaintainHeadingToTarget(
-            drivetrain,
-            shooterBLUsystem::getTargetPose,
-            () -> -bottomDriver.getLeftY() * MaxSpeed,
-            () -> -bottomDriver.getLeftX() * MaxSpeed);
-
-    private final Command intakeDeployCommand =
-        new CmdIntakeDeploy(intakeArmSubsystem, intakeRollerSubsystem);
-
-    private final Command shootCommand =
-        new CmdShoot(
-            200, 200, 0.35,
-            agitatorSubsystem,
-            feederBLUsystem,
-            feederYELsystem,
-            shooterBLUsystem);
-
-    // ----------------------------------------------------------
+    // ==========================================================
     // Robot Container Constructor
-    // ----------------------------------------------------------
+    // ==========================================================
     public RobotContainer() {
         configureTelemetry();
         configureDefaultCommands();
@@ -247,120 +261,118 @@ public class RobotContainer {
         dashboardManager.initDashboard();
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // Default commands
-    // ----------------------------------------------------------
+    // ==========================================================
     private void configureDefaultCommands() {
 
-        drivetrain.setDefaultCommand(driveCommand);
+        swerve.setDefaultCommand(createDriveCommand());
 
-        final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true));
+            swerve.run(swerve::stop).ignoringDisable(true)
+        );
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // Driver controls
-    // ----------------------------------------------------------
+    // ==========================================================
     private void configureDriverControls() {
-
-        // Drivetrain SysId
-        bottomDriver.back().and(bottomDriver.y())
-            .whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        bottomDriver.back().and(bottomDriver.x())
-            .whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        bottomDriver.start().and(bottomDriver.y())
-            .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        bottomDriver.start().and(bottomDriver.x())
-            .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset field-centric heading
         bottomDriver.a()
-            .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+            .onTrue(ctreDrivetrain.runOnce(ctreDrivetrain::seedFieldCentric));
 
         // Left bumper: slow mode while held, normal when released, reseed heading on press
         bottomDriver.leftBumper()
             .onTrue(Commands.runOnce(() -> {
-                MaxSpeed = 0.3 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-                MaxAngularRate = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
-                drivetrain.seedFieldCentric();
+                kSwerve.MAX_SPEED = 0.3 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+                kSwerve.MAX_ANGULAR_RATE = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
+                ctreDrivetrain.seedFieldCentric();
             }));
 
         bottomDriver.leftBumper()
             .onFalse(Commands.runOnce(() -> {
-                MaxSpeed = 0.65 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-                MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
+                kSwerve.MAX_SPEED = 0.65 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+                kSwerve.MAX_ANGULAR_RATE = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
             }));
 
         // Preplanned poses
         bottomDriver.povDown()
-            .onTrue(new CmdMoveToPose(drivetrain, Tower.APPROACH_LEFT, MaxSpeed, MaxAngularRate));
+            .onTrue(DriveCommands.moveToPose(swerve, Tower.APPROACH_LEFT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
 
         bottomDriver.povLeft()
-            .onTrue(new CmdMoveToPose(drivetrain, Hub.APPROACH_LEFT, MaxSpeed, MaxAngularRate));
+            .onTrue(DriveCommands.moveToPose(swerve, Hub.APPROACH_LEFT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
 
         bottomDriver.povRight()
-            .onTrue(new CmdMoveToPose(drivetrain, Hub.APPROACH_RIGHT, MaxSpeed, MaxAngularRate));
+            .onTrue(DriveCommands.moveToPose(swerve, Hub.APPROACH_RIGHT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
 
         // Maintain heading to shooter target while driving
         bottomDriver.rightStick()
-            .whileTrue(maintainHeadingToTargetCommand);
+            .whileTrue(
+                DriveCommands.maintainHeadingToTarget(
+                    swerve,
+                    shooterBLUsystem::getTargetPose,
+                    () -> -bottomDriver.getLeftY() * kSwerve.MAX_SPEED,
+                    () -> -bottomDriver.getLeftX() * kSwerve.MAX_SPEED
+                )
+            );
 
         // Intake
         bottomDriver.leftTrigger(0.5)
-            .whileTrue(intakeDeployCommand);
+            .whileTrue(IntakeArmCommands.down(intakeArmSubsystem)
+                .alongWith(IntakeRollerCommands.intake(intakeRollerSubsystem)));
 
-        // Shooter + feeders + agitator
+        // Shooting
         bottomDriver.rightTrigger()
-            .whileTrue(shootCommand);
+            .whileTrue(ShooterCoordinator.shootModelBased(
+                shooterBLUsystem,
+                shooterYELsystem,
+                feederBLUsystem,
+                feederYELsystem,
+                agitatorSubsystem
+            ));
 
         // Climber
-        topDriver.y()
-            .onTrue(new CmdClimberRobotUp(climberSubsystem));
-
-        topDriver.x()
-            .onTrue(new CmdClimberRobotDown(climberSubsystem));
+        topDriver.y().onTrue(ClimberCommands.robotUp(climberSubsystem));
+        topDriver.x().onTrue(ClimberCommands.robotDown(climberSubsystem));
 
         // Agitator
-        topDriver.povUp()
-            .whileTrue(new CmdAgitateToShooter(agitatorSubsystem));
+        topDriver.povUp().whileTrue(AgitatorCommands.toShooter(agitatorSubsystem));
+        topDriver.povDown().whileTrue(AgitatorCommands.toIntake(agitatorSubsystem));
 
-        topDriver.povDown()
-            .whileTrue(new CmdAgitateToIntake(agitatorSubsystem));
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // Telemetry
-    // ----------------------------------------------------------
+    // ==========================================================
     private void configureTelemetry() {
         logger.registerVisionPoseSource("PhotonVisionManager");
         logger.registerVisionPoseSource("Photon-BLU");
         logger.registerVisionPoseSource("Photon-YEL");
 
-        drivetrain.registerTelemetry(logger::logDriveState);
+        ctreDrivetrain.registerTelemetry(logger::logDriveState);
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // Autos
-    // ----------------------------------------------------------
+    // ==========================================================
     private void configureAutos() {
 
-        autoChooser.setDefaultOption(
-            "Auto Do Nothing",
-            Commands.print("Doing nothing"));
+        autoChooser.setDefaultOption("Do Nothing", Commands.print("Doing nothing"));
 
         autoChooser.addOption(
             "One Piece Auto",
-            AutoSample.build(subsystemsRecord, MaxSpeed, MaxAngularRate));
+            AutoSample.build(subsystemsRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE)
+        );
     }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // Dashboard access for Robot.java
-    // ----------------------------------------------------------
+    // ==========================================================
     public DashboardManager getDashboard() {
         return dashboardManager;
     }

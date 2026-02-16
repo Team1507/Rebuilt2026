@@ -10,54 +10,40 @@ package frc.robot.localization.PhotonVision;
 
 import static frc.robot.Constants.kVision.*;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.targeting.PhotonPipelineResult;
-
+import frc.lib.io.photonvision.PhotonVisionIO;
+import frc.lib.io.photonvision.PhotonVisionIO.CameraInputs;
+import frc.lib.logging.Telemetry;
 import frc.robot.Constants.kQuest;
-import frc.robot.utilities.Telemetry;
+import frc.robot.subsystems.SwerveSubsystem;
 
+/**
+ * IO‑based PhotonVision manager.
+ *
+ * This class no longer touches PhotonCamera or PhotonPoseEstimator directly.
+ * All camera data comes from PhotonVisionIO, and all pose fusion is done
+ * through SwerveSubsystem.
+ */
 public class PVManager extends SubsystemBase {
 
-    public static record CameraConfig(String name, Transform3d robotToCamera) {}
-
-    @FunctionalInterface
-    public static interface VisionConsumer {
-        void accept(
-            Pose2d visionRobotPoseMeters,
-            double timestampSeconds,
-            Matrix<N3, N1> visionMeasurementStdDevs);
-    }
-
     private final Telemetry telemetry;
-    private final VisionConsumer consumer;
-    private final Supplier<Rotation2d> headingSupplier;
-    private final Consumer<Pose2d> poseSeeder;
-    private final Consumer<Pose3d> questNavPoseSeeder;
-    private final Camera[] cameras;
+    private final PhotonVisionIO io;
+    private final SwerveSubsystem swerve;
+    private final java.util.function.Consumer<Pose3d> questNavPoseSeeder;
+
+    private final CameraState[] cameras;
 
     private boolean startupPoseSeeded = false;
 
@@ -67,44 +53,51 @@ public class PVManager extends SubsystemBase {
 
     public PVManager(
         Telemetry telemetry,
-        VisionConsumer consumer,
-        Supplier<Rotation2d> headingSupplier,
-        Consumer<Pose2d> poseSeeder,
-        Consumer<Pose3d> questNavPoseSeeder,
-        CameraConfig... configs
+        PhotonVisionIO io,
+        SwerveSubsystem swerve,
+        java.util.function.Consumer<Pose3d> questNavPoseSeeder
     ) {
         this.telemetry = telemetry;
-        this.consumer = consumer;
-        this.headingSupplier = headingSupplier;
-        this.poseSeeder = poseSeeder;
+        this.io = io;
+        this.swerve = swerve;
         this.questNavPoseSeeder = questNavPoseSeeder;
 
-        this.cameras = new Camera[configs.length];
-
-        for (int i = 0; i < configs.length; i++) {
-            cameras[i] = new Camera(configs[i]);
-                telemetry.registerVisionPoseSource(configs[i].name());
+        cameras = new CameraState[io.getCameraCount()];
+        for (int i = 0; i < cameras.length; i++) {
+            cameras[i] = new CameraState("Camera-" + i);
+            telemetry.registerVisionPoseSource("Camera-" + i);
         }
     }
 
-    public void resetHeadingData() {
-        double now = Timer.getFPGATimestamp();
-        Rotation2d heading = headingSupplier.get();
-        for (var cam : cameras) {
-            cam.estimator.resetHeadingData(now, heading);
+    /** Internal per-camera state (debounce, alerts, etc.) */
+    private static class CameraState {
+        final String name;
+        final Debouncer disabledDebounce =
+            new Debouncer(5.0, DebounceType.kFalling);
+        final Alert disconnectedAlert;
+
+        Rotation2d latestYaw = Rotation2d.kZero;
+        Rotation2d latestPitch = Rotation2d.kZero;
+        boolean hasTarget = false;
+
+        CameraState(String name) {
+            this.name = name;
+            this.disconnectedAlert = new Alert(
+                "Vision camera " + name + " is disconnected.",
+                AlertType.kWarning);
         }
     }
 
-    public Rotation2d getTargetX(int cameraIndex) {
-        return cameras[cameraIndex].latestTargetYaw;
+    public Rotation2d getTargetX(int index) {
+        return cameras[index].latestYaw;
     }
 
-    public Rotation2d getTargetY(int cameraIndex) {
-        return cameras[cameraIndex].latestTargetPitch;
+    public Rotation2d getTargetY(int index) {
+        return cameras[index].latestPitch;
     }
 
-    public boolean hasTarget(int cameraIndex) {
-        return cameras[cameraIndex].hasTarget;
+    public boolean hasTarget(int index) {
+        return cameras[index].hasTarget;
     }
 
     @Override
@@ -115,105 +108,76 @@ public class PVManager extends SubsystemBase {
         if (now - lastProcessTime < PROCESS_PERIOD) return;
         lastProcessTime = now;
 
-        Rotation2d heading = headingSupplier.get();
-        for (var cam : cameras) cam.estimator.addHeadingData(now, heading);
+        // Pull fresh camera data from IO
+        CameraInputs[] inputs = new CameraInputs[cameras.length];
+        for (int i = 0; i < inputs.length; i++) inputs[i] = new CameraInputs();
+        io.updateInputs(inputs);
 
         List<Pose3d> accepted = new LinkedList<>();
         List<Pose3d> rejected = new LinkedList<>();
         List<Pose3d> tagPoses = new LinkedList<>();
 
-        Pose2d latestVisionPose = null;
         Pose2d seedPose = null;
         double seedScore = Double.NEGATIVE_INFINITY;
-
         int fusedCount = 0;
 
+        Rotation2d heading = swerve.getHeading();
+
         for (int i = 0; i < cameras.length; i++) {
-            Camera cam = cameras[i];
+            CameraState cam = cameras[i];
+            CameraInputs in = inputs[i];
 
-            boolean usingTrig = startupPoseSeeded
-                ? cam.disabledDebounce.calculate(DriverStation.isEnabled())
-                : false;
+            cam.hasTarget = in.hasTarget;
+            cam.latestYaw = in.latestYaw;
+            cam.latestPitch = in.latestPitch;
 
-            var results = cam.photonCamera.getAllUnreadResults();
-            if (results.isEmpty()) continue;
+            if (in.latestPose3d.isEmpty()) continue;
 
-            PhotonPipelineResult result = results.get(results.size() - 1);
+            Pose3d pose3d = in.latestPose3d.get();
+            Pose2d pose2d = in.latestPose2d.get();
 
-            cam.hasTarget = result.hasTargets();
-            if (cam.hasTarget) {
-                cam.latestTargetYaw = Rotation2d.fromDegrees(result.getBestTarget().getYaw());
-                cam.latestTargetPitch = Rotation2d.fromDegrees(result.getBestTarget().getPitch());
-            }
-
-            Optional<EstimatedRobotPose> estimate =
-                usingTrig
-                    ? cam.estimator.estimatePnpDistanceTrigSolvePose(result)
-                    : cam.estimator.estimateCoprocMultiTagPose(result);
-
-            if (estimate.isEmpty()) continue;
-            var est = estimate.get();
-            if (est.targetsUsed.isEmpty()) continue;
-
-            Pose3d robotPose3d = est.estimatedPose;
-            int tagCount = est.targetsUsed.size();
-
-            double avgDistance = est.targetsUsed.stream()
-                .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
-                .average().orElse(0.0);
+            int tagCount = in.tagCount;
+            double avgDistance = in.avgDistance;
 
             boolean reject =
-                Math.abs(robotPose3d.getZ()) > maxZError ||
-                robotPose3d.getX() < 0.0 ||
-                robotPose3d.getX() > APRILTAG_LAYOUT.getFieldLength() ||
-                robotPose3d.getY() < 0.0 ||
-                robotPose3d.getY() > APRILTAG_LAYOUT.getFieldWidth() ||
+                Math.abs(pose3d.getZ()) > maxZError ||
+                pose3d.getX() < 0.0 ||
+                pose3d.getX() > APRILTAG_LAYOUT.getFieldLength() ||
+                pose3d.getY() < 0.0 ||
+                pose3d.getY() > APRILTAG_LAYOUT.getFieldWidth() ||
                 avgDistance > maxTagDistance ||
-                (tagCount == 1 && est.targetsUsed.get(0).getPoseAmbiguity() > maxAmbiguity);
+                (tagCount == 1 && in.stdDevs != null &&
+                 in.stdDevs.get(2, 0) > maxAmbiguity);
 
             if (reject) {
-                rejected.add(robotPose3d);
+                rejected.add(pose3d);
                 continue;
             }
 
-            accepted.add(robotPose3d);
-            latestVisionPose = robotPose3d.toPose2d();
+            accepted.add(pose3d);
 
-            for (var target : est.targetsUsed) {
-                APRILTAG_LAYOUT.getTagPose(target.getFiducialId())
-                    .ifPresent(tagPoses::add);
-            }
-
+            // Startup seeding logic
             if (!startupPoseSeeded) {
                 double score = tagCount * 100.0 - avgDistance * 10.0;
                 if (score > seedScore) {
                     seedScore = score;
-                    seedPose = robotPose3d.toPose2d();
+                    seedPose = pose2d;
                 }
             } else {
-                double xyStd =
-                    (usingTrig ? trigXyStdBase : constrainedPnpXyStdBase) * avgDistance;
-                double angStd =
-                    (usingTrig ? 1e5 : constrainedPnpAngStdBase) * avgDistance;
-
-                if (tagCount > 1) {
-                    double discount = Math.sqrt(tagCount);
-                    xyStd /= discount;
-                    angStd /= discount;
+                // Vision fusion
+                if (in.stdDevs != null) {
+                    swerve.addVisionMeasurement(pose2d, in.timestampSeconds, in.stdDevs);
+                    fusedCount++;
                 }
-
-                Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStd, xyStd, angStd);
-                consumer.accept(robotPose3d.toPose2d(), est.timestampSeconds, stdDevs);
-                fusedCount++;
             }
 
-            telemetry.logVisionPose(cam.name, robotPose3d.toPose2d());
+            telemetry.logVisionPose(cam.name, pose2d);
         }
 
+        // Perform startup pose seed
         if (!startupPoseSeeded && seedPose != null) {
-            poseSeeder.accept(seedPose);
+            swerve.seedPoseFromVision(seedPose);
             questNavPoseSeeder.accept(new Pose3d(seedPose).transformBy(kQuest.ROBOT_TO_QUEST));
-            resetHeadingData();
             startupPoseSeeded = true;
             telemetry.logVisionStartupSeed(seedPose);
         }
@@ -224,29 +188,7 @@ public class PVManager extends SubsystemBase {
         telemetry.logVisionFusedCount(fusedCount);
     }
 
-    public boolean isVisionSeeded(){
+    public boolean isVisionSeeded() {
         return startupPoseSeeded;
-    }
-
-    private class Camera {
-        final String name;
-        final PhotonCamera photonCamera;
-        final PhotonPoseEstimator estimator;
-        final Debouncer disabledDebounce;
-        final Alert disconnectedAlert;
-
-        Rotation2d latestTargetYaw = Rotation2d.kZero;
-        Rotation2d latestTargetPitch = Rotation2d.kZero;
-        boolean hasTarget = false;
-
-        Camera(CameraConfig config) {
-            this.name = config.name();
-            this.photonCamera = new PhotonCamera(config.name());
-            this.estimator = new PhotonPoseEstimator(APRILTAG_LAYOUT, config.robotToCamera());
-            this.disabledDebounce = new Debouncer(5.0, DebounceType.kFalling);
-            this.disconnectedAlert = new Alert(
-                "Vision camera " + config.name() + " is disconnected.",
-                AlertType.kWarning);
-        }
     }
 }
