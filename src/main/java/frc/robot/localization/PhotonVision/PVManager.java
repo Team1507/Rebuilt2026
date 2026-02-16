@@ -6,189 +6,179 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.localization.PhotonVision;
+package frc.robot.localization.photonvision;
 
-import static frc.robot.Constants.kVision.*;
-
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import frc.lib.io.photonvision.PhotonVisionIO;
+import frc.lib.io.photonvision.PhotonVisionInputs;
+import frc.robot.Constants.kVision;
+import frc.lib.logging.Telemetry;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import frc.lib.io.photonvision.PhotonVisionIO;
-import frc.lib.io.photonvision.PhotonVisionIO.CameraInputs;
-import frc.lib.logging.Telemetry;
-import frc.robot.Constants.kQuest;
-import frc.robot.subsystems.SwerveSubsystem;
+import java.util.Optional;
 
 /**
- * IO‑based PhotonVision manager.
+ * PVManager:
+ *  - Reads all PhotonVision IO data
+ *  - Rejects bad observations
+ *  - Computes a fused PV pose (best estimate)
+ *  - Computes fused std devs
+ *  - Logs accepted/rejected poses
  *
- * This class no longer touches PhotonCamera or PhotonPoseEstimator directly.
- * All camera data comes from PhotonVisionIO, and all pose fusion is done
- * through SwerveSubsystem.
+ * This class does NOT:
+ *  - Seed the drivetrain
+ *  - Seed QuestNav
+ *  - Fuse with gyro or QuestNav
+ *
+ * Those responsibilities belong to LocalizationManager.
  */
 public class PVManager extends SubsystemBase {
 
-    private final Telemetry telemetry;
     private final PhotonVisionIO io;
-    private final SwerveSubsystem swerve;
-    private final java.util.function.Consumer<Pose3d> questNavPoseSeeder;
+    private final PhotonVisionInputs inputs = new PhotonVisionInputs();
+    private final Telemetry telemetry;
 
-    private final CameraState[] cameras;
+    // Camera names provided by IO (e.g., "Photon-BLU", "Photon-YEL")
+    private final String[] cameraNames;
 
-    private boolean startupPoseSeeded = false;
+    // Fused PV output
+    private Optional<Pose2d> fusedPose = Optional.empty();
+    private double fusedTimestamp = 0.0;
+    private double fusedXyStd = 0.0;
+    private double fusedAngStd = 0.0;
 
     // 20 Hz throttle
     private double lastProcessTime = 0.0;
     private static final double PROCESS_PERIOD = 0.05;
 
-    public PVManager(
-        Telemetry telemetry,
-        PhotonVisionIO io,
-        SwerveSubsystem swerve,
-        java.util.function.Consumer<Pose3d> questNavPoseSeeder
-    ) {
-        this.telemetry = telemetry;
+    public PVManager(PhotonVisionIO io, Telemetry telemetry) {
         this.io = io;
-        this.swerve = swerve;
-        this.questNavPoseSeeder = questNavPoseSeeder;
+        this.telemetry = telemetry;
 
-        cameras = new CameraState[io.getCameraCount()];
-        for (int i = 0; i < cameras.length; i++) {
-            cameras[i] = new CameraState("Camera-" + i);
-            telemetry.registerVisionPoseSource("Camera-" + i);
+        // Allocate camera input slots
+        inputs.cameras = new PhotonVisionInputs.CameraInputs[io.getCameraCount()];
+        for (int i = 0; i < inputs.cameras.length; i++) {
+            inputs.cameras[i] = new PhotonVisionInputs.CameraInputs();
         }
-    }
 
-    /** Internal per-camera state (debounce, alerts, etc.) */
-    private static class CameraState {
-        final String name;
-        final Debouncer disabledDebounce =
-            new Debouncer(5.0, DebounceType.kFalling);
-        final Alert disconnectedAlert;
+        // Pull explicit camera names from IO
+        this.cameraNames = io.getCameraNames();
 
-        Rotation2d latestYaw = Rotation2d.kZero;
-        Rotation2d latestPitch = Rotation2d.kZero;
-        boolean hasTarget = false;
-
-        CameraState(String name) {
-            this.name = name;
-            this.disconnectedAlert = new Alert(
-                "Vision camera " + name + " is disconnected.",
-                AlertType.kWarning);
+        // Register each camera as a vision pose source
+        for (String name : cameraNames) {
+            telemetry.registerVisionPoseSource(name);
         }
-    }
-
-    public Rotation2d getTargetX(int index) {
-        return cameras[index].latestYaw;
-    }
-
-    public Rotation2d getTargetY(int index) {
-        return cameras[index].latestPitch;
-    }
-
-    public boolean hasTarget(int index) {
-        return cameras[index].hasTarget;
     }
 
     @Override
     public void periodic() {
 
-        // 20 Hz throttle
-        double now = Timer.getFPGATimestamp();
+        double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
         if (now - lastProcessTime < PROCESS_PERIOD) return;
         lastProcessTime = now;
 
-        // Pull fresh camera data from IO
-        CameraInputs[] inputs = new CameraInputs[cameras.length];
-        for (int i = 0; i < inputs.length; i++) inputs[i] = new CameraInputs();
         io.updateInputs(inputs);
 
-        List<Pose3d> accepted = new LinkedList<>();
-        List<Pose3d> rejected = new LinkedList<>();
-        List<Pose3d> tagPoses = new LinkedList<>();
+        List<Pose3d> accepted3d = new LinkedList<>();
+        List<Pose3d> rejected3d = new LinkedList<>();
 
-        Pose2d seedPose = null;
-        double seedScore = Double.NEGATIVE_INFINITY;
-        int fusedCount = 0;
+        // Reset fused output
+        fusedPose = Optional.empty();
+        fusedTimestamp = 0.0;
+        fusedXyStd = 0.0;
+        fusedAngStd = 0.0;
 
-        Rotation2d heading = swerve.getHeading();
+        double bestScore = Double.NEGATIVE_INFINITY;
+        Pose2d bestPose = null;
+        double bestTimestamp = 0.0;
+        double bestXyStd = 0.0;
+        double bestAngStd = 0.0;
 
-        for (int i = 0; i < cameras.length; i++) {
-            CameraState cam = cameras[i];
-            CameraInputs in = inputs[i];
+        // Process each camera
+        for (int i = 0; i < inputs.cameras.length; i++) {
+            var cam = inputs.cameras[i];
+            String camName = cameraNames[i];
 
-            cam.hasTarget = in.hasTarget;
-            cam.latestYaw = in.latestYaw;
-            cam.latestPitch = in.latestPitch;
+            if (!cam.pose3d.isPresent()) continue;
 
-            if (in.latestPose3d.isEmpty()) continue;
+            Pose3d pose3d = cam.pose3d.get();
+            Pose2d pose2d = cam.pose2d.get();
 
-            Pose3d pose3d = in.latestPose3d.get();
-            Pose2d pose2d = in.latestPose2d.get();
-
-            int tagCount = in.tagCount;
-            double avgDistance = in.avgDistance;
-
+            // Reject bad observations
             boolean reject =
-                Math.abs(pose3d.getZ()) > maxZError ||
+                Math.abs(pose3d.getZ()) > kVision.maxZError ||
                 pose3d.getX() < 0.0 ||
-                pose3d.getX() > APRILTAG_LAYOUT.getFieldLength() ||
+                pose3d.getX() > kVision.APRILTAG_LAYOUT.getFieldLength() ||
                 pose3d.getY() < 0.0 ||
-                pose3d.getY() > APRILTAG_LAYOUT.getFieldWidth() ||
-                avgDistance > maxTagDistance ||
-                (tagCount == 1 && in.stdDevs != null &&
-                 in.stdDevs.get(2, 0) > maxAmbiguity);
+                pose3d.getY() > kVision.APRILTAG_LAYOUT.getFieldWidth() ||
+                cam.avgDistance > kVision.maxTagDistance ||
+                (cam.tagCount == 1 && cam.ambiguity > kVision.maxAmbiguity);
 
             if (reject) {
-                rejected.add(pose3d);
+                rejected3d.add(pose3d);
                 continue;
             }
 
-            accepted.add(pose3d);
+            accepted3d.add(pose3d);
 
-            // Startup seeding logic
-            if (!startupPoseSeeded) {
-                double score = tagCount * 100.0 - avgDistance * 10.0;
-                if (score > seedScore) {
-                    seedScore = score;
-                    seedPose = pose2d;
-                }
-            } else {
-                // Vision fusion
-                if (in.stdDevs != null) {
-                    swerve.addVisionMeasurement(pose2d, in.timestampSeconds, in.stdDevs);
-                    fusedCount++;
+            // Compute score for fusion
+            double score =
+                cam.tagCount * 100.0 -
+                cam.avgDistance * 10.0 -
+                cam.ambiguity * 50.0;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestPose = pose2d;
+                bestTimestamp = cam.timestamp;
+
+                if (cam.stdDevs != null) {
+                    bestXyStd = cam.stdDevs.get(0, 0);
+                    bestAngStd = cam.stdDevs.get(2, 0);
                 }
             }
 
-            telemetry.logVisionPose(cam.name, pose2d);
+            // Log per-camera pose
+            telemetry.logVisionPose(camName, pose2d);
         }
 
-        // Perform startup pose seed
-        if (!startupPoseSeeded && seedPose != null) {
-            swerve.seedPoseFromVision(seedPose);
-            questNavPoseSeeder.accept(new Pose3d(seedPose).transformBy(kQuest.ROBOT_TO_QUEST));
-            startupPoseSeeded = true;
-            telemetry.logVisionStartupSeed(seedPose);
+        // Save fused result
+        if (bestPose != null) {
+            fusedPose = Optional.of(bestPose);
+            fusedTimestamp = bestTimestamp;
+            fusedXyStd = bestXyStd;
+            fusedAngStd = bestAngStd;
         }
 
-        telemetry.logVisionAccepted(accepted.toArray(new Pose3d[0]));
-        telemetry.logVisionRejected(rejected.toArray(new Pose3d[0]));
-        telemetry.logVisionTagPoses(tagPoses.toArray(new Pose3d[0]));
-        telemetry.logVisionFusedCount(fusedCount);
+        telemetry.logVisionAccepted(accepted3d.toArray(new Pose3d[0]));
+        telemetry.logVisionRejected(rejected3d.toArray(new Pose3d[0]));
     }
 
-    public boolean isVisionSeeded() {
-        return startupPoseSeeded;
+    // ============================
+    // Public API for LocalizationManager
+    // ============================
+
+    public Optional<Pose2d> getFusedPose() {
+        return fusedPose;
+    }
+
+    public double getFusedTimestamp() {
+        return fusedTimestamp;
+    }
+
+    public double getFusedXyStd() {
+        return fusedXyStd;
+    }
+
+    public double getFusedAngStd() {
+        return fusedAngStd;
+    }
+
+    public boolean hasGoodVision() {
+        return fusedPose.isPresent();
     }
 }

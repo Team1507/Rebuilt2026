@@ -18,29 +18,44 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.logging.Telemetry;
-
 import frc.robot.Constants.kQuest;
 import frc.robot.generated.questnav.PoseFrame;
 import frc.robot.generated.questnav.QuestNav;
-import frc.robot.subsystems.SwerveSubsystem;
 
+/**
+ * QuestNavManager:
+ *  - Reads QuestNav pose frames
+ *  - Applies ROBOT_TO_QUEST transform
+ *  - Produces corrected robot pose
+ *  - Logs tracking, latency, battery, timestamps
+ *
+ * This class does NOT:
+ *  - Fuse with odometry
+ *  - Fuse with PhotonVision
+ *  - Seed the drivetrain
+ *  - Seed QuestNav externally
+ *
+ * Those responsibilities belong to LocalizationManager.
+ */
 public class QuestNavManager extends SubsystemBase {
 
-    private final SwerveSubsystem swerve;
     private final QuestNav questNav = new QuestNav();
     private final Telemetry telemetry;
 
-    // Throttle QuestNav processing to 20 Hz
-    private double lastProcessTime = 0.0;
-    private static final double PROCESS_PERIOD = 0.05; // 50 ms
+    // Latest processed output
+    private Pose2d latestPose = new Pose2d();
+    private double latestTimestamp = 0.0;
+    private boolean latestTracking = false;
 
-    public QuestNavManager(SwerveSubsystem swerve, Telemetry telemetry) {
-        this.swerve = swerve;
+    // Throttle to 20 Hz
+    private double lastProcessTime = 0.0;
+    private static final double PROCESS_PERIOD = 0.05;
+
+    public QuestNavManager(Telemetry telemetry) {
         this.telemetry = telemetry;
 
-        // Register QuestNav as a vision source
-        telemetry.registerVisionPoseSource("QuestNav");
         telemetry.registerVisionPoseSource("QuestNav-Raw");
+        telemetry.registerVisionPoseSource("QuestNav-Corrected");
     }
 
     @Override
@@ -49,75 +64,74 @@ public class QuestNavManager extends SubsystemBase {
         questNav.commandPeriodic();
 
         double now = Timer.getFPGATimestamp();
-        if (now - lastProcessTime < PROCESS_PERIOD) {
-            return;
-        }
+        if (now - lastProcessTime < PROCESS_PERIOD) return;
         lastProcessTime = now;
 
-        // Log connection state every cycle
         telemetry.logQuestNavConnected(questNav.isConnected());
 
         PoseFrame[] frames = questNav.getAllUnreadPoseFrames();
         if (frames.length == 0) {
+            latestTracking = false;
             telemetry.logQuestNavTracking(false);
             return;
         }
 
         // Only process the latest frame
         PoseFrame frame = frames[frames.length - 1];
+        latestTracking = frame.isTracking();
+        telemetry.logQuestNavTracking(latestTracking);
 
-        // Log tracking state
-        telemetry.logQuestNavTracking(frame.isTracking());
-
-        if (!frame.isTracking()) {
-            telemetry.logQuestNavCorrectedPose(new Pose2d());
+        if (!latestTracking) {
             return;
         }
 
         Pose3d questPose = frame.questPose3d();
         double frameTimestamp = frame.dataTimestamp();
 
-        // Log raw QuestNav pose
         telemetry.logQuestNavRawPose(questPose);
-
-        // Log frame timestamp
         telemetry.logQuestNavFrameTimestamp(frameTimestamp);
 
-        // Compute corrected robot pose
-        Pose3d robotPose = questPose.transformBy(kQuest.ROBOT_TO_QUEST.inverse());
+        // Transform QuestNav pose into robot frame
+        Pose3d robotPose3d = questPose.transformBy(kQuest.ROBOT_TO_QUEST.inverse());
 
-        // Use IO-based heading 
-        Rotation2d heading = swerve.getHeading();
+        // QuestNav heading is already drift‑corrected
+        Rotation2d heading = new Rotation2d(robotPose3d.getRotation().getZ());
 
-        Pose2d correctedPose = new Pose2d(
-            robotPose.getX(),
-            robotPose.getY(),
+        latestPose = new Pose2d(
+            robotPose3d.getX(),
+            robotPose3d.getY(),
             heading
         );
 
-        // Log corrected pose
-        telemetry.logQuestNavCorrectedPose(correctedPose);
+        latestTimestamp = frameTimestamp;
 
-        // Log latency (ms)
+        telemetry.logQuestNavCorrectedPose(latestPose);
+
         double latencyMs = (now - frameTimestamp) * 1000.0;
         telemetry.logQuestNavLatency(latencyMs);
 
-        // Log battery %
-        questNav.getBatteryPercent().ifPresent(
-            pct -> telemetry.logQuestNavBattery(pct)
-        );
-
-        // Log app timestamp
-        questNav.getAppTimestamp().ifPresent(
-            appTs -> telemetry.logQuestNavAppTimestamp(appTs)
-        );
-
-        // Feed corrected pose into drivetrain estimator
-        swerve.addVisionMeasurement(correctedPose, frameTimestamp, kQuest.STD_DEVS);
+        questNav.getBatteryPercent().ifPresent(telemetry::logQuestNavBattery);
+        questNav.getAppTimestamp().ifPresent(telemetry::logQuestNavAppTimestamp);
     }
+
+    // ============================
+    // Public API for LocalizationManager
+    // ============================
 
     public boolean isConnected() {
         return questNav.isConnected();
+    }
+
+    public boolean isTracking() {
+        return latestTracking;
+    }
+
+    public Pose2d getPose2d() {
+        return latestPose;
+    }
+
+    public double getTimestamp() {
+        return latestTimestamp;
     }
 
     public OptionalInt getBatteryPercent() {
@@ -128,7 +142,10 @@ public class QuestNavManager extends SubsystemBase {
         return questNav.getAppTimestamp();
     }
 
-    public void setQuestNavPose(Pose3d pose) {
+    /**
+     * Seeds QuestNav pose
+     */
+    public void seedPose(Pose3d pose) {
         questNav.setPose(pose);
     }
 }

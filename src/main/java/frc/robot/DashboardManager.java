@@ -26,7 +26,7 @@ import frc.robot.commands.IntakeArmCommands;
 import frc.robot.commands.IntakeRollerCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.tuning.CmdShooterPIDTuner;
-
+import frc.robot.utilities.LocalizationRecord;
 // Utilities
 import frc.robot.utilities.SubsystemsRecord;
 
@@ -37,6 +37,7 @@ public class DashboardManager {
 
     // Subsystems (via record)
     private final SubsystemsRecord subsystems;
+    private final LocalizationRecord localization;
     private final SendableChooser<?> autoChooser;
 
     // Manual values (read from NT)
@@ -85,12 +86,11 @@ public class DashboardManager {
     private final DoublePublisher pubShooterIdleRPM =
         nt.getDoubleTopic("Shooter/Shooter Idle RPM").publish();
 
-    private final BooleanPublisher pubPVSeeded =
-        nt.getBooleanTopic("Vision/PV/PoseSeeded").publish();
+    private final BooleanPublisher pubLocalizationSeeded =
+        nt.getBooleanTopic("Localization/PoseSeeded").publish();
 
     private final DoublePublisher pubQuestBattery =
-        nt.getDoubleTopic("Vision/QuestNav/BatteryPercent").publish();
-
+        nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
 
     // Throttle
     private double lastUpdateTime = 0.0;
@@ -98,9 +98,11 @@ public class DashboardManager {
 
     public DashboardManager(
         SubsystemsRecord subsystems,
+        LocalizationRecord localization,
         SendableChooser<?> autoChooser) {
 
         this.subsystems = subsystems;
+        this.localization = localization;
         this.autoChooser = autoChooser;
     }
 
@@ -186,9 +188,9 @@ public class DashboardManager {
         pubYELShooterRPM.set(manualYELShooterRPM);
         pubShooterIdleRPM.set(shooterIdleRPM);
 
-        // Publish Vision data to NT (Elastic UI)
-        pubPVSeeded.set(subsystems.pvManager().isVisionSeeded());
-        pubQuestBattery.set(subsystems.questNav().getBatteryPercent().orElse(-1));
+        // Publish Localization data to NT (Elastic UI)
+        pubLocalizationSeeded.set(localization.localizationManager().isStartupSeeded());
+        pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
     }
 
     public double getShooterIdleRPM() {

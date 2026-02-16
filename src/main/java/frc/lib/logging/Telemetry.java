@@ -97,6 +97,31 @@ public class Telemetry {
         Logger.recordOutput(keys.poseAccepted, poseAccepted);
     }
 
+    /* ---------------- PVManager Fused Output ---------------- */
+
+    public void logPVFusedPose(Pose2d pose) {
+        Logger.recordOutput("Vision/PV/FusedPose", pose);
+    }
+
+    public void logPVFusedStdDevs(double xyStd, double angStd) {
+        Logger.recordOutput("Vision/PV/FusedXYStd", xyStd);
+        Logger.recordOutput("Vision/PV/FusedAngStd", angStd);
+    }
+
+    /* ---------------- LocalizationManager Logging ---------------- */
+
+    public void logLocalizationFusedPose(Pose2d pose) {
+        Logger.recordOutput("Localization/FusedPose", pose);
+    }
+
+    public void logLocalizationTranslationSource(String source) {
+        Logger.recordOutput("Localization/TranslationSource", source);
+    }
+
+    public void logLocalizationHeadingSource(String source) {
+        Logger.recordOutput("Localization/HeadingSource", source);
+    }
+
     /* ---------------- Shooter Telemetry ---------------- */
 
     private final Map<String, Boolean> registeredShooterSources = new HashMap<>();
@@ -118,6 +143,17 @@ public class Telemetry {
     ) {
         if (!registeredShooterSources.containsKey(name)) return;
 
+        // --- SANITIZE VALUES ---
+        if (Double.isNaN(rpm)) rpm = 0.0;
+        if (Double.isNaN(targetRpm)) targetRpm = 0.0;
+        if (Double.isNaN(voltage)) voltage = 0.0;
+        if (Double.isNaN(statorCurrent)) statorCurrent = 0.0;
+        if (Double.isNaN(supplyCurrent)) supplyCurrent = 0.0;
+        if (Double.isNaN(closedLoopError)) closedLoopError = 0.0;
+        if (Double.isNaN(distanceToTarget)) distanceToTarget = 0.0;
+
+        if (shooterPose == null) shooterPose = new Pose2d();
+
         String base = "Shooter/" + name;
 
         Logger.recordOutput(base + "/RPM", rpm);
@@ -129,6 +165,7 @@ public class Telemetry {
         Logger.recordOutput(base + "/Pose", shooterPose);
         Logger.recordOutput(base + "/DistanceToTarget", distanceToTarget);
     }
+
 
     /* ---------------- QuestNav Telemetry ---------------- */
 

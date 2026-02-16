@@ -8,9 +8,10 @@
 
 package frc.robot;
 
+// Java Standard Library
 import java.util.function.Supplier;
 
-// WPI libraries
+// WPI / WPILib
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -22,29 +23,20 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import static edu.wpi.first.units.Units.*;
 
 // Commands
-import frc.robot.commands.AgitatorCommands;
-import frc.robot.commands.ClimberCommands;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.FeederCommands;
-import frc.robot.commands.HopperCommands;
-import frc.robot.commands.IntakeArmCommands;
-import frc.robot.commands.IntakeRollerCommands;
-import frc.robot.commands.ShooterCommands;
-import frc.robot.commands.ShooterCoordinator;
+import frc.robot.commands.*;
 import frc.robot.commands.auto.routines.*;
 
 // Subsystems
 import frc.robot.subsystems.*;
 
-// Robot Utilities
-import frc.robot.utilities.*;
-import frc.robot.generated.ctre.CommandSwerveDrivetrain;
-import frc.robot.generated.ctre.TunerConstants;
-import frc.robot.localization.PhotonVision.PVManager;
+// Localization
+import frc.robot.localization.LocalizationManager;
 import frc.robot.localization.nodes.Nodes.Hub;
 import frc.robot.localization.nodes.Nodes.Tower;
+import frc.robot.localization.photonvision.PVManager;
 import frc.robot.localization.quest.QuestNavManager;
-import frc.lib.hardware.ShooterHardware;
+
+// IO Layer (Hardware Abstractions)
 import frc.lib.io.agitator.AgitatorIOReal;
 import frc.lib.io.climber.ClimberIOReal;
 import frc.lib.io.feeder.FeederIOReal;
@@ -55,9 +47,19 @@ import frc.lib.io.photonvision.PhotonVisionIO;
 import frc.lib.io.photonvision.PhotonVisionIOReal;
 import frc.lib.io.shooter.*;
 import frc.lib.io.swerve.*;
-import frc.lib.logging.Telemetry;
+
+// Hardware Config / Vendor Libraries
+import frc.robot.generated.ctre.CommandSwerveDrivetrain;
+import frc.robot.generated.ctre.TunerConstants;
+import frc.lib.hardware.ShooterHardware;
+
+// Shooter ML Model
 import frc.lib.shooterML.data.*;
 import frc.lib.shooterML.model.*;
+
+// Utilities
+import frc.lib.logging.Telemetry;
+import frc.robot.utilities.*;
 
 // Constants
 import frc.robot.Constants.*;
@@ -87,28 +89,37 @@ public class RobotContainer {
 
     private Command createDriveCommand() {
         return swerve.run(() -> {
-            swerve.drive(new ChassisSpeeds(
-                -bottomDriver.getLeftY() * kSwerve.MAX_SPEED,
-                -bottomDriver.getLeftX() * kSwerve.MAX_SPEED,
-                -bottomDriver.getRightX() * kSwerve.MAX_ANGULAR_RATE
-            ));
+            double vx = -bottomDriver.getLeftY() * kSwerve.MAX_SPEED;
+            double vy = -bottomDriver.getLeftX() * kSwerve.MAX_SPEED;
+            double omega = -bottomDriver.getRightX() * kSwerve.MAX_ANGULAR_RATE;
+
+            swerve.drive(new ChassisSpeeds(vx, vy, omega));
         });
     }
 
     // ==========================================================
     // Localization
     // ==========================================================
-    private final QuestNavManager questNav = new QuestNavManager(swerve, logger);
 
-    private final PhotonVisionIO photonVisionIO =
+    // QuestNav (IO-based, no longer fused directly)
+    private final QuestNavManager questNav =
+        new QuestNavManager(logger);
+
+    // PhotonVision IO (explicit camera names)
+    private final PhotonVisionIO pvIO =
         new PhotonVisionIOReal();
 
-    public final PVManager PVManager =
-        new PVManager(
-            logger,
-            photonVisionIO,
+    // PhotonVision manager (fuses cameras only)
+    private final PVManager pvManager =
+        new PVManager(pvIO, logger);
+
+    // Localization manager (final fusion layer)
+    private final LocalizationManager localizationManager =
+        new LocalizationManager(
             swerve,
-            questNav::setQuestNavPose
+            pvManager,
+            questNav,
+            logger
         );
 
     // ==========================================================
@@ -116,7 +127,8 @@ public class RobotContainer {
     // ==========================================================
 
     // Pose supplier for model-driven shooter + ShotTrainer
-    private final Supplier<Pose2d> poseSupplier = () -> ctreDrivetrain.getState().Pose;
+    //private final Supplier<Pose2d> poseSupplier = () -> ctreDrivetrain.getState().Pose;
+    private final Supplier<Pose2d> poseSupplier = localizationManager::getFusedPose;
 
     // Load shooter model
     private final ShooterModel shooterModelConfig =
@@ -223,19 +235,29 @@ public class RobotContainer {
     // ==========================================================
     // SubsystemsRecord
     // ==========================================================
-    private final SubsystemsRecord subsystemsRecord = new SubsystemsRecord(
-        swerve,
-        agitatorSubsystem,
-        climberSubsystem,
-        feederBLUsystem,
-        feederYELsystem,
-        hopperSubsystem,
-        intakeArmSubsystem,
-        intakeRollerSubsystem,
-        shooterBLUsystem,
-        shooterYELsystem,
-        PVManager,
-        questNav);
+    private final SubsystemsRecord subsystemsRecord = 
+        new SubsystemsRecord(
+            swerve,
+            agitatorSubsystem,
+            climberSubsystem,
+            feederBLUsystem,
+            feederYELsystem,
+            hopperSubsystem,
+            intakeArmSubsystem,
+            intakeRollerSubsystem,
+            shooterBLUsystem,
+            shooterYELsystem
+        );
+
+    // ==========================================================
+    // LocalizationRecord
+    // ==========================================================
+    private final LocalizationRecord localizationRecord =
+        new LocalizationRecord(
+            localizationManager,
+            pvManager,
+            questNav
+        );
 
     // ==========================================================
     // Autonomous chooser
@@ -245,8 +267,8 @@ public class RobotContainer {
     // ==========================================================
     // Dashboard manager
     // ==========================================================
-     private final DashboardManager dashboardManager =
-        new DashboardManager(subsystemsRecord, autoChooser);
+    private final DashboardManager dashboardManager =
+        new DashboardManager(subsystemsRecord, localizationRecord, autoChooser);
 
     // ==========================================================
     // Robot Container Constructor
@@ -346,10 +368,6 @@ public class RobotContainer {
     // Telemetry
     // ==========================================================
     private void configureTelemetry() {
-        logger.registerVisionPoseSource("PhotonVisionManager");
-        logger.registerVisionPoseSource("Photon-BLU");
-        logger.registerVisionPoseSource("Photon-YEL");
-
         ctreDrivetrain.registerTelemetry(logger::logDriveState);
     }
 

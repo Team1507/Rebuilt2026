@@ -8,17 +8,12 @@
 
 package frc.robot.utilities;
 
-import frc.robot.subsystems.*;
+import frc.robot.localization.LocalizationManager;
+import frc.robot.localization.photonvision.PVManager;
+import frc.robot.localization.quest.QuestNavManager;
 
-public record SubsystemsRecord(
-    SwerveSubsystem swerve,
-    AgitatorSubsystem agitator,
-    ClimberSubsystem climber,
-    FeederSubsystem BLUfeeder,
-    FeederSubsystem YELfeeder,
-    HopperSubsystem hopper,
-    IntakeArmSubsystem intakeArm,
-    IntakeRollerSubsystem intakeRoller,
-    ShooterSubsystem BLUshooter,
-    ShooterSubsystem YELshooter
+public record LocalizationRecord(
+    LocalizationManager localizationManager,
+    PVManager pvManager,
+    QuestNavManager questNav
 ) {}

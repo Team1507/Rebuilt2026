@@ -1,0 +1,173 @@
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
+
+package frc.robot.localization;
+
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import frc.robot.localization.photonvision.PVManager;
+import frc.robot.localization.quest.QuestNavManager;
+import frc.robot.subsystems.SwerveSubsystem;
+import frc.lib.logging.Telemetry;
+
+/**
+ * LocalizationManager:
+ *
+ *  - Fuses PhotonVision + QuestNav + Gyro + Odometry
+ *  - Chooses best translation source (PV or QuestNav)
+ *  - Chooses best heading source (QuestNav or Gyro)
+ *  - Seeds SwerveSubsystem and QuestNav on startup
+ *  - Feeds final fused pose into SwerveSubsystem
+ *
+ * This is the single source of truth for robot pose.
+ */
+public class LocalizationManager extends SubsystemBase {
+
+    private final SwerveSubsystem swerve;
+    private final PVManager pv;
+    private final QuestNavManager quest;
+    private final Telemetry telemetry;
+
+    private boolean startupSeeded = false;
+
+    // 20 Hz throttle
+    private double lastProcessTime = 0.0;
+    private static final double PERIOD = 0.05;
+
+    public LocalizationManager(
+        SwerveSubsystem swerve,
+        PVManager pv,
+        QuestNavManager quest,
+        Telemetry telemetry
+    ) {
+        this.swerve = swerve;
+        this.pv = pv;
+        this.quest = quest;
+        this.telemetry = telemetry;
+
+        telemetry.registerVisionPoseSource("Localization-Fused");
+    }
+
+    @Override
+    public void periodic() {
+
+        double now = Timer.getFPGATimestamp();
+        if (now - lastProcessTime < PERIOD) return;
+        lastProcessTime = now;
+
+        // ============================
+        // 1. Read all sources
+        // ============================
+
+        var pvPoseOpt = pv.getFusedPose();
+        boolean pvGood = pv.hasGoodVision();
+
+        boolean questGood = quest.isTracking();
+        Pose2d questPose = quest.getPose2d();
+        double questTs = quest.getTimestamp();
+
+        Pose2d odomPose = swerve.getPose();
+
+        // ============================
+        // 2. Startup seeding
+        // ============================
+
+        if (!startupSeeded && pvGood) {
+            Pose2d seed = pvPoseOpt.get();
+
+            // Seed drivetrain
+            swerve.seedPoseFromVision(seed);
+
+            // Seed QuestNav (using its own timestamp)
+            quest.seedPose(new edu.wpi.first.math.geometry.Pose3d(seed));
+
+            startupSeeded = true;
+            telemetry.logVisionStartupSeed(seed);
+        }
+
+        // ============================
+        // 3. Choose translation source
+        // ============================
+
+        Pose2d translationSource;
+
+        if (pvGood) {
+            translationSource = pvPoseOpt.get();
+            telemetry.logLocalizationTranslationSource("PhotonVision");
+        } else if (questGood) {
+            translationSource = questPose;
+            telemetry.logLocalizationTranslationSource("QuestNav");
+        } else {
+            translationSource = odomPose;
+            telemetry.logLocalizationTranslationSource("Odometry");
+        }
+
+        // ============================
+        // 4. Choose heading source
+        // ============================
+
+        edu.wpi.first.math.geometry.Rotation2d heading;
+
+        if (questGood) {
+            heading = questPose.getRotation();
+            telemetry.logLocalizationHeadingSource("QuestNav");
+        } else {
+            heading = swerve.getHeading();
+            telemetry.logLocalizationHeadingSource("Gyro");
+        }
+
+        // ============================
+        // 5. Build fused pose
+        // ============================
+
+        Pose2d fusedPose = new Pose2d(
+            translationSource.getX(),
+            translationSource.getY(),
+            heading
+        );
+
+        telemetry.logLocalizationFusedPose(fusedPose);
+
+        // ============================
+        // 6. Feed fused pose into drivetrain
+        // ============================
+
+        if (pvGood) {
+            swerve.addVisionMeasurement(
+                fusedPose,
+                pv.getFusedTimestamp(),
+                VecBuilder.fill(
+                    pv.getFusedXyStd(),
+                    pv.getFusedXyStd(),
+                    pv.getFusedAngStd()
+                )
+            );
+        } else if (questGood) {
+            swerve.addVisionMeasurement(
+                fusedPose,
+                questTs,
+                frc.robot.Constants.kQuest.STD_DEVS
+            );
+        }
+    }
+
+    // ============================
+    // Public API
+    // ============================
+
+    public Pose2d getFusedPose() {
+        return swerve.getPose();
+    }
+
+    public boolean isStartupSeeded() {
+        return startupSeeded;
+    }
+}

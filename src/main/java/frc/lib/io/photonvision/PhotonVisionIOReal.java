@@ -23,7 +23,7 @@ import frc.lib.hardware.PhotonVisionHardware;
 import frc.robot.Constants.kVision;
 
 /**
- * Real PhotonVision implementation.
+ * Real PhotonVision implementation with explicit camera names.
  *
  * This class wraps PhotonCamera + PhotonPoseEstimator and produces
  * raw pose estimates, timestamps, and stddevs for PVManager.
@@ -32,15 +32,23 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
 
     private final PhotonCamera[] cameras;
     private final PhotonPoseEstimator[] estimators;
+    private final String[] cameraNames;
 
+    /**
+     * Creates a PhotonVision IO layer
+     */
     public PhotonVisionIOReal() {
         int count = PhotonVisionHardware.CAMERAS.length;
 
         cameras = new PhotonCamera[count];
         estimators = new PhotonPoseEstimator[count];
+        cameraNames = new String[count];
 
         for (int i = 0; i < count; i++) {
             var cfg = PhotonVisionHardware.CAMERAS[i];
+
+            // Explicit camera name (BLU/YEL)
+            cameraNames[i] = cfg.name;
 
             cameras[i] = new PhotonCamera(cfg.name);
             estimators[i] = new PhotonPoseEstimator(
@@ -55,16 +63,39 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
         return cameras.length;
     }
 
+    /** Allows PVManager to use human-readable names like "Photon-BLU" */
+    public String[] getCameraNames() {
+        return cameraNames;
+    }
+
     @Override
-    public void updateInputs(CameraInputs[] inputs) {
+    public void updateInputs(PhotonVisionInputs inputs) {
+
+        // Ensure array is sized correctly
+        if (inputs.cameras.length != cameras.length) {
+            inputs.cameras = new PhotonVisionInputs.CameraInputs[cameras.length];
+            for (int i = 0; i < cameras.length; i++) {
+                inputs.cameras[i] = new PhotonVisionInputs.CameraInputs();
+                inputs.cameras[i].name = cameraNames[i];
+            }
+        }
+
+        inputs.anyCameraConnected = false;
+        inputs.totalTags = 0;
+
         for (int i = 0; i < cameras.length; i++) {
             PhotonCamera cam = cameras[i];
             PhotonPoseEstimator estimator = estimators[i];
-            CameraInputs out = inputs[i];
+            PhotonVisionInputs.CameraInputs out = inputs.cameras[i];
+
+            out.connected = cam.isConnected();
+            if (out.connected) inputs.anyCameraConnected = true;
 
             var results = cam.getAllUnreadResults();
             if (results.isEmpty()) {
                 out.hasTarget = false;
+                out.pose2d = Optional.empty();
+                out.pose3d = Optional.empty();
                 continue;
             }
 
@@ -72,30 +103,37 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
             out.hasTarget = result.hasTargets();
 
             if (out.hasTarget) {
-                out.latestYaw = Rotation2d.fromDegrees(result.getBestTarget().getYaw());
-                out.latestPitch = Rotation2d.fromDegrees(result.getBestTarget().getPitch());
+                out.yaw = Rotation2d.fromDegrees(result.getBestTarget().getYaw());
+                out.pitch = Rotation2d.fromDegrees(result.getBestTarget().getPitch());
             }
 
-            Optional<EstimatedRobotPose> estimate = estimator.update(result);
+            Optional<EstimatedRobotPose> estimate = estimator.estimatePnpDistanceTrigSolvePose(result);
+
             if (estimate.isEmpty()) {
-                out.latestPose3d = Optional.empty();
-                out.latestPose2d = Optional.empty();
+                out.pose2d = Optional.empty();
+                out.pose3d = Optional.empty();
                 continue;
             }
 
             EstimatedRobotPose est = estimate.get();
             Pose3d pose3d = est.estimatedPose;
 
-            out.latestPose3d = Optional.of(pose3d);
-            out.latestPose2d = Optional.of(pose3d.toPose2d());
-            out.timestampSeconds = est.timestampSeconds;
+            out.pose3d = Optional.of(pose3d);
+            out.pose2d = Optional.of(pose3d.toPose2d());
+            out.timestamp = est.timestampSeconds;
 
             out.tagCount = est.targetsUsed.size();
+            inputs.totalTags += out.tagCount;
+
             out.avgDistance = est.targetsUsed.stream()
                 .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
                 .average().orElse(0.0);
 
-            // Compute stddevs based on your constants
+            out.ambiguity = est.targetsUsed.stream()
+                .mapToDouble(t -> t.poseAmbiguity)
+                .average().orElse(0.0);
+
+            // Compute stddevs
             double xyStd = kVision.constrainedPnpXyStdBase * out.avgDistance;
             double angStd = kVision.constrainedPnpAngStdBase * out.avgDistance;
 
