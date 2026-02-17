@@ -8,78 +8,46 @@
 
 package frc.robot.subsystems;
 
-// CTRE Imports
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.ctre.phoenix6.controls.Follower;
-// Subsystems
-import frc.robot.subsystems.lib.Subsystems1507;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-// Extras
-import frc.robot.mechanics.GearRatio;
-import frc.robot.utilities.MotorConfig;
+import frc.lib.io.intakearm.IntakeArmIO;
+import frc.lib.io.intakearm.IntakeArmInputs;
 
 /**
- * Intake Arm Subsystem
+ * Thin, IO-based intake arm subsystem.
  */
-public class IntakeArmSubsystem extends Subsystems1507 {
-    
-    private final TalonFXS intakeBLUArmMotor;
-    private final TalonFXS intakeYELArmMotor;
-    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0).withSlot(0);
+public class IntakeArmSubsystem extends SubsystemBase {
 
-    private final GearRatio BLUratio;
-    private final GearRatio YELratio;
+    private final IntakeArmIO io;
+    private final IntakeArmInputs inputs = new IntakeArmInputs();
 
-    /** Creates a new IntakeSubsystem. */
-    public IntakeArmSubsystem(MotorConfig motorBLU,MotorConfig motorYEL) {
-        this.intakeBLUArmMotor = new TalonFXS(motorBLU.CAN_ID());
-        this.intakeYELArmMotor = new TalonFXS(motorYEL.CAN_ID());
-
-        this.BLUratio = motorBLU.ratio();
-        this.YELratio = motorYEL.ratio();
-
-        configureFXSMotor(motorBLU, intakeBLUArmMotor);
-        configureFXSMotor(motorYEL, intakeYELArmMotor);
-        intakeYELArmMotor.setControl(new Follower(intakeBLUArmMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+    public IntakeArmSubsystem(IntakeArmIO io) {
+        this.io = io;
     }
 
-    public void setPosition(double degrees){
-        double BLUOutputRot = degrees;
-        double YELOutputRot = -degrees;
+    @Override
+    public void periodic() {
+        io.updateInputs(inputs);
+    }
 
-        double BLUMotorRot = BLUratio.toMotor(BLUOutputRot);
-        double YELMotorRot = YELratio.toMotor(YELOutputRot);
-
-        intakeBLUArmMotor.setControl(positionRequest.withPosition(BLUMotorRot));
-        //intakeYELArmMotor.setControl(positionRequest.withPosition(YELMotorRot));
+    public void setPosition(double degrees) {
+        io.setPositionDeg(degrees);
     }
 
     public double getBLUPositionDegrees() {
-        double motorRot = intakeBLUArmMotor.getPosition().getValueAsDouble();
-        //double rightMotorRot = -intakeRightArmMotor.getPosition().getValueAsDouble();
-        double outputRot = BLUratio.toOutput(motorRot);
-        //double rightOutputRot = -ratio.toOutput(rightMotorRot);
-
-        return outputRot;
+        return inputs.bluPositionDeg;
     }
 
     public double getYELPositionDegrees() {
-        double motorRot = intakeYELArmMotor.getPosition().getValueAsDouble();
-        //double rightMotorRot = -intakeRightArmMotor.getPosition().getValueAsDouble();
-        double outputRot = YELratio.toOutput(motorRot);
-        //double rightOutputRot = -ratio.toOutput(rightMotorRot);
-
-        return outputRot;
+        return inputs.yelPositionDeg;
     }
 
-    // degrees is the target position, toleranceDegrees is how close we need to be to count as "at position"
-    public boolean isAtPosition(double degrees, double toleranceDegrees){
-        double currentBLUPos = getBLUPositionDegrees();
-        double currentYELPos = getYELPositionDegrees();
+    public boolean isAtPosition(double targetDeg, double toleranceDeg) {
+        return Math.abs(inputs.bluPositionDeg - targetDeg) < toleranceDeg &&
+               Math.abs(inputs.yelPositionDeg - targetDeg) < toleranceDeg;
+    }
 
-        return Math.abs(currentBLUPos - degrees) < toleranceDegrees
-            && Math.abs(currentYELPos + degrees) < toleranceDegrees;
+    public void stop() {
+        io.stop();
     }
 }

@@ -10,275 +10,129 @@ package frc.robot.subsystems;
 
 import java.util.function.Supplier;
 
-// CTRE Libraries
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-
-// WPI Libraries
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.RobotBase;
-
-// Mechanics
-import frc.robot.mechanics.GearRatio;
-import frc.robot.mechanics.FlywheelModel;
-
-// Shooter Model
-import frc.robot.shooter.data.ShotRecord;
-import frc.robot.shooter.model.ShooterModel;
-
-// Extras
-import frc.robot.subsystems.lib.Subsystems1507;
-import frc.robot.utilities.MotorConfig;
-
-// Constants
-import frc.robot.Constants.kShooter;
+import frc.lib.shooterML.model.ShooterModel;
+import frc.lib.io.shooter.ShooterIO;
+import frc.lib.io.shooter.ShooterIOSim;
+import frc.lib.io.shooter.ShooterInputs;
+import frc.lib.logging.Telemetry;
+import frc.lib.math.GearRatio;
+import frc.lib.shooterML.data.ShotRecord;
+import frc.robot.framework.base.Subsystems1507;
 
 /**
- * ShooterSubsystem provides a unified interface for controlling a flywheel‑based shooter.
- * <p>
- * This implementation supports four capability tiers:
+ * High‑level shooter subsystem using the IO architecture.
+ *
+ * <p>This class owns:
  * <ul>
- *     <li><b>Basic shooter</b> — closed‑loop velocity control only</li>
- *     <li><b>Model‑driven shooter</b> — uses a ShooterModel to compute RPM from robot pose</li>
- *     <li><b>GearRatio‑aware shooter</b> — correct motor↔wheel conversion</li>
- *     <li><b>Full physics simulation</b> — FlywheelModel for realistic acceleration and steady‑state behavior</li>
+ *   <li>Target RPM logic</li>
+ *   <li>Model‑driven shooter behavior</li>
+ *   <li>Pose‑based kinematics</li>
+ *   <li>Telemetry logging</li>
  * </ul>
  *
- * All constructors chain into the full constructor, ensuring consistent initialization.
- * Simulation behavior is automatically enabled when running in WPILib simulation mode.
+ * <p>All hardware interaction is delegated to {@link ShooterIO}.
+ * Simulation is handled by {@link ShooterIOSim}.
  */
 public class ShooterSubsystem extends Subsystems1507 {
 
-    // ------------------------------------------------------------
-    // Default objects for optional constructors
-    // ------------------------------------------------------------
-
-    /** Default 1:1 gearbox for basic shooters. */
-    private static final GearRatio DEFAULT_RATIO = GearRatio.gearBox(1, 1);
-
-    /** Default flywheel model used when none is provided. */
-    private static final FlywheelModel DEFAULT_FLYWHEEL =
-        new FlywheelModel(
-            /* inertia */ 0.0001,
-            /* motorKv */ 533,
-            /* motorKt */ 0.018,
-            /* resistance */ 0.09,
-            /* frictionTorque */ 0.0,
-            DEFAULT_RATIO
-        );
-
-    /** Default model-driven shooter disabled by default. */
-    private static final ShooterModel DEFAULT_MODEL = null;
-
-    /** Default pose supplier returning origin. */
-    private static final Supplier<Pose2d> DEFAULT_POSE_SUPPLIER = () -> new Pose2d();
-
-    /** Default target pose for model-driven shooters. */
-    private static final Pose2d DEFAULT_TARGET_POSE = new Pose2d();
-
-    // ------------------------------------------------------------
-    // Hardware
-    // ------------------------------------------------------------
-
-    private final TalonFX shooterMotor;
-    private final VelocityVoltage velocityRequest =
-        new VelocityVoltage(0).withSlot(0);
-
-    // ------------------------------------------------------------
-    // Mechanics
-    // ------------------------------------------------------------
+    private final ShooterIO io;
+    private final ShooterInputs inputs = new ShooterInputs();
 
     private final GearRatio ratio;
-    private final FlywheelModel flywheel;
-
-    // ------------------------------------------------------------
-    // Model-driven shooter fields
-    // ------------------------------------------------------------
-
     private final ShooterModel model;
+
     private final Supplier<Pose2d> poseSupplier;
     private Pose2d targetPose;
     private final ShooterKinematics kinematics;
 
-    /** Phoenix 6 uses motor RPS internally. */
     private double targetMotorRPS = 0.0;
 
-    /** Used to know where the robot is located relative to robot center */
-    private final Transform2d shooterOffset;
+    private final Telemetry telemetry;
+    private final String shooterKey;
 
     // ------------------------------------------------------------
-    // Simulation state
-    // ------------------------------------------------------------
-
-    private double simWheelRPM = 0.0;
-    private double simVoltage = 0.0;
-    private double simMotorRpsMeasured = 0.0;
-    private double simMotorRpsCommanded = 0.0;
-
-    // ------------------------------------------------------------
-    // Constructor Tier 1 — Basic shooter
+    // Constructors
     // ------------------------------------------------------------
 
     /**
-     * Creates a basic shooter subsystem using default GearRatio, FlywheelModel,
-     * and no model-driven behavior.
+     * Creates a basic shooter with no model‑driven behavior.
      *
-     * @param shooterMotor the TalonFX controlling the shooter
-     */
-    public ShooterSubsystem(MotorConfig motorConfig) {
-        this(
-            motorConfig,
-            DEFAULT_FLYWHEEL,
-            DEFAULT_MODEL,
-            DEFAULT_POSE_SUPPLIER,
-            DEFAULT_TARGET_POSE
-        );
-    }
-
-    // ------------------------------------------------------------
-    // Constructor Tier 2 — Model-driven shooter
-    // ------------------------------------------------------------
-
-    /**
-     * Creates a shooter subsystem with model-driven RPM prediction.
-     *
-     * @param shooterMotor the TalonFX controlling the shooter
-     * @param model        shooter model used to compute RPM from telemetry
-     * @param poseSupplier supplier for robot pose
-     * @param targetPose   target pose used by the shooter model
+     * @param io         shooter IO implementation (real or sim)
+     * @param telemetry  telemetry logger
+     * @param shooterKey logging key for this shooter
      */
     public ShooterSubsystem(
-        MotorConfig motorConfig,
-        ShooterModel model,
-        Supplier<Pose2d> poseSupplier,
-        Pose2d targetPose
+        ShooterIO io,
+        GearRatio ratio,
+        Transform2d shooterOffset,
+        Telemetry telemetry,
+        String shooterKey
     ) {
-        this(
-            motorConfig,
-            DEFAULT_FLYWHEEL,
-            model,
-            poseSupplier,
-            targetPose
-        );
+        this(io, ratio, shooterOffset, null, () -> new Pose2d(), new Pose2d(), telemetry, shooterKey);
     }
 
-    // ------------------------------------------------------------
-    // Constructor Tier 3 — Full physics simulation
-    // ------------------------------------------------------------
-
     /**
-     * Creates a fully featured shooter subsystem with:
-     * <ul>
-     *     <li>GearRatio for motor↔wheel conversion</li>
-     *     <li>FlywheelModel for physics-based simulation</li>
-     *     <li>ShooterModel for model-driven RPM prediction</li>
-     *     <li>PoseSupplier for dynamic targeting</li>
-     * </ul>
+     * Creates a fully featured shooter subsystem.
      *
-     * @param shooterMotor the TalonFX controlling the shooter
-     * @param ratio        gearbox ratio for motor↔wheel conversion
-     * @param flywheel     physics model for simulation
-     * @param model        shooter model (may be null)
+     * @param io           shooter IO implementation
+     * @param model        optional shooter model for predictive RPM
      * @param poseSupplier supplier for robot pose
      * @param targetPose   target pose used by the shooter model
+     * @param telemetry    telemetry logger
+     * @param shooterKey   logging key for this shooter
      */
     public ShooterSubsystem(
-        MotorConfig motorConfig,
-        FlywheelModel flywheel,
+        ShooterIO io,
+        GearRatio ratio,
+        Transform2d shooterOffset,
         ShooterModel model,
         Supplier<Pose2d> poseSupplier,
-        Pose2d targetPose
+        Pose2d targetPose,
+        Telemetry telemetry,
+        String shooterKey
     ) {
-        this.shooterMotor = new TalonFX(motorConfig.CAN_ID());
-        this.ratio = motorConfig.ratio();
-        this.flywheel = flywheel;
+        this.io = io;
+        this.ratio = ratio;
         this.model = model;
         this.poseSupplier = poseSupplier;
         this.targetPose = targetPose;
-        this.shooterOffset = motorConfig.robotToMechanism();
 
         this.kinematics = new ShooterKinematics(shooterOffset);
 
-        configureFXMotor(motorConfig, shooterMotor);
-    }
+        this.telemetry = telemetry;
+        this.shooterKey = shooterKey;
 
-    /**
-     * @return the underlying TalonFX motor controller
-     */
-    public TalonFX getShooterMotor() {
-        return shooterMotor;
+        telemetry.registerShooterSource(shooterKey);
     }
 
     // ------------------------------------------------------------
-    // Telemetry
+    // Shooter control API
     // ------------------------------------------------------------
 
-    /**
-     * Returns the current wheel RPM.
-     * <p>
-     * In simulation, this returns the simulated wheel RPM.
-     * On real hardware, this converts motor RPS → wheel RPM using the GearRatio.
-     *
-     * @return current wheel RPM
-     */
-    public double getShooterRPM() {
-        if (RobotBase.isSimulation()) return simWheelRPM;
-
-        double motorRPS = shooterMotor.getVelocity().getValueAsDouble();
-        return ratio.toOutput(motorRPS) * 60.0;
+    /** Sets the desired wheel RPM for the shooter. */
+    public void setTargetRPM(double wheelRPM) {
+        double wheelRPS = wheelRPM / 60.0;
+        targetMotorRPS = ratio.toMotor(wheelRPS);
     }
 
-    /**
-     * @return applied voltage (real or simulated)
-     */
-    public double getShooterVoltage() {
-        return RobotBase.isSimulation()
-            ? simVoltage
-            : shooterMotor.getMotorVoltage().getValueAsDouble();
+    /** Stops the shooter motor. */
+    public void stop() {
+        targetMotorRPS = 0.0;
     }
 
-    /**
-     * @return stator current (real or simulated)
-     */
-    public double getStatorCurrent() {
-        return RobotBase.isSimulation()
-            ? 5.0 + Math.abs(simWheelRPM) / 1000.0
-            : shooterMotor.getStatorCurrent().getValueAsDouble();
-    }
-
-    /**
-     * @return supply current (real or simulated)
-     */
-    public double getSupplyCurrent() {
-        return RobotBase.isSimulation()
-            ? getStatorCurrent()
-            : shooterMotor.getSupplyCurrent().getValueAsDouble();
-    }
-
-    /**
-     * @return closed-loop error in wheel RPM
-     */
-    public double getClosedLoopError() {
-        return getTargetRPM() - getShooterRPM();
-    }
-
-    /**
-     * @return pose of the shooter
-     */
-    public Pose2d getShooterPose() {
-        return kinematics.shooterPose(poseSupplier.get());
+    /** @return current target wheel RPM */
+    public double getTargetRPM() {
+        return ratio.toOutput(targetMotorRPS) * 60.0;
     }
 
     // ------------------------------------------------------------
-    // Model-driven shooter update
+    // Model‑driven shooter
     // ------------------------------------------------------------
 
-    /**
-     * Builds a {@link ShotRecord} containing telemetry used by the ShooterModel.
-     *
-     * @return telemetry snapshot
-     */
+    /** Builds a telemetry snapshot used by the ShooterModel. */
     private ShotRecord buildTelemetry() {
         Pose2d robotPose = poseSupplier.get();
         Pose2d shooterPose = kinematics.shooterPose(robotPose);
@@ -287,166 +141,114 @@ public class ShooterSubsystem extends Subsystems1507 {
 
         return new ShotRecord(
             getShooterRPM(),
-            getShooterVoltage(),
-            getStatorCurrent(),
-            getSupplyCurrent(),
+            inputs.appliedVolts,
+            inputs.statorCurrent,
+            inputs.supplyCurrent,
             getClosedLoopError(),
             shooterPose,
             distance
         );
     }
 
-    /**
-     * Updates the shooter target RPM using the ShooterModel.
-     * <p>
-     * If no model is provided, this method does nothing.
-     */
+    /** Updates the shooter target RPM using the ShooterModel. */
     public void updateShooterFromModel() {
         if (model == null) return;
 
-        ShotRecord telemetry = buildTelemetry();
-        double rpm = model.getRPM(telemetry);
+        ShotRecord t = buildTelemetry();
+        double rpm = model.getRPM(t);
         setTargetRPM(rpm);
     }
 
     // ------------------------------------------------------------
-    // Shooter control API
+    // Derived telemetry values
     // ------------------------------------------------------------
 
-    /**
-     * Sets the desired wheel RPM for the shooter.
-     * <p>
-     * Internally converts wheel RPM → motor RPS using the GearRatio.
-     *
-     * @param wheelRPM desired wheel RPM
-     */
-    public void setTargetRPM(double wheelRPM) {
-        double wheelRPS = wheelRPM / 60.0;
-        targetMotorRPS = ratio.toMotor(wheelRPS);
-    }
-    public void stop() {
-        targetMotorRPS = 0;
+    /** @return current wheel RPM (converted from motor RPS) */
+    public double getShooterRPM() {
+        return ratio.toOutput(inputs.motorRPS) * 60.0;
     }
 
-    /**
-     * @return current target wheel RPM
-     */
-    public double getTargetRPM() {
-        return ratio.toOutput(targetMotorRPS) * 60.0;
+    /** @return pose of the shooter mechanism on the field */
+    public Pose2d getShooterPose() {
+        return kinematics.shooterPose(poseSupplier.get());
     }
 
-    /**
-     * Sets the target pose used by the ShooterModel.
-     *
-     * @param newTarget new target pose
-     */
-    public void setTargetPose(Pose2d newTarget) {
-        this.targetPose = newTarget;
+    /** @return distance from shooter to target pose */
+    private double getDistanceToTarget() {
+        return getShooterPose().getTranslation().getDistance(targetPose.getTranslation());
     }
 
-    /**
-     * Returns the target pose used by the ShooterModel.
-     */
+    /** @return current targetPose */
     public Pose2d getTargetPose() {
         return targetPose;
     }
 
-    // ------------------------------------------------------------
-    // Simulation reset
-    // ------------------------------------------------------------
-
-    /**
-     * Resets all simulation state variables to zero.
-     * <p>
-     * Called automatically by the PID tuner before each test run.
-     */
-    public void resetSimulationState() {
-        simWheelRPM = 0;
-        simMotorRpsMeasured = 0;
-        simMotorRpsCommanded = 0;
-        simVoltage = 0;
+    /** @return applied voltage (real or simulated) */
+    public double getShooterVoltage() {
+        return inputs.appliedVolts;
     }
+
+    /** @return stator current (real or simulated) */
+    public double getStatorCurrent() {
+        return inputs.statorCurrent;
+    }
+
+    /** @return supply current (real or simulated) */
+    public double getSupplyCurrent() {
+        return inputs.supplyCurrent;
+    }
+
+    /** @return closed‑loop error in wheel RPM */
+    public double getClosedLoopError() {
+        return getTargetRPM() - getShooterRPM();
+    }
+
+    public double getKV() { return io.getKV(); }
+    public double getKS() { return io.getKS(); }
+    public double getKP() { return io.getKP(); }
+    public double getKI() { return io.getKI(); }
+    public double getKD() { return io.getKD(); }
 
     // ------------------------------------------------------------
     // Periodic
     // ------------------------------------------------------------
 
-    /**
-     * Periodic update loop.
-     * <p>
-     * On real hardware, this sends the VelocityVoltage command to the TalonFX.
-     * In simulation, this executes a physics-based simulation loop:
-     * <ol>
-     *     <li>Convert wheel RPM → motor RPS</li>
-     *     <li>Apply sensor filtering</li>
-     *     <li>Apply command filtering</li>
-     *     <li>Compute PID + FF voltage</li>
-     *     <li>Apply voltage slew rate</li>
-     *     <li>Step the FlywheelModel</li>
-     * </ol>
-     */
     @Override
     public void periodic() {
 
-        if (RobotBase.isReal()) {
-            shooterMotor.setControl(velocityRequest.withVelocity(targetMotorRPS));
-            return;
+        io.updateInputs(inputs);
+
+        if (RobotBase.isSimulation() && io instanceof ShooterIOSim sim) {
+            sim.simulate(0.02);
         }
 
-        // -----------------------------
-        // Simulation loop (20ms)
-        // -----------------------------
-        double dt = 0.02;
+        io.setTargetRPS(targetMotorRPS);
 
-        double wheelRPS = simWheelRPM / 60.0;
-        double motorRPS = ratio.toMotor(wheelRPS);
-
-        // 1. Sensor filtering
-        double alphaSensor = dt / (kShooter.kSim.SENSOR_FILTER_TIME_CONSTANT + dt);
-        simMotorRpsMeasured += alphaSensor * (motorRPS - simMotorRpsMeasured);
-
-        // 2. Command filtering
-        double alphaCommand = dt / (kShooter.kSim.COMMAND_FILTER_TIME_CONSTANT + dt);
-        simMotorRpsCommanded += alphaCommand * (targetMotorRPS - simMotorRpsCommanded);
-
-        // 3. Phoenix-like control law
-        double errorRPS = simMotorRpsCommanded - simMotorRpsMeasured;
-
-        double ffVolts = kShooter.BLU_CONFIG.KV() * simMotorRpsCommanded;
-        double ksVolts = kShooter.BLU_CONFIG.KS() * Math.signum(simMotorRpsCommanded);
-        double fbVolts = kShooter.BLU_CONFIG.KP() * errorRPS;
-
-        double desiredVolts = ffVolts + ksVolts + fbVolts;
-
-        // 4. Voltage slew rate limiting
-        double maxStep = kShooter.kSim.VOLTAGE_SLEW_RATE * dt;
-        double delta = desiredVolts - simVoltage;
-
-        if (delta > maxStep) delta = maxStep;
-        if (delta < -maxStep) delta = -maxStep;
-
-        simVoltage += delta;
-
-        // Clamp to battery
-        simVoltage = Math.max(-kShooter.kSim.MAX_VOLTAGE,
-                              Math.min(kShooter.kSim.MAX_VOLTAGE, simVoltage));
-
-        // 5. Step flywheel physics
-        if (flywheel != null)
-            simWheelRPM = flywheel.stepRPM(simWheelRPM, simVoltage, dt);
+        telemetry.logShooter(
+            shooterKey,
+            getShooterRPM(),
+            getTargetRPM(),
+            inputs.appliedVolts,
+            inputs.statorCurrent,
+            inputs.supplyCurrent,
+            getClosedLoopError(),
+            getShooterPose(),
+            getDistanceToTarget()
+        );
     }
 
     // ------------------------------------------------------------
     // Internal helper
-    // ------------------------------------------------------------ 
-    
+    // ------------------------------------------------------------
+
+    /** Computes shooter pose relative to robot pose using a fixed transform. */
     private static class ShooterKinematics {
         private final Transform2d offset;
-        
+
         ShooterKinematics(Transform2d offset) {
             this.offset = offset;
         }
-        
+
         Pose2d shooterPose(Pose2d robotPose) {
             return robotPose.transformBy(offset);
         }

@@ -8,59 +8,45 @@
 
 package frc.robot.subsystems;
 
-// CTRE Libraries
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-// Mechanics
-import frc.robot.mechanics.GearRatio;
+import frc.lib.io.feeder.FeederIO;
+import frc.lib.io.feeder.FeederInputs;
 
-// Subsystems
-import frc.robot.subsystems.lib.Subsystems1507;
+/**
+ * Thin, IO-based feeder subsystem.
+ */
+public class FeederSubsystem extends SubsystemBase {
 
-// Utilities
-import frc.robot.utilities.MotorConfig;
+    private final FeederIO io;
+    private final FeederInputs inputs = new FeederInputs();
 
-
-public class FeederSubsystem extends Subsystems1507 {
-
-    private final TalonFX feedermotor;
-    private final GearRatio ratio; 
-    private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
-
-
-    public FeederSubsystem(MotorConfig config) {
-        this.feedermotor = new TalonFX(config.CAN_ID());
-        this.ratio = config.ratio();
-        configureFXMotor(config, feedermotor);
+    public FeederSubsystem(FeederIO io) {
+        this.io = io;
     }
 
-   // ------------------------------------------------------------
-    // PID Configuration
-    // ------------------------------------------------------------
-
-   
-    public void run(double rpm) {
-        double motorRPM = ratio.toMotor(rpm);
-        double motorRPS = motorRPM / 60.0;
-        feedermotor.setControl(velocityRequest.withVelocity(motorRPS));
+    @Override
+    public void periodic() {
+        io.updateInputs(inputs);
     }
+
+    public void runRPM(double rpm) {
+        io.runRPM(rpm);
+    }
+
+    public void runDuty(double duty) {
+        io.runDuty(duty);
+    }
+
+    public void setVoltage(double voltage) {
+        io.setVoltage(voltage);
+    }
+
+    public void stop() {
+        io.stop();
+    }
+
     public double getVelocityRPM() {
-        double motorRPS = feedermotor.getVelocity().getValueAsDouble();
-        double motorRPM = motorRPS * 60.0;
-        return ratio.toOutput(motorRPM);
-    }
-    public void setFeederVoltage(double voltage){
-        feedermotor.setVoltage(voltage);
-    }
-
-     /** Run motor in open-loop (percent output) */
-    public void runMotor(double power) {
-        feedermotor.set(power);
-    }
-
-    /** Stop motor */
-    public void stopMotor() {
-        feedermotor.set(0);
+        return inputs.velocityRPM;
     }
 }
