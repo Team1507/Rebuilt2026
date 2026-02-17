@@ -342,8 +342,14 @@ public class RobotContainer {
 
         // Intake
         bottomDriver.leftTrigger(0.5)
-            .whileTrue(IntakeArmCommands.down(intakeArmSubsystem)
-                .alongWith(IntakeRollerCommands.intake(intakeRollerSubsystem)));
+            .whileTrue(
+                IntakeArmCommands.down(intakeArmSubsystem)
+                    .alongWith(IntakeRollerCommands.intake(intakeRollerSubsystem))
+            )
+            .onFalse(
+                IntakeArmCommands.up(intakeArmSubsystem)
+                    .alongWith(IntakeRollerCommands.stop(intakeRollerSubsystem))
+            );
 
         // Shooting
         bottomDriver.rightTrigger()

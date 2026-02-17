@@ -17,32 +17,14 @@ import frc.lib.io.photonvision.PhotonVisionInputs;
 import frc.robot.Constants.kVision;
 import frc.lib.logging.Telemetry;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
-/**
- * PVManager:
- *  - Reads all PhotonVision IO data
- *  - Rejects bad observations
- *  - Computes a fused PV pose (best estimate)
- *  - Computes fused std devs
- *  - Logs accepted/rejected poses
- *
- * This class does NOT:
- *  - Seed the drivetrain
- *  - Seed QuestNav
- *  - Fuse with gyro or QuestNav
- *
- * Those responsibilities belong to LocalizationManager.
- */
 public class PVManager extends SubsystemBase {
 
     private final PhotonVisionIO io;
     private final PhotonVisionInputs inputs = new PhotonVisionInputs();
     private final Telemetry telemetry;
 
-    // Camera names provided by IO (e.g., "Photon-BLU", "Photon-YEL")
     private final String[] cameraNames;
 
     // Fused PV output
@@ -53,7 +35,7 @@ public class PVManager extends SubsystemBase {
 
     // 20 Hz throttle
     private double lastProcessTime = 0.0;
-    private static final double PROCESS_PERIOD = 0.05;
+    private static final double PROCESS_PERIOD = 0.10;
 
     public PVManager(PhotonVisionIO io, Telemetry telemetry) {
         this.io = io;
@@ -65,7 +47,6 @@ public class PVManager extends SubsystemBase {
             inputs.cameras[i] = new PhotonVisionInputs.CameraInputs();
         }
 
-        // Pull explicit camera names from IO
         this.cameraNames = io.getCameraNames();
 
         // Register each camera as a vision pose source
@@ -81,10 +62,8 @@ public class PVManager extends SubsystemBase {
         if (now - lastProcessTime < PROCESS_PERIOD) return;
         lastProcessTime = now;
 
+        // Update raw inputs (fast)
         io.updateInputs(inputs);
-
-        List<Pose3d> accepted3d = new LinkedList<>();
-        List<Pose3d> rejected3d = new LinkedList<>();
 
         // Reset fused output
         fusedPose = Optional.empty();
@@ -101,7 +80,6 @@ public class PVManager extends SubsystemBase {
         // Process each camera
         for (int i = 0; i < inputs.cameras.length; i++) {
             var cam = inputs.cameras[i];
-            String camName = cameraNames[i];
 
             if (!cam.pose3d.isPresent()) continue;
 
@@ -118,12 +96,7 @@ public class PVManager extends SubsystemBase {
                 cam.avgDistance > kVision.maxTagDistance ||
                 (cam.tagCount == 1 && cam.ambiguity > kVision.maxAmbiguity);
 
-            if (reject) {
-                rejected3d.add(pose3d);
-                continue;
-            }
-
-            accepted3d.add(pose3d);
+            if (reject) continue;
 
             // Compute score for fusion
             double score =
@@ -141,9 +114,6 @@ public class PVManager extends SubsystemBase {
                     bestAngStd = cam.stdDevs.get(2, 0);
                 }
             }
-
-            // Log per-camera pose
-            telemetry.logVisionPose(camName, pose2d);
         }
 
         // Save fused result
@@ -152,15 +122,11 @@ public class PVManager extends SubsystemBase {
             fusedTimestamp = bestTimestamp;
             fusedXyStd = bestXyStd;
             fusedAngStd = bestAngStd;
+
+            // Log only the fused pose (fast)
+            telemetry.logVisionPose("PhotonVision-Fused", bestPose);
         }
-
-        telemetry.logVisionAccepted(accepted3d.toArray(new Pose3d[0]));
-        telemetry.logVisionRejected(rejected3d.toArray(new Pose3d[0]));
     }
-
-    // ============================
-    // Public API for LocalizationManager
-    // ============================
 
     public Optional<Pose2d> getFusedPose() {
         return fusedPose;

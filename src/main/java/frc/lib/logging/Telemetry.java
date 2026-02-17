@@ -100,7 +100,7 @@ public class Telemetry {
     /* ---------------- PVManager Fused Output ---------------- */
 
     public void logPVFusedPose(Pose2d pose) {
-        Logger.recordOutput("Vision/PV/FusedPose", pose);
+        //Logger.recordOutput("Vision/PV/FusedPose", pose);
     }
 
     public void logPVFusedStdDevs(double xyStd, double angStd) {
@@ -111,7 +111,7 @@ public class Telemetry {
     /* ---------------- LocalizationManager Logging ---------------- */
 
     public void logLocalizationFusedPose(Pose2d pose) {
-        Logger.recordOutput("Localization/FusedPose", pose);
+        //Logger.recordOutput("Localization/FusedPose2d", pose);
     }
 
     public void logLocalizationTranslationSource(String source) {
@@ -162,7 +162,7 @@ public class Telemetry {
         Logger.recordOutput(base + "/StatorCurrent", statorCurrent);
         Logger.recordOutput(base + "/SupplyCurrent", supplyCurrent);
         Logger.recordOutput(base + "/ClosedLoopError", closedLoopError);
-        Logger.recordOutput(base + "/Pose", shooterPose);
+        //Logger.recordOutput(base + "/Pose", shooterPose);
         Logger.recordOutput(base + "/DistanceToTarget", distanceToTarget);
     }
 
