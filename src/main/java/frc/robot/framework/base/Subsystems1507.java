@@ -17,8 +17,8 @@ import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.utilities.MotorConfig;
-import frc.robot.utilities.MotorConfig.ControlMode;
+import frc.lib.util.MotorConfig;
+import frc.lib.util.MotorConfig.ControlMode;
 
 public abstract class Subsystems1507 extends SubsystemBase {
    

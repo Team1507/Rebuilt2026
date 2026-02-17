@@ -8,40 +8,41 @@
 
 package frc.robot.subsystems;
 
-// CTRE Imports
-import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-// Extras
-import frc.robot.utilities.MotorConfig;
-import frc.robot.framework.base.Subsystems1507;
-import frc.robot.mechanics.GearRatio;
+import frc.lib.io.intakeroller.IntakeRollerIO;
+import frc.lib.io.intakeroller.IntakeRollerInputs;
 
-public class IntakeRollerSubsystem extends Subsystems1507 {
-    private final TalonFX intakeMotor;
-    private final DutyCycleOut dutyRequest = new DutyCycleOut(0);
-    private final GearRatio ratio;
+/**
+ * Thin, IO-based intake roller subsystem.
+ */
+public class IntakeRollerSubsystem extends SubsystemBase {
 
-    /** Creates a new IntakeSubsystem. */
-    public IntakeRollerSubsystem(MotorConfig config) {
-        this.intakeMotor = new TalonFX (config.CAN_ID());
-        this.ratio = config.ratio();
-        configureFXMotor(config, intakeMotor);
+    private final IntakeRollerIO io;
+    private final IntakeRollerInputs inputs = new IntakeRollerInputs();
+
+    public IntakeRollerSubsystem(IntakeRollerIO io) {
+        this.io = io;
     }
 
-    public void run(double dutyCycle) {
-        intakeMotor.setControl(dutyRequest.withOutput(dutyCycle));
+    @Override
+    public void periodic() {
+        io.updateInputs(inputs);
     }
 
-    public void setpower(double power) {
-        intakeMotor.set(power);
-    }    
-
-    public void stop()  {
-        intakeMotor.set(0);
+    public void run(double duty) {
+        io.runDuty(duty);
     }
 
-    public double getDutyCycle(){
-        return intakeMotor.getDutyCycle().getValueAsDouble();
+    public void runPower(double power) {
+        io.runPower(power);
+    }
+
+    public void stop() {
+        io.stop();
+    }
+
+    public double getDutyCycle() {
+        return inputs.dutyCycle;
     }
 }
