@@ -19,7 +19,7 @@ public class AutoSample {
 
         return new AutoSequence(record, maxSpeed, maxAngularSpeed)
             .moveTo(Nodes.Hub.START_SUBWAY_RIGHT)
-            .moveTo(Nodes.Hub.RIGHT_OVER_BUMP)
+            .moveThrough(Nodes.Hub.RIGHT_OVER_BUMP, 0.5)
             .moveTo(Nodes.Hub.RIGHT_SUBWAY)
             .intakeDeploy()
             .moveTo(Nodes.Hub.LEFT_SUBWAY)

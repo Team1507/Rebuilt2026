@@ -251,13 +251,9 @@ public class Constants {
     public static final class kMoveToPose {
 
         // PID gains for X/Y translation
-        public static final double X_KP = 1.0;
-        public static final double X_KI = 0.0;
-        public static final double X_KD = 0.0;
-
-        public static final double Y_KP = 1.0;
-        public static final double Y_KI = 0.0;
-        public static final double Y_KD = 0.0;
+        public static final double XY_KP = 1.0;
+        public static final double XY_KI = 0.0;
+        public static final double XY_KD = 0.0;
 
         // PID gains for rotation
         public static final double THETA_KP = 2.0;
@@ -279,13 +275,9 @@ public class Constants {
     public static final class kMoveThroughPose {
 
         // PID gains for X/Y translation
-        public static final double X_KP = 1.0;
-        public static final double X_KI = 0.0;
-        public static final double X_KD = 0.0;
-
-        public static final double Y_KP = 1.0;
-        public static final double Y_KI = 0.0;
-        public static final double Y_KD = 0.0;
+        public static final double XY_KP = 1.0;
+        public static final double XY_KI = 0.0;
+        public static final double XY_KD = 0.0;
 
         // Stall detection
         public static final double STALL_THRESHOLD = 0.02;
