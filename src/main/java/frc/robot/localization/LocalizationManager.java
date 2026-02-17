@@ -10,7 +10,9 @@ package frc.robot.localization;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.localization.vision.PVManager;
 import frc.robot.localization.vision.QuestNavManager;
@@ -36,6 +38,8 @@ public class LocalizationManager extends SubsystemBase {
     private final Telemetry telemetry;
 
     private boolean startupSeeded = false;
+
+    private int pvStableCount = 0;
 
     // 20 Hz throttle
     private double lastProcessTime = 0.0;
@@ -76,20 +80,33 @@ public class LocalizationManager extends SubsystemBase {
         Pose2d odomPose = swerve.getPose();
 
         // ============================
-        // 2. Startup seeding
+        // 2. Startup seeding (safe)
         // ============================
 
-        if (!startupSeeded && pvGood) {
-            Pose2d seed = pvPoseOpt.get();
+        if (!startupSeeded) {
 
-            // Seed drivetrain
-            swerve.seedPoseFromVision(seed);
+            boolean pvStable = pvGood && pv.getFusedXyStd() < 1.0 && pv.getFusedAngStd() < 0.7;
 
-            // Seed QuestNav (using its own timestamp)
-            quest.seedPose(new edu.wpi.first.math.geometry.Pose3d(seed));
+            if (pvStable) {
+                pvStableCount++;
+            } else {
+                pvStableCount = 0;
+            }
 
-            startupSeeded = true;
-            telemetry.logVisionStartupSeed(seed);
+            if (pvStableCount >= 5) {
+                Pose2d seed = pvPoseOpt.get();
+
+                // 1. Seed drivetrain pose
+                swerve.seedPoseFromVision(seed);
+
+                // 2. Seed QuestNav
+                quest.seedPose(new Pose3d(seed));
+
+                startupSeeded = true;
+                pv.setSeeded(true);
+
+                telemetry.logVisionStartupSeed(seed);
+            }
         }
 
         // ============================

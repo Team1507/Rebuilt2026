@@ -9,6 +9,7 @@
 package frc.lib.io.photonvision;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -18,7 +19,7 @@ import org.photonvision.EstimatedRobotPose;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-
+import edu.wpi.first.wpilibj.Timer;
 import frc.lib.hardware.PhotonVisionHardware;
 import frc.robot.Constants.kVision;
 
@@ -34,10 +35,14 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
     private final PhotonPoseEstimator[] estimators;
     private final String[] cameraNames;
 
+    private final Supplier<Rotation2d> headingSupplier;
+
     /**
      * Creates a PhotonVision IO layer
      */
-    public PhotonVisionIOReal() {
+    public PhotonVisionIOReal(Supplier<Rotation2d> headingSupplier) {
+        this.headingSupplier = headingSupplier;
+
         int count = PhotonVisionHardware.CAMERAS.length;
 
         cameras = new PhotonCamera[count];
@@ -53,6 +58,7 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
             cameras[i] = new PhotonCamera(cfg.name);
             estimators[i] = new PhotonPoseEstimator(
                 kVision.APRILTAG_LAYOUT,
+                PhotonPoseEstimator.PoseStrategy.PNP_DISTANCE_TRIG_SOLVE, // or LOWEST_AMBIGUITY
                 cfg.robotToCamera
             );
         }
@@ -69,7 +75,26 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
     }
 
     @Override
-    public void updateInputs(PhotonVisionInputs inputs) {
+    public void updateInputs(PhotonVisionInputs inputs, boolean seeded) {
+
+        double now = Timer.getFPGATimestamp();
+        Rotation2d heading = headingSupplier.get();
+
+        // Feed heading for trig-solve
+        for (int i = 0; i < cameras.length; i++) {
+            estimators[i].addHeadingData(now, heading);
+
+            // Switch strategy based on seeding
+            if (!seeded) {
+                estimators[i].setPrimaryStrategy(
+                    PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY
+                );
+            } else {
+                estimators[i].setPrimaryStrategy(
+                    PhotonPoseEstimator.PoseStrategy.PNP_DISTANCE_TRIG_SOLVE
+                );
+            }
+        }
 
         // Ensure array is sized correctly
         if (inputs.cameras.length != cameras.length) {
@@ -107,7 +132,15 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
                 out.pitch = Rotation2d.fromDegrees(result.getBestTarget().getPitch());
             }
 
-            Optional<EstimatedRobotPose> estimate = estimator.estimatePnpDistanceTrigSolvePose(result);
+            Optional<EstimatedRobotPose> estimate;
+
+            if (!seeded) {
+                // Use full PnP for absolute pose
+                estimate = estimator.update(result);
+            } else {
+                // Use trig-solve for fast XY
+                estimate = estimator.estimatePnpDistanceTrigSolvePose(result);
+            }
 
             if (estimate.isEmpty()) {
                 out.pose2d = Optional.empty();
