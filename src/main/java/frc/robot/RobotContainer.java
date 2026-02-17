@@ -345,7 +345,6 @@ public class RobotContainer {
             Commands.print("Doing nothing"));
 
         autoChooser.addOption(
-<<<<<<< HEAD
             "Auto Subway Right",
             AutoBlueSubwayRight.build(record, MaxSpeed, MaxAngularRate)
         );
@@ -354,10 +353,6 @@ public class RobotContainer {
             "Auto Subway Left",
             AutoBlueSubwayLeft.build(record, MaxSpeed, MaxAngularRate)
         );
-=======
-            "One Piece Auto",
-            AutoSample.build(record, MaxSpeed, MaxAngularRate));
->>>>>>> 86daca42474fb2f5ca23b6fc4c633a5efbe00133
 
         SmartDashboard.putData("Auto Mode", autoChooser);
     }

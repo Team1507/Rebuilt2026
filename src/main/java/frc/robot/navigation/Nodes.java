@@ -56,13 +56,17 @@ public final class Nodes {
         public static final Pose2d BACK_RIGHT =
                 new Pose2d(2.0, 3.0, Rotation2d.fromDegrees(270.0));
         public static final Pose2d RIGHT_SUBWAY =
-                new Pose2d(7.8, 0.85, Rotation2d.fromDegrees(45.0));
+                new Pose2d(7.8, 0.85, Rotation2d.fromDegrees(90.0));
         public static final Pose2d LEFT_SUBWAY =
                 new Pose2d(7.8, 7.4, Rotation2d.fromDegrees(90.0));
         public static final Pose2d START_SUBWAY_RIGHT =
-                new Pose2d(3.0,3.0, Rotation2d.fromDegrees(45.0));
+                new Pose2d(3.5,3.0, Rotation2d.fromDegrees(90.0));
         public static final Pose2d START_SUBWAY_LEFT =
-                new Pose2d(3.0,5.5, Rotation2d.fromDegrees(45.0));
+                new Pose2d(3.5,5.5, Rotation2d.fromDegrees(90.0));
+        public static final Pose2d RIGHT_OVER_BUMP =
+                new Pose2d(6.0,2.0, Rotation2d.fromDegrees(45.0));
+        public static final Pose2d LEFT_OVER_BUMP =
+                new Pose2d(6.0,6.0, Rotation2d.fromDegrees(45.0));
 
         // Approach nodes (1.0 m away, facing center)
         public static final Pose2d APPROACH_FRONT =

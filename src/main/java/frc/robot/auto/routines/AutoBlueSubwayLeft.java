@@ -20,6 +20,7 @@ public class AutoBlueSubwayLeft {
 
         return new AutoSequence(record, maxSpeed, maxAngularSpeed)
             .moveTo(Nodes.Hub.START_SUBWAY_LEFT)
+            .moveTo(Nodes.Hub.LEFT_OVER_BUMP)
             .moveTo(Nodes.Hub.LEFT_SUBWAY)
             .intakeDeploy()
             .moveTo(Nodes.Hub.RIGHT_SUBWAY)
