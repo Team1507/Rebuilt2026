@@ -386,8 +386,8 @@ public class RobotContainer {
         autoChooser.setDefaultOption("Do Nothing", Commands.print("Doing nothing"));
 
         autoChooser.addOption(
-            "Auto Sample",
-            AutoSample.build(subsystemsRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Blue Subway Right",
+            AutoBlueSubwayRight.build(subsystemsRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {

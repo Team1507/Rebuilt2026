@@ -251,7 +251,7 @@ public class Constants {
     public static final class kMoveToPose {
 
         // PID gains for X/Y translation
-        public static final double XY_KP = 0.4;
+        public static final double XY_KP = 0.3;
         public static final double XY_KI = 0.0;
         public static final double XY_KD = 0.0;
 
@@ -264,7 +264,7 @@ public class Constants {
         public static final double DEADBAND_ERROR = 0.05;
 
         // Tolerances
-        public static final double POSITION_TOLERANCE_METERS = 0.07;
+        public static final double POSITION_TOLERANCE_METERS = 0.09;
         public static final double ANGLE_TOLERANCE_RADIANS = Math.toRadians(3.0);
 
         // Stall detection
