@@ -323,7 +323,7 @@ public class Constants {
             public static final String NAME = "Bluecam";
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
-                    new Translation3d(-0.281, 0.296, 0.2413),
+                    new Translation3d(-0.288925, 0.314325, 0.015875),
                     new Rotation3d(0, Math.toRadians(15), Math.toRadians(70))
                 );
         }
@@ -333,7 +333,7 @@ public class Constants {
             public static final String NAME = "Yellowcam";
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
-                    new Translation3d(-0.2985, -0.276, 0.2413),
+                    new Translation3d(-0.288925, -0.314325, 0.015875),
                     new Rotation3d(0, Math.toRadians(15), Math.toRadians(210))
                 );
         }
