@@ -68,6 +68,11 @@ public class ShooterIOSim implements ShooterIO {
     }
 
     @Override
+    public boolean getBallSensor() {
+        return false; // or simulate later
+    }
+
+    @Override
     public void stop() {
         this.targetMotorRPS = 0.0;
     }

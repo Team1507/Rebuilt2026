@@ -126,33 +126,28 @@ public class RobotContainer {
     // ==========================================================
     // Shooter + Model
     // ==========================================================
-
-    // Pose supplier for model-driven shooter + ShotTrainer
-    //private final Supplier<Pose2d> poseSupplier = () -> ctreDrivetrain.getState().Pose;
-    private final Supplier<Pose2d> poseSupplier = localizationManager::getFusedPose;
-
-    // Load shooter model
-    private final ShooterModel shooterModelConfig =
-        ModelLoader.load("model.json", poseSupplier);
-
-    // -------------------
-    // Shooter IO (Real Hardware)
-    // -------------------
+    // IO
     private final ShooterIO shooterBLUIO =
         new ShooterIOReal(
             ShooterHardware.BLU_ID,
-            kShooter.BLU_CONFIG
+            kShooter.BLU_CONFIG,
+            ShooterHardware.BLU_DIO
         );
 
     private final ShooterIO shooterYELIO =
         new ShooterIOReal(
             ShooterHardware.YEL_ID,
-            kShooter.YEL_CONFIG
+            kShooter.YEL_CONFIG,
+            ShooterHardware.YEL_DIO
         );
 
-    // -------------------
-    // Shooter Subsystems
-    // -------------------
+    // pose + model
+    private final Supplier<Pose2d> poseSupplier = localizationManager::getFusedPose;
+
+    private final ShooterModel shooterModelConfig =
+        ModelLoader.load("model.json", poseSupplier);
+
+    // subsystems (note: NO ShotTrainer arg)
     public final ShooterSubsystem shooterBLUsystem =
         new ShooterSubsystem(
             shooterBLUIO,
@@ -177,9 +172,7 @@ public class RobotContainer {
             "Shooter-YEL"
         );
 
-    // -------------------
-    // Shot Trainers (IO-based)
-    // -------------------
+    // trainers (ShooterSubsystem implements ShooterTelemetryProvider)
     public final ShotTrainer shotBLUTrainer =
         new ShotTrainer(
             shooterBLUsystem,
@@ -275,6 +268,9 @@ public class RobotContainer {
     // Robot Container Constructor
     // ==========================================================
     public RobotContainer() {
+        shooterBLUsystem.setShotTrainer(shotBLUTrainer);
+        shooterYELsystem.setShotTrainer(shotYELTrainer);
+        
         configureTelemetry();
         configureDefaultCommands();
         configureDriverControls();

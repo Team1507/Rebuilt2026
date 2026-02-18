@@ -9,6 +9,9 @@
 package frc.lib.io.shooter;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.wpilibj.DigitalInput;
+
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
 import frc.lib.util.MotorConfig;
@@ -35,6 +38,9 @@ public class ShooterIOReal extends Subsystems1507 implements ShooterIO {
     /** Configuration for this motor */
     private final MotorConfig config;
 
+    /** Digital IO for the shooter ball sensor */
+    private final DigitalInput ballSensor;
+
     /** Phoenix 6 velocity control request reused each cycle. */
     private final VelocityVoltage velocityRequest =
         new VelocityVoltage(0).withSlot(0);
@@ -45,9 +51,11 @@ public class ShooterIOReal extends Subsystems1507 implements ShooterIO {
      * @param canID  CAN ID of the shooter motor
      * @param config Motor configuration containing PID/FF/voltage limits
      */
-    public ShooterIOReal(int canID, MotorConfig config) {
+    public ShooterIOReal(int canID, MotorConfig config, int sensorDIO) {
         this.motor = new TalonFX(canID);
         this.config = config;
+
+        this.ballSensor = new DigitalInput(sensorDIO);
 
         // Apply PID/FF/voltage limits to the motor
         configureFXMotor(config, motor);
@@ -64,6 +72,8 @@ public class ShooterIOReal extends Subsystems1507 implements ShooterIO {
         inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
         inputs.statorCurrent = motor.getStatorCurrent().getValueAsDouble();
         inputs.supplyCurrent = motor.getSupplyCurrent().getValueAsDouble();
+
+        inputs.ballFired = getBallSensor();
     }
 
     /**
@@ -74,6 +84,14 @@ public class ShooterIOReal extends Subsystems1507 implements ShooterIO {
     @Override
     public void setTargetRPS(double motorRPS) {
         motor.setControl(velocityRequest.withVelocity(motorRPS));
+    }
+
+    /**
+     * 
+     */
+    @Override
+    public boolean getBallSensor() {
+        return !ballSensor.get(); // depending on wiring
     }
 
     /**

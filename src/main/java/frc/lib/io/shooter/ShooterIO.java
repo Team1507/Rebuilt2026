@@ -16,6 +16,9 @@ public interface ShooterIO {
     /** Sets the motor target velocity in motor RPS (Phoenix 6 native units). */
     void setTargetRPS(double motorRPS);
 
+    /** gets ball sensor */
+    boolean getBallSensor();
+
     /** Stops the shooter motor. */
     void stop();
 

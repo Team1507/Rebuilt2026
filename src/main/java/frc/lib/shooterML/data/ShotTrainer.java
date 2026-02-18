@@ -1,3 +1,11 @@
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
+
 package frc.lib.shooterML.data;
 
 import java.util.ArrayList;
@@ -9,18 +17,17 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import frc.robot.subsystems.ShooterSubsystem;
+import frc.lib.shooterML.ShooterTelemetryProvider;
 
 /**
  * ShotTrainer collects unlabeled shot data for offline model training.
  *
- * <p>This version is IO‑friendly and does not depend on TalonFX hardware.
- * All shooter telemetry is pulled from ShooterSubsystem, which abstracts
- * real vs simulated hardware.
+ * This version is IO‑friendly and does not depend on hardware or subsystems.
+ * All shooter telemetry is pulled through ShooterTelemetryProvider.
  */
 public class ShotTrainer {
 
-    private final ShooterSubsystem shooter;
+    private final ShooterTelemetryProvider shooter;
     private final Supplier<Pose2d> poseSupplier;
     private Translation2d targetPose;
 
@@ -34,7 +41,7 @@ public class ShotTrainer {
             .getSubTable("UnlabeledShots");
 
     public ShotTrainer(
-        ShooterSubsystem shooter,
+        ShooterTelemetryProvider shooter,
         Supplier<Pose2d> poseSupplier,
         Translation2d targetPose
     ) {
@@ -43,6 +50,7 @@ public class ShotTrainer {
         this.targetPose = targetPose;
     }
 
+    /** Called by ShooterSubsystem when the shot sensor detects a fired ball. */
     public void notifyShotFired(double timestampSeconds) {
         recordShot(timestampSeconds);
     }

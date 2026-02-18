@@ -22,8 +22,6 @@ import frc.robot.subsystems.SwerveSubsystem;
 
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import frc.robot.Constants.kMoveThroughPose;
 import frc.robot.Constants.kMoveToPose;
 

@@ -13,13 +13,19 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.lib.shooterML.model.ShooterModel;
+import edu.wpi.first.wpilibj.Timer;
+
 import frc.lib.io.shooter.ShooterIO;
 import frc.lib.io.shooter.ShooterIOSim;
 import frc.lib.io.shooter.ShooterInputs;
+
 import frc.lib.logging.Telemetry;
 import frc.lib.math.GearRatio;
+import frc.lib.shooterML.ShooterTelemetryProvider;
 import frc.lib.shooterML.data.ShotRecord;
+import frc.lib.shooterML.data.ShotTrainer;
+
+import frc.lib.shooterML.model.ShooterModel;
 import frc.robot.framework.base.Subsystems1507;
 
 /**
@@ -36,7 +42,7 @@ import frc.robot.framework.base.Subsystems1507;
  * <p>All hardware interaction is delegated to {@link ShooterIO}.
  * Simulation is handled by {@link ShooterIOSim}.
  */
-public class ShooterSubsystem extends Subsystems1507 {
+public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetryProvider {
 
     private final ShooterIO io;
     private final ShooterInputs inputs = new ShooterInputs();
@@ -52,6 +58,9 @@ public class ShooterSubsystem extends Subsystems1507 {
 
     private final Telemetry telemetry;
     private final String shooterKey;
+
+    private ShotTrainer shotTrainer;
+    private boolean lastBallSensor = false;
 
     // ------------------------------------------------------------
     // Constructors
@@ -106,6 +115,13 @@ public class ShooterSubsystem extends Subsystems1507 {
         this.shooterKey = shooterKey;
 
         telemetry.registerShooterSource(shooterKey);
+    }
+
+    // ------------------------------------------------------------
+    // ShotTrainer injection
+    // ------------------------------------------------------------
+    public void setShotTrainer(ShotTrainer trainer) { 
+        this.shotTrainer = trainer; 
     }
 
     // ------------------------------------------------------------
@@ -174,7 +190,7 @@ public class ShooterSubsystem extends Subsystems1507 {
     }
 
     /** @return distance from shooter to target pose */
-    private double getDistanceToTarget() {
+    public double getDistanceToTarget() {
         return getShooterPose().getTranslation().getDistance(targetPose.getTranslation());
     }
 
@@ -224,6 +240,20 @@ public class ShooterSubsystem extends Subsystems1507 {
 
         io.setTargetRPS(targetMotorRPS);
 
+        // -----------------------------
+        // Shot sensor edge detection
+        // -----------------------------
+        boolean current = inputs.ballFired;
+
+        if (shotTrainer != null && current && !lastBallSensor) {
+            shotTrainer.notifyShotFired(Timer.getFPGATimestamp());
+        }
+
+        lastBallSensor = current;
+
+        // -----------------------------
+        // Telemetry logging
+        // -----------------------------
         telemetry.logShooter(
             shooterKey,
             getShooterRPM(),
@@ -233,7 +263,7 @@ public class ShooterSubsystem extends Subsystems1507 {
             inputs.supplyCurrent,
             getClosedLoopError(),
             getShooterPose(),
-            getDistanceToTarget()
+            getShooterPose().getTranslation().getDistance(targetPose.getTranslation())
         );
     }
 
