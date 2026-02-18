@@ -108,7 +108,7 @@ public class RobotContainer {
 
     // PhotonVision IO (explicit camera names)
     private final PhotonVisionIO pvIO =
-        new PhotonVisionIOReal();
+        new PhotonVisionIOReal(() -> swerve.getHeading());
 
     // PhotonVision manager (fuses cameras only)
     private final PVManager pvManager =
@@ -386,16 +386,8 @@ public class RobotContainer {
         autoChooser.setDefaultOption("Do Nothing", Commands.print("Doing nothing"));
 
         autoChooser.addOption(
-            "Auto Subway Right",
-            AutoBlueSubwayRight.build(record, MaxSpeed, MaxAngularRate)
-        );
-
-        autoChooser.addOption(
-            "Auto Subway Left",
-            AutoBlueSubwayLeft.build(record, MaxSpeed, MaxAngularRate)
-        );
-
-        SmartDashboard.putData("Auto Mode", autoChooser);
+            "Auto Sample",
+            AutoSample.build(subsystemsRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {

@@ -8,6 +8,8 @@
 
 package frc.lib.io.photonvision;
 
+import java.util.function.Supplier;
+
 /**
  * IO abstraction for PhotonVision.
  *
@@ -21,7 +23,7 @@ public interface PhotonVisionIO {
      *
      * @param inputs The PhotonVisionInputs object to populate.
      */
-    void updateInputs(PhotonVisionInputs inputs);
+    void updateInputs(PhotonVisionInputs inputs, boolean seeded);
 
     /** Number of cameras in the system. */
     int getCameraCount();

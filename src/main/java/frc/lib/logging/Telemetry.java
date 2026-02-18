@@ -31,22 +31,22 @@ public class Telemetry {
 
     public void logVisionPose(String sourceKey, Pose2d pose) {
         if (registeredVisionSources.containsKey(sourceKey)) {
-            Logger.recordOutput("Vision/" + sourceKey + "/Pose", pose);
+            //Logger.recordOutput("Vision/" + sourceKey + "/Pose", pose);
         }
     }
 
     /* ---------------- Vision Cloud Logging ---------------- */
 
     public void logVisionAccepted(Pose3d[] poses) {
-        Logger.recordOutput("Vision/AcceptedPoses", poses);
+        //Logger.recordOutput("Vision/AcceptedPoses", poses);
     }
 
     public void logVisionRejected(Pose3d[] poses) {
-        Logger.recordOutput("Vision/RejectedPoses", poses);
+        //Logger.recordOutput("Vision/RejectedPoses", poses);
     }
 
     public void logVisionTagPoses(Pose3d[] poses) {
-        Logger.recordOutput("Vision/TagPoses", poses);
+        //Logger.recordOutput("Vision/TagPoses", poses);
     }
 
     public void logVisionFusedCount(int count) {
@@ -54,7 +54,7 @@ public class Telemetry {
     }
 
     public void logVisionStartupSeed(Pose2d seed) {
-        Logger.recordOutput("Vision/StartupPoseSeeded", seed);
+        // Logger.recordOutput("Vision/StartupPoseSeeded", seed);
     }
 
     /* ---------------- Photon Diagnostics ---------------- */
@@ -170,11 +170,11 @@ public class Telemetry {
     /* ---------------- QuestNav Telemetry ---------------- */
 
     public void logQuestNavRawPose(Pose3d pose) {
-        Logger.recordOutput("QuestNav/RawPose", pose);
+        //Logger.recordOutput("QuestNav/RawPose", pose);
     }
 
     public void logQuestNavCorrectedPose(Pose2d pose) {
-        Logger.recordOutput("QuestNav/CorrectedPose", pose);
+        //Logger.recordOutput("QuestNav/CorrectedPose", pose);
     }
 
     public void logQuestNavTracking(boolean tracking) {

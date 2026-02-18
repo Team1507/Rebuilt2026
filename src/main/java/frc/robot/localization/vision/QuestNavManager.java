@@ -146,6 +146,6 @@ public class QuestNavManager extends SubsystemBase {
      * Seeds QuestNav pose
      */
     public void seedPose(Pose3d pose) {
-        questNav.setPose(pose);
+        questNav.setPose(pose.transformBy(kQuest.ROBOT_TO_QUEST));
     }
 }

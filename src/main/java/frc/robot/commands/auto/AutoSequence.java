@@ -153,6 +153,48 @@ public class AutoSequence {
     }
 
     /**
+     * Adds a movement step that drives the robot *through* the specified pose
+     * without slowing down or attempting to stop precisely on the point.
+     *
+     * <p>This is useful for path shaping, waypoint passing, and smooth motion
+     * through intermediate nodes where stopping is not desired.</p>
+     *
+     * <p>The command ends when the robot comes within the configured pass-through
+     * radius of the target pose, or when stall detection triggers.</p>
+     *
+     * <p><strong>Speed Overrides:</strong><br>
+     * If {@link #withSpeed(double)} or {@link #withSpeed(double, double)} was
+     * called immediately before this method, the override applies only to this
+     * movement step. After the command is added, the override is cleared and the
+     * default speed profile resumes.</p>
+     *
+     * @param target The pose the robot should pass near.
+     * @param passRadius The distance (in meters) at which the robot is considered
+     *                   to have passed the target.
+     * @return This AutoSequence instance for fluent chaining.
+     */
+    public AutoSequence moveThrough(Pose2d target, double passRadius) {
+
+        double speedToUse = (nextSpeedOverride != null)
+            ? nextSpeedOverride
+            : MaxSpeed;
+
+        // Angular rate is irrelevant for moveThrough, but we clear it anyway
+        nextSpeedOverride = null;
+        nextAngularOverride = null;
+
+        steps.add(DriveCommands.moveThroughPose(
+            record.swerve(),
+            target,
+            speedToUse,
+            passRadius
+        ));
+
+        return this;
+    }
+
+
+    /**
      * This should add a Command that performs the robot's scoring routine.
      * Example:
      * steps.add(new ScoreCommand(shooterSubsystem));

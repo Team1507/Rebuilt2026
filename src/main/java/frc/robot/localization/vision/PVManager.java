@@ -15,9 +15,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import frc.lib.io.photonvision.PhotonVisionIO;
 import frc.lib.io.photonvision.PhotonVisionInputs;
 import frc.robot.Constants.kVision;
+import frc.robot.localization.LocalizationManager;
 import frc.lib.logging.Telemetry;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class PVManager extends SubsystemBase {
 
@@ -26,6 +28,8 @@ public class PVManager extends SubsystemBase {
     private final Telemetry telemetry;
 
     private final String[] cameraNames;
+
+    private boolean seeded = false;
 
     // Fused PV output
     private Optional<Pose2d> fusedPose = Optional.empty();
@@ -63,7 +67,7 @@ public class PVManager extends SubsystemBase {
         lastProcessTime = now;
 
         // Update raw inputs (fast)
-        io.updateInputs(inputs);
+        io.updateInputs(inputs, seeded);
 
         // Reset fused output
         fusedPose = Optional.empty();
@@ -86,23 +90,47 @@ public class PVManager extends SubsystemBase {
             Pose3d pose3d = cam.pose3d.get();
             Pose2d pose2d = cam.pose2d.get();
 
-            // Reject bad observations
-            boolean reject =
-                Math.abs(pose3d.getZ()) > kVision.maxZError ||
-                pose3d.getX() < 0.0 ||
-                pose3d.getX() > kVision.APRILTAG_LAYOUT.getFieldLength() ||
-                pose3d.getY() < 0.0 ||
-                pose3d.getY() > kVision.APRILTAG_LAYOUT.getFieldWidth() ||
-                cam.avgDistance > kVision.maxTagDistance ||
-                (cam.tagCount == 1 && cam.ambiguity > kVision.maxAmbiguity);
+            // Reject bad observations (robust version)
+            boolean reject = false;
+
+            // 1. Z-height sanity check (camera height + noise)
+            if (Math.abs(pose3d.getZ()) > 1.0) {  // was too strict before
+                reject = true;
+            }
+
+            // 2. Field bounds (allow slight negative due to transforms)
+            double x = pose3d.getX();
+            double y = pose3d.getY();
+            double fieldLen = kVision.APRILTAG_LAYOUT.getFieldLength();
+            double fieldWid = kVision.APRILTAG_LAYOUT.getFieldWidth();
+
+            if (x < -1.0 || x > fieldLen + 1.0 ||
+                y < -1.0 || y > fieldWid + 1.0) {
+                reject = true;
+            }
+
+            // 3. Distance sanity check (allow up to 6–7m)
+            if (cam.avgDistance > 7.0) {  // was too strict before
+                reject = true;
+            }
+
+            // 4. Ambiguity check (only reject VERY ambiguous single-tag solves)
+            if (cam.tagCount == 1 && cam.ambiguity > 0.35) {  // relaxed from your version
+                reject = true;
+            }
+
+            // 5. Require at least 1 tag (should never happen, but safe)
+            if (cam.tagCount < 1) {
+                reject = true;
+            }
 
             if (reject) continue;
 
             // Compute score for fusion
             double score =
-                cam.tagCount * 100.0 -
-                cam.avgDistance * 10.0 -
-                cam.ambiguity * 50.0;
+                cam.tagCount * 200.0 -
+                cam.avgDistance * 20.0 -
+                cam.ambiguity * 80.0;
 
             if (score > bestScore) {
                 bestScore = score;
@@ -112,7 +140,11 @@ public class PVManager extends SubsystemBase {
                 if (cam.stdDevs != null) {
                     bestXyStd = cam.stdDevs.get(0, 0);
                     bestAngStd = cam.stdDevs.get(2, 0);
+                } else {
+                    bestXyStd = 0.5;   // reasonable default
+                    bestAngStd = 0.5;
                 }
+
             }
         }
 
@@ -126,6 +158,10 @@ public class PVManager extends SubsystemBase {
             // Log only the fused pose (fast)
             telemetry.logVisionPose("PhotonVision-Fused", bestPose);
         }
+    }
+
+    public void setSeeded(boolean seeded) {
+        this.seeded = seeded;
     }
 
     public Optional<Pose2d> getFusedPose() {

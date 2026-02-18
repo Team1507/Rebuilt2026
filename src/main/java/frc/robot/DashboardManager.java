@@ -100,7 +100,11 @@ public class DashboardManager {
         nt.getBooleanTopic("Localization/PoseSeeded").publish();
     private final DoublePublisher pubQuestBattery =
         nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
-
+    private final BooleanPublisher pubQuestIsTracking =
+        nt.getBooleanTopic("Localization/QuestNav/Is Tracking").publish();
+    private final BooleanPublisher pubhasGoodVision =
+        nt.getBooleanTopic("Localization/PhotonVision/Has Good Vision").publish();
+        
     /* ---------------- Rising/Falling edge tracking ---------------- */
 
     private boolean prevAgitatorRun, prevClimberRun, prevBLUFeederRun, prevYELFeederRun;
@@ -181,6 +185,9 @@ public class DashboardManager {
 
         pubLocalizationSeeded.set(localization.localizationManager().isStartupSeeded());
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
+        pubQuestIsTracking.set(localization.questNav().isTracking());
+
+        pubhasGoodVision.set(localization.pvManager().hasGoodVision());
 
         /* -------- Read RUN button states -------- */
 
