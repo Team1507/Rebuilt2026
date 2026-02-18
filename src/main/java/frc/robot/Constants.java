@@ -251,12 +251,12 @@ public class Constants {
     public static final class kMoveToPose {
 
         // PID gains for X/Y translation
-        public static final double XY_KP = 1.0;
+        public static final double XY_KP = 0.4;
         public static final double XY_KI = 0.0;
         public static final double XY_KD = 0.0;
 
         // PID gains for rotation
-        public static final double THETA_KP = 2.0;
+        public static final double THETA_KP = 1.0;
         public static final double THETA_KI = 0.0;
         public static final double THETA_KD = 0.0;
 
@@ -264,8 +264,8 @@ public class Constants {
         public static final double DEADBAND_ERROR = 0.05;
 
         // Tolerances
-        public static final double POSITION_TOLERANCE_METERS = 0.05;
-        public static final double ANGLE_TOLERANCE_RADIANS = Math.toRadians(2.0);
+        public static final double POSITION_TOLERANCE_METERS = 0.07;
+        public static final double ANGLE_TOLERANCE_RADIANS = Math.toRadians(3.0);
 
         // Stall detection
         public static final double STALL_THRESHOLD = 0.02;
@@ -275,9 +275,14 @@ public class Constants {
     public static final class kMoveThroughPose {
 
         // PID gains for X/Y translation
-        public static final double XY_KP = 1.0;
+        public static final double XY_KP = 0.4;
         public static final double XY_KI = 0.0;
         public static final double XY_KD = 0.0;
+
+        // PID gains for rotation
+        public static final double THETA_KP = 1.0;
+        public static final double THETA_KI = 0.0;
+        public static final double THETA_KD = 0.0;
 
         // Stall detection
         public static final double STALL_THRESHOLD = 0.02;

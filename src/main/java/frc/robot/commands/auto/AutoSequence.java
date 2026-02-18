@@ -179,6 +179,10 @@ public class AutoSequence {
             ? nextSpeedOverride
             : MaxSpeed;
 
+        double angularToUse = (nextAngularOverride != null)
+            ? nextAngularOverride
+            : MaxAngularRate;
+
         // Angular rate is irrelevant for moveThrough, but we clear it anyway
         nextSpeedOverride = null;
         nextAngularOverride = null;
@@ -187,6 +191,7 @@ public class AutoSequence {
             record.swerve(),
             target,
             speedToUse,
+            angularToUse,
             passRadius
         ));
 

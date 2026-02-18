@@ -49,6 +49,9 @@ public interface SwerveIO {
      */
     void drive(ChassisSpeeds speeds);
 
+    /** Drives the robot using robot-relative chassis speeds (vx, vy, omega). */
+    void driveRobotRelative(ChassisSpeeds speeds);
+
     /**
      * Directly sets the module states.
      *

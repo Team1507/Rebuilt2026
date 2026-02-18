@@ -54,6 +54,10 @@ public class SwerveSubsystem extends SubsystemBase {
         io.drive(speeds);
     }
 
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        io.driveRobotRelative(speeds);
+    }
+
     /** Directly set module states (used by autos / PathPlanner). */
     public void setModuleStates(SwerveModuleState[] states) {
         io.setModuleStates(states);

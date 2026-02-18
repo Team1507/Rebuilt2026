@@ -64,6 +64,14 @@ public class SwerveIOReal implements SwerveIO {
     }
 
     @Override
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        drivetrain.setControl(
+            new SwerveRequest.ApplyRobotSpeeds()
+                .withSpeeds(speeds)
+        );
+    }
+
+    @Override
     public void setModuleStates(SwerveModuleState[] states) {
         // Your CTRE version does NOT support ApplyModuleStates
         // so we simply idle or ignore this request.

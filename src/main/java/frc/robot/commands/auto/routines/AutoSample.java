@@ -21,12 +21,12 @@ public class AutoSample {
             .moveTo(Nodes.Hub.START_SUBWAY_RIGHT)
             .moveThrough(Nodes.Hub.RIGHT_OVER_BUMP, 0.5)
             .moveTo(Nodes.Hub.RIGHT_SUBWAY)
-            .intakeDeploy()
+            //.intakeDeploy()
             .moveTo(Nodes.Hub.LEFT_SUBWAY)
-            .intakeRetract()
-            .moveTo(Nodes.Hub.RIGHT_SUBWAY)
-            .moveTo(Nodes.Hub.BACK_RIGHT)
-            .shoot()
+            //.intakeRetract()
+            .moveThrough(Nodes.Hub.RIGHT_SUBWAY, 1.0)
+            .moveThrough(Nodes.Hub.BACK_RIGHT, 0.5)
+            //.shoot()
             .build();
     }
 }
