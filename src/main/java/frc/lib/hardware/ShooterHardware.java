@@ -34,6 +34,12 @@ public final class ShooterHardware {
     public static final int YEL_ID = 17;
 
     // ------------------------------------------------------------
+    // Sensor DIO
+    // ------------------------------------------------------------
+    public static final int BLU_DIO = 1;
+    public static final int YEL_DIO = 2;
+
+    // ------------------------------------------------------------
     // Gear Ratio (motor → wheel)
     // ------------------------------------------------------------
     public static final GearRatio BLU_RATIO = GearRatio.gearBox(1, 1);
