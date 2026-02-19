@@ -19,7 +19,7 @@ public class AutoBlueSubwayRight {
     public static Command build(SubsystemsRecord record, double maxSpeed, double maxAngularSpeed) {
 
         return new AutoSequence(record, maxSpeed, maxAngularSpeed)
-            //.moveTo(Nodes.Start.START_SUBWAY_RIGHT)
+            .moveTo(Nodes.Start.START_SUBWAY_RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.5)
             .moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.5)
             .intakeDeploy()

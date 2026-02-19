@@ -64,6 +64,48 @@ public final class DriveCommands {
             .onEnd(swerve::stop);
     }
 
+    public static Command pointToTarget(
+        SwerveSubsystem swerve,
+        Supplier<Pose2d> targetPoseSupplier
+    ) {
+        PIDController headingController = new PIDController(6.0, 0.0, 0.1);
+        headingController.enableContinuousInput(-Math.PI, Math.PI);
+
+        return new CommandBuilder(swerve)
+            .named("MaintainHeadingToTarget")
+            .onExecute(() -> {
+                Pose2d current = swerve.getPose();
+                Pose2d target = targetPoseSupplier.get();
+
+                Rotation2d desiredHeading = computeHeadingToTarget(current, target);
+
+                double rotRate = headingController.calculate(
+                    swerve.getHeading().getRadians(),
+                    desiredHeading.getRadians()
+                );
+
+                swerve.drive(new ChassisSpeeds(
+                    0.0,
+                    0.0,
+                    rotRate
+                ));
+            })
+            .isFinished(() -> {
+                Pose2d current = swerve.getPose();
+                Pose2d target = targetPoseSupplier.get();
+
+                Rotation2d desiredHeading = computeHeadingToTarget(current, target);
+
+                double angleError = Math.abs(
+                    current.getRotation().minus(desiredHeading).getRadians()
+                );
+
+                return angleError < Math.toRadians(20.0); // 5 degree tolerance
+            })
+            
+            .onEnd(swerve::stop);
+    }
+
     private static Rotation2d computeHeadingToTarget(Pose2d robot, Pose2d target) {
         double dx = target.getX() - robot.getX();
         double dy = target.getY() - robot.getY();

@@ -411,7 +411,7 @@ public class RobotContainer {
 
         autoChooser.addOption(
             "Auto Shoot Until",
-            AutoShootUntil.build(subsystemsRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+            AutoShootUntil.build(subsystemsRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {

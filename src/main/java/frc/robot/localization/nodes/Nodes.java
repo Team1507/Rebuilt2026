@@ -64,7 +64,8 @@ public final class Nodes {
         public static final Pose2d APPROACH_LEFT =
                 approach(FRONT_RIGHT, CENTER);
         public static final Pose2d APPROACH_RIGHT =
-                approach(BACK_RIGHT, CENTER);
+                new Pose2d(0.557, 2.468, Rotation2d.fromDegrees(0.0));
+               
     }
 
     // ============================
@@ -73,15 +74,15 @@ public final class Nodes {
     public static final class Tower {
         // Tower center from tags at (0.55 in, 146.86/163.86 in)
         public static final Pose2d CENTER =
-                new Pose2d(0.014, 3.947, Rotation2d.fromDegrees(0.0));
+                new Pose2d(0.514, 3.947, Rotation2d.fromDegrees(270.0));
 
         // Virtual face points around the tower (for approach geometry)
         private static final Pose2d FRONT_POINT =
-                new Pose2d(CENTER.getX() + 0.50, CENTER.getY(), Rotation2d.fromDegrees(0.0));
+                new Pose2d(CENTER.getX() + 0.50, CENTER.getY(), Rotation2d.fromDegrees(270.0));
         private static final Pose2d BACK_POINT =
-                new Pose2d(CENTER.getX() - 0.50, CENTER.getY(), Rotation2d.fromDegrees(180.0));
+                new Pose2d(CENTER.getX() - 0.50, CENTER.getY(), Rotation2d.fromDegrees(270.0));
         private static final Pose2d LEFT_POINT =
-                new Pose2d(CENTER.getX(), CENTER.getY() + 0.50, Rotation2d.fromDegrees(90.0));
+                new Pose2d(CENTER.getX(), CENTER.getY() + 0.50, Rotation2d.fromDegrees(270.0));
         private static final Pose2d RIGHT_POINT =
                 new Pose2d(CENTER.getX(), CENTER.getY() - 0.50, Rotation2d.fromDegrees(270.0));
 
@@ -92,7 +93,9 @@ public final class Nodes {
         public static final Pose2d APPROACH_LEFT =
                 approach(LEFT_POINT, CENTER);
         public static final Pose2d APPROACH_RIGHT =
-                approach(RIGHT_POINT, CENTER);
+                new Pose2d(1.0, 2.45, Rotation2d.fromDegrees(-11.59));
+        public static final Pose2d CLIMB =
+                new Pose2d(1.05, 2.75, Rotation2d.fromDegrees(-11.59));
     }
 
     // ============================
@@ -217,7 +220,7 @@ public final class Nodes {
         public static final Pose2d START_SUBWAY_RIGHT =
                 new Pose2d(3.5,2.5, Rotation2d.fromDegrees(45.0));
         public static final Pose2d START_SUBWAY_LEFT =
-                new Pose2d(3.5,7.2, Rotation2d.fromDegrees(90.0));
+                new Pose2d(3.5,5.8,Rotation2d.fromDegrees(90.0));
         public static final Pose2d START_DEPOT_LEFT =
                 new Pose2d(3.5, 6.0, Rotation2d.fromDegrees(0.0));
     }
