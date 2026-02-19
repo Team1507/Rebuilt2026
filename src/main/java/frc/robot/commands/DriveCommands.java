@@ -8,6 +8,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -79,67 +80,91 @@ public final class DriveCommands {
         double maxAngularSpeed,
         double passRadius
     ) {
-        PIDController thetaController = new PIDController(
+        PIDController thetaPID = new PIDController(
             kMoveThroughPose.THETA_KP,
             kMoveThroughPose.THETA_KI,
             kMoveThroughPose.THETA_KD
         );
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        thetaPID.enableContinuousInput(-Math.PI, Math.PI);
 
-        final double[] last = new double[3];
+        final double[] last = new double[3]; // x, y, time
 
         return new CommandBuilder(swerve)
-            .named("MoveThroughPose")
+            .named("MoveThroughPose_Vector")
             .onInitialize(() -> {
                 Pose2d p = swerve.getPose();
                 last[0] = p.getX();
                 last[1] = p.getY();
                 last[2] = Timer.getFPGATimestamp();
-                thetaController.reset();
+                thetaPID.reset();
             })
             .onExecute(() -> {
 
                 Pose2d current = swerve.getPose();
 
-                // --- CONSTANT-SPEED VECTOR TOWARD TARGET ---
-                Translation2d error = targetPose.getTranslation().minus(current.getTranslation());
-                double direction = Math.atan2(error.getY(), error.getX());
+                // -----------------------------------------
+                // 1. Compute direction vector to target
+                // -----------------------------------------
+                double dx = targetPose.getX() - current.getX();
+                double dy = targetPose.getY() - current.getY();
+                double distance = Math.hypot(dx, dy);
 
-                double vx_field = maxSpeed * Math.cos(direction);
-                double vy_field = maxSpeed * Math.sin(direction);
+                // Unit direction vector
+                double dirX = dx / (distance + 1e-9);
+                double dirY = dy / (distance + 1e-9);
 
-                // --- CONVERT TO ROBOT-RELATIVE ---
-                Rotation2d heading = current.getRotation();
-                double vx_robot =  vx_field * heading.getCos() + vy_field * heading.getSin();
-                double vy_robot = -vx_field * heading.getSin() + vy_field * heading.getCos();
+                // -----------------------------------------
+                // 2. Constant-speed translation (NO slowdown)
+                // -----------------------------------------
+                double vx_field = dirX * maxSpeed;
+                double vy_field = dirY * maxSpeed;
 
-                // --- ROTATION PID ---
-                double thetaSpeed = thetaController.calculate(
+                // -----------------------------------------
+                // 3. Rotation PID
+                // -----------------------------------------
+                double thetaSpeed = thetaPID.calculate(
                     current.getRotation().getRadians(),
                     targetPose.getRotation().getRadians()
                 );
-                thetaSpeed = Math.copySign(Math.min(Math.abs(thetaSpeed), maxAngularSpeed), thetaSpeed);
+                thetaSpeed = MathUtil.clamp(thetaSpeed, -maxAngularSpeed, maxAngularSpeed);
 
-                // --- DRIVE ---
-                swerve.driveRobotRelative(new ChassisSpeeds(vx_robot, vy_robot, thetaSpeed));
+                // -----------------------------------------
+                // 4. Convert to robot-relative
+                // -----------------------------------------
+                ChassisSpeeds robotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(
+                    vx_field,
+                    vy_field,
+                    thetaSpeed,
+                    current.getRotation()
+                );
+
+                swerve.driveRobotRelative(robotRelative);
             })
             .isFinished(() -> {
                 Pose2d current = swerve.getPose();
+                double now = Timer.getFPGATimestamp();
 
-                // PASS THROUGH CONDITION
+                // -----------------------------------------
+                // 1. Pass-through condition
+                // -----------------------------------------
                 if (current.getTranslation().getDistance(targetPose.getTranslation()) < passRadius)
                     return true;
 
-                // STALL DETECTION
-                double now = Timer.getFPGATimestamp();
+                // -----------------------------------------
+                // 2. Stall detection
+                // -----------------------------------------
                 double dx = Math.abs(current.getX() - last[0]);
                 double dy = Math.abs(current.getY() - last[1]);
 
-                if (dx < kMoveThroughPose.STALL_THRESHOLD &&
+                boolean stalled =
+                    dx < kMoveThroughPose.STALL_THRESHOLD &&
                     dy < kMoveThroughPose.STALL_THRESHOLD &&
-                    (now - last[2]) > kMoveThroughPose.STALL_TIMEOUT)
+                    (now - last[2]) > kMoveThroughPose.STALL_TIMEOUT;
+
+                if (stalled)
                     return true;
 
+                // Update last movement if we ARE moving
                 if (dx > kMoveThroughPose.STALL_THRESHOLD || dy > kMoveThroughPose.STALL_THRESHOLD) {
                     last[0] = current.getX();
                     last[1] = current.getY();
@@ -151,7 +176,6 @@ public final class DriveCommands {
             .onEnd(swerve::stop);
     }
 
-
     // ==========================================================
     // Move To Pose (full PID control)
     // ==========================================================
@@ -161,100 +185,99 @@ public final class DriveCommands {
         double maxSpeed,
         double maxAngularSpeed
     ) {
-        PIDController xyController = new PIDController(
-            kMoveToPose.XY_KP, 
-            kMoveToPose.XY_KI, 
-            kMoveToPose.XY_KD);
-        PIDController thetaController = new PIDController(
+
+        PIDController distancePID = new PIDController(
+            kMoveToPose.XY_KP,
+            kMoveToPose.XY_KI,
+            kMoveToPose.XY_KD
+        );
+
+        PIDController thetaPID = new PIDController(
             kMoveToPose.THETA_KP,
             kMoveToPose.THETA_KI,
             kMoveToPose.THETA_KD
         );
-        
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
-        final double[] last = new double[3];
+        thetaPID.enableContinuousInput(-Math.PI, Math.PI);
 
         return new CommandBuilder(swerve)
-            .named("MoveToPose")
+            .named("MoveToPose_VectorPID")
             .onInitialize(() -> {
-                Pose2d p = swerve.getPose();
-                last[0] = p.getX();
-                last[1] = p.getY();
-                last[2] = Timer.getFPGATimestamp();
-                thetaController.reset();
+                distancePID.reset();
+                thetaPID.reset();
             })
             .onExecute(() -> {
 
-                 // 1. Get current robot pose from drivetrain's state estimator
                 Pose2d current = swerve.getPose();
 
-                // 2. Calculate velocity commands using PID controllers
-                // Each controller compares current vs target and outputs a speed
-                double xSpeed = xyController.calculate(
-                current.getX(), 
-                targetPose.getX()
-                );
+                // -----------------------------
+                // 1. Compute vector to target
+                // -----------------------------
+                double dx = targetPose.getX() - current.getX();
+                double dy = targetPose.getY() - current.getY();
 
-                double ySpeed = xyController.calculate(
-                current.getY(), 
-                targetPose.getY()
-                );
+                double distance = Math.hypot(dx, dy);
 
-                double thetaSpeed = thetaController.calculate(
+                // Unit direction vector
+                double dirX = dx / (distance + 1e-9);
+                double dirY = dy / (distance + 1e-9);
+
+                // -----------------------------
+                // 2. PID on distance only
+                // -----------------------------
+                double speed = distancePID.calculate(0.0, distance);
+
+                // Clamp to max speed
+                speed = MathUtil.clamp(speed, -maxSpeed, maxSpeed);
+
+                // -----------------------------
+                // 3. Apply slowdown curve
+                // -----------------------------
+
+                double scale = 1.0;
+                if (distance < kMoveToPose.SLOWDOWN_START) {
+                    scale = Math.max(kMoveToPose.SLOWDOWN_MIN, distance / kMoveToPose.SLOWDOWN_START);
+                }
+
+                speed *= scale;
+
+                // Minimum speed floor when close
+                 // tune this
+
+                if (distance < 0.20) { // only apply inside 20 cm
+                    speed = Math.copySign(Math.max(Math.abs(speed), kMoveToPose.MIN_SPEED), speed);
+                }
+
+                // -----------------------------
+                // 4. Convert scalar speed → XY components
+                // -----------------------------
+                double xSpeed = dirX * speed;
+                double ySpeed = dirY * speed;
+
+                // -----------------------------
+                // 5. Rotation PID
+                // -----------------------------
+                double thetaSpeed = thetaPID.calculate(
                     current.getRotation().getRadians(),
                     targetPose.getRotation().getRadians()
                 );
+                thetaSpeed = MathUtil.clamp(thetaSpeed, -maxAngularSpeed, maxAngularSpeed);
 
-                // 3. Cap speeds to prevent runaway values
-                // (keeps motion safe and predictable during tuning)
-                double minSpeed = 0.6; // or whatever feels right
-
-                if (Math.abs(xSpeed) > 0.0)
-                    xSpeed = Math.copySign(Math.max(Math.abs(xSpeed), minSpeed), xSpeed);
-
-                if (Math.abs(ySpeed) > 0.0)
-                    ySpeed = Math.copySign(Math.max(Math.abs(ySpeed), minSpeed), ySpeed);
-
-                thetaSpeed = Math.copySign(Math.min(Math.abs(thetaSpeed), maxAngularSpeed), thetaSpeed);
-
-                // 4. Deadband small dithers near target
-                // If error is below DEADBAND_ERROR, zero out tiny corrections
-                // This prevents jittery "hunting" around the goal
-                if (Math.abs(targetPose.getX() - current.getX()) < kMoveToPose.DEADBAND_ERROR) xSpeed = 0.0;
-                if (Math.abs(targetPose.getY() - current.getY()) < kMoveToPose.DEADBAND_ERROR) ySpeed = 0.0;
-
-                // 5. Convert field-relative X/Y to robot-relative using current heading
-                // (PID math is in field coordinates, but drivetrain expects robot-relative)
-                ChassisSpeeds robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                // -----------------------------
+                // 6. Convert to robot-relative
+                // -----------------------------
+                ChassisSpeeds robotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(
                     xSpeed,
                     ySpeed,
                     thetaSpeed,
                     current.getRotation()
                 );
 
-                // 6. Send robot-relative speeds to CTRE drivetrain
-                swerve.driveRobotRelative(robotRelativeSpeeds);
+                swerve.driveRobotRelative(robotRelative);
             })
             .isFinished(() -> {
                 Pose2d current = swerve.getPose();
-                double now = Timer.getFPGATimestamp();
 
-                double dx = Math.abs(current.getX() - last[0]);
-                double dy = Math.abs(current.getY() - last[1]);
-
-                if (dx < kMoveToPose.STALL_THRESHOLD &&
-                    dy < kMoveToPose.STALL_THRESHOLD &&
-                    (now - last[2]) > kMoveToPose.STALL_TIMEOUT)
-                    return true;
-
-                if (dx > kMoveToPose.STALL_THRESHOLD || dy > kMoveToPose.STALL_THRESHOLD) {
-                    last[0] = current.getX();
-                    last[1] = current.getY();
-                    last[2] = now;
-                }
-
-                boolean atPosition =
+                boolean atPos =
                     current.getTranslation().getDistance(targetPose.getTranslation()) <
                     kMoveToPose.POSITION_TOLERANCE_METERS;
 
@@ -262,7 +285,7 @@ public final class DriveCommands {
                     Math.abs(current.getRotation().minus(targetPose.getRotation()).getRadians()) <
                     kMoveToPose.ANGLE_TOLERANCE_RADIANS;
 
-                return atPosition && atAngle;
+                return atPos && atAngle;
             })
             .onEnd(swerve::stop);
     }

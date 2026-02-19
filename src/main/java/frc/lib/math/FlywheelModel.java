@@ -21,22 +21,19 @@ public class FlywheelModel {
     private final double motorKt;        // N·m per amp
     private final double motorResistance;// ohms
     private final double frictionTorque; // N·m
-    private final GearRatio ratio;       // motor-to-wheel ratio
 
     public FlywheelModel(
         double inertia,
         double motorKv,
         double motorKt,
         double motorResistance,
-        double frictionTorque,
-        GearRatio ratio
+        double frictionTorque
     ) {
         this.inertia = inertia;
         this.motorKv = motorKv;
         this.motorKt = motorKt;
         this.motorResistance = motorResistance;
         this.frictionTorque = frictionTorque;
-        this.ratio = ratio;
     }
 
     // -----------------------------
@@ -58,48 +55,26 @@ public class FlywheelModel {
     public double computeAccelerationRPM(double wheelRPM, double voltage) {
         double wheelRPS = rpmToRps(wheelRPM);
 
-        // Convert wheel speed → motor speed
-        double motorRPS = ratio.toMotor(wheelRPS);
-
-        // Convert motor speed to rad/s for physics
-        double motorRadPerSec = motorRPS * 2 * Math.PI;
-
-        // Back-EMF
-        double backEmf = motorRadPerSec / motorKv;
-
-        // Motor current
-        double current = (voltage - backEmf) / motorResistance;
-
-        // Motor torque
-        double motorTorque = current * motorKt;
-
-        // Wheel torque after gearbox
-        double wheelTorque = motorTorque * ratio.getRatio();
-
-        // Subtract friction
-        wheelTorque -= frictionTorque * Math.signum(wheelRPS);
-
-        // Angular acceleration (rad/s²)
-        double accelRad = wheelTorque / inertia;
-
-        // Convert rad/s² → RPS²
-        double accelRPS = accelRad / (2 * Math.PI);
-
-        return accelRPS * 60.0; // return acceleration in RPM/s
-    }
-
-    /** Predict steady-state wheel RPM for a given voltage. */
-    public double computeSteadyStateRPM(double voltage) {
-        // Solve for motor speed where torque = friction
-        double motorTorque = frictionTorque / ratio.getRatio();
-        double current = motorTorque / motorKt;
-        double backEmf = voltage - current * motorResistance;
-        double motorRadPerSec = backEmf * motorKv;
-
-        double motorRPS = motorRadPerSec / (2 * Math.PI);
-        double wheelRPS = ratio.toOutput(motorRPS);
-
-        return rpsToRpm(wheelRPS);
+        // Convert wheel speed to rad/s 
+        double wheelRadPerSec = wheelRPS * 2 * Math.PI; 
+        
+        // Back-EMF 
+        double backEmf = wheelRadPerSec / motorKv; 
+        
+        // Motor current 
+        double current = (voltage - backEmf) / motorResistance; 
+        
+        // Motor torque 
+        double motorTorque = current * motorKt; 
+        
+        // Subtract friction 
+        double wheelTorque = motorTorque - frictionTorque * Math.signum(wheelRPS); 
+        
+        // Angular acceleration (rad/s²) 
+        double accelRad = wheelTorque / inertia; 
+        
+        // Convert rad/s² → RPM/s 
+        return rpsToRpm(accelRad / (2 * Math.PI));
     }
 
     /** Simulate one timestep of flywheel motion. */

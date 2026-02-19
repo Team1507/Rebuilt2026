@@ -25,14 +25,17 @@ public final class IntakeArmCommands {
         return new CommandBuilder(arm)
             .named("IntakeArmUp")
             .onExecute(() -> arm.setPosition(RETRACTED_ANGLE_DEGREES))
+            .isFinished(() -> arm.isAtPosition(RETRACTED_ANGLE_DEGREES, 2))
             .onEnd(arm::stop);
     }
+
 
     /** Move arm to the DEPLOYED angle. */
     public static Command down(IntakeArmSubsystem arm) {
         return new CommandBuilder(arm)
             .named("IntakeArmDown")
             .onExecute(() -> arm.setPosition(DEPLOYED_ANGLE_DEGREES))
+            .isFinished(() -> arm.isAtPosition(DEPLOYED_ANGLE_DEGREES, 2))
             .onEnd(arm::stop);
     }
 

@@ -19,7 +19,7 @@ import java.util.List;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.math.geometry.Pose2d;
-
+import edu.wpi.first.wpilibj.Timer;
 // Robot Commands
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShooterCoordinator;
@@ -49,6 +49,8 @@ public class AutoSequence {
 
     private Double nextSpeedOverride = null;
     private Double nextAngularOverride = null;
+
+    private final Timer autoTimer = new Timer();
 
     /**
      * Creates a new AutoSequence builder.
@@ -198,23 +200,6 @@ public class AutoSequence {
         return this;
     }
 
-
-    /**
-     * This should add a Command that performs the robot's scoring routine.
-     * Example:
-     * steps.add(new ScoreCommand(shooterSubsystem));
-     */
-    public AutoSequence shoot() {
-        steps.add(ShooterCoordinator.shootModelBased(
-            record.BLUshooter(),
-            record.YELshooter(),
-            record.BLUfeeder(),
-            record.YELfeeder(),
-            record.agitator()
-        ));
-        return this;
-    }
-
     public AutoSequence hopperExtend() {
         steps.add(HopperCommands.extend(record.hopper()));
         return this;
@@ -243,11 +228,42 @@ public class AutoSequence {
     }
 
     /**
-     * Wait for a number of seconds before continuing.
-     * This is already implemented for students.
+     * This should add a Command that performs the robot's scoring routine.
+     * Example:
+     * steps.add(new ScoreCommand(shooterSubsystem));
      */
-    public AutoSequence waitSeconds(double seconds) {
-        steps.add(Commands.waitSeconds(seconds));
+    public AutoSequence shoot() {
+        steps.add(ShooterCoordinator.shootModelBased(
+            record.BLUshooter(),
+            record.YELshooter(),
+            record.BLUfeeder(),
+            record.YELfeeder(),
+            record.agitator()
+        ));
+        return this;
+    }
+
+    /**
+     * This will start shooting until an elapsed time has happened.
+     * Auto runs for 15 seconds. So at the start of auto a timer
+     * will begin counting. When the timer has reached endTime then
+     * the shooting sequence will stop.
+     * 
+     * @param endTime the elapsed time to stop shooting
+     */
+    public AutoSequence shootUntil(double endTime) {
+        steps.add(
+            Commands.race(
+                ShooterCoordinator.shootModelBased(
+                    record.BLUshooter(),
+                    record.YELshooter(),
+                    record.BLUfeeder(),
+                    record.YELfeeder(),
+                    record.agitator()
+                ),
+                Commands.waitUntil(() -> autoTimer.get() >= endTime)
+            )
+        );
         return this;
     }
 
@@ -261,6 +277,26 @@ public class AutoSequence {
     // - moveRRT()
     // etc.
 
+    public AutoSequence startTimer() {
+        steps.add(Commands.runOnce(() -> {
+            autoTimer.reset();
+            autoTimer.start();
+        }));
+        return this;
+    }
+
+    public Command endAtTime(double endTime) {
+        return Commands.waitUntil(() -> autoTimer.get() >= endTime);
+    }
+
+    /**
+     * Wait for a number of seconds before continuing.
+     * This is already implemented for students.
+     */
+    public AutoSequence waitSeconds(double seconds) {
+        steps.add(Commands.waitSeconds(seconds));
+        return this;
+    }
 
     /**
      * Adds a parallel race group to the autonomous sequence.

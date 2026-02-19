@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj.RobotBase;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -41,8 +42,8 @@ import frc.lib.io.agitator.AgitatorIOReal;
 import frc.lib.io.climber.ClimberIOReal;
 import frc.lib.io.feeder.FeederIOReal;
 import frc.lib.io.hopper.HopperIOReal;
-import frc.lib.io.intakearm.IntakeArmIOReal;
-import frc.lib.io.intakeroller.IntakeRollerIOReal;
+import frc.lib.io.intakearm.*;
+import frc.lib.io.intakeroller.*;
 import frc.lib.io.photonvision.PhotonVisionIO;
 import frc.lib.io.photonvision.PhotonVisionIOReal;
 import frc.lib.io.shooter.*;
@@ -56,6 +57,7 @@ import frc.lib.hardware.ShooterHardware;
 // Shooter ML Model
 import frc.lib.shooterML.data.*;
 import frc.lib.shooterML.model.*;
+
 // Utilities
 import frc.lib.logging.Telemetry;
 
@@ -126,20 +128,36 @@ public class RobotContainer {
     // ==========================================================
     // Shooter + Model
     // ==========================================================
-    // IO
+
+    // -----------------------------
+    // Shooter IO (Real or Sim)
+    // -----------------------------
     private final ShooterIO shooterBLUIO =
-        new ShooterIOReal(
-            ShooterHardware.BLU_ID,
-            kShooter.BLU_CONFIG,
-            ShooterHardware.BLU_DIO
-        );
+        RobotBase.isReal()
+            ? new ShooterIOReal(
+                ShooterHardware.BLU_ID,
+                kShooter.BLU_CONFIG,
+                ShooterHardware.BLU_DIO
+            )
+            : new ShooterIOSim(
+                kShooter.BLU_CONFIG,
+                kShooter.kSim.FLYWHEEL_MODEL,
+                ShooterHardware.BLU_RATIO
+            );
 
     private final ShooterIO shooterYELIO =
-        new ShooterIOReal(
-            ShooterHardware.YEL_ID,
-            kShooter.YEL_CONFIG,
-            ShooterHardware.YEL_DIO
-        );
+        RobotBase.isReal()
+            ? new ShooterIOReal(
+                ShooterHardware.YEL_ID,
+                kShooter.YEL_CONFIG,
+                ShooterHardware.YEL_DIO
+            )
+            : new ShooterIOSim(
+                kShooter.YEL_CONFIG,
+                kShooter.kSim.FLYWHEEL_MODEL,
+                ShooterHardware.YEL_RATIO
+            );
+
 
     // pose + model
     private final Supplier<Pose2d> poseSupplier = localizationManager::getFusedPose;
@@ -219,12 +237,18 @@ public class RobotContainer {
     // Intake Arm
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
-            new IntakeArmIOReal(kIntake.kArm.BLU_CONFIG, kIntake.kArm.YEL_CONFIG));
+            RobotBase.isReal()
+                ? new IntakeArmIOReal(kIntake.kArm.BLU_CONFIG, kIntake.kArm.YEL_CONFIG)
+                : new IntakeArmIOSim()
+        );
 
     // Intake Roller
     public final IntakeRollerSubsystem intakeRollerSubsystem =
         new IntakeRollerSubsystem(
-            new IntakeRollerIOReal(kIntake.ROLLER_CONFIG));
+            RobotBase.isReal()
+                ? new IntakeRollerIOReal(kIntake.ROLLER_CONFIG)
+                : new IntakeRollerIOSim()
+        );
 
     // ==========================================================
     // SubsystemsRecord
@@ -270,7 +294,7 @@ public class RobotContainer {
     public RobotContainer() {
         shooterBLUsystem.setShotTrainer(shotBLUTrainer);
         shooterYELsystem.setShotTrainer(shotYELTrainer);
-        
+
         configureTelemetry();
         configureDefaultCommands();
         configureDriverControls();
@@ -384,6 +408,10 @@ public class RobotContainer {
         autoChooser.addOption(
             "Auto Blue Subway Right",
             AutoBlueSubwayRight.build(subsystemsRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+
+        autoChooser.addOption(
+            "Auto Shoot Until",
+            AutoShootUntil.build(subsystemsRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {
