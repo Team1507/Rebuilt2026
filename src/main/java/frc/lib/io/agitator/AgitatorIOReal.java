@@ -9,7 +9,7 @@
 package frc.lib.io.agitator;
 
 import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 import frc.lib.hardware.AgitatorHardware;
 import frc.lib.util.MotorConfig;
@@ -20,12 +20,12 @@ import frc.robot.framework.base.Subsystems1507;
  */
 public class AgitatorIOReal extends Subsystems1507 implements AgitatorIO {
 
-    private final TalonFXS motor;
+    private final TalonFX motor;
     private final DutyCycleOut dutyRequest = new DutyCycleOut(0);
 
     public AgitatorIOReal(MotorConfig config) {
-        this.motor = new TalonFXS(AgitatorHardware.AGITATOR_ID);
-        configureFXSMotor(config, motor);
+        this.motor = new TalonFX(AgitatorHardware.AGITATOR_ID);
+        configureFXMotor(config, motor);
     }
 
     @Override

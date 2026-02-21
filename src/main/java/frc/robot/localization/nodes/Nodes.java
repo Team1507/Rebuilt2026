@@ -93,9 +93,9 @@ public final class Nodes {
         public static final Pose2d APPROACH_LEFT =
                 approach(LEFT_POINT, CENTER);
         public static final Pose2d APPROACH_RIGHT =
-                new Pose2d(1.05, 2.45, Rotation2d.fromDegrees(-8.5));
+                new Pose2d(1.15, 2.45, Rotation2d.fromDegrees(-8.5));
         public static final Pose2d CLIMB =
-                new Pose2d(1.05, 2.85, Rotation2d.fromDegrees(-8.5));
+                new Pose2d(1.15, 2.85, Rotation2d.fromDegrees(-8.5));
     }
 
     // ============================

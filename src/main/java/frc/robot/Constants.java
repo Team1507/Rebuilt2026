@@ -260,13 +260,13 @@ public class Constants {
     public static final class kMoveToPose {
 
         // PID gains for X/Y translation
-        public static final double XY_KP = 1.215; // increasing kP can decrease settle time
+        public static final double XY_KP = 1.476; // increasing kP can decrease settle time
             /*Note: When a non‑zero settle time is observed, increasing XY_KP can reduce 
               terminal convergence time, provided overshoot, 
               oscillation, and jitter metrics remain clean. 
              */
         public static final double XY_KI = 0.0;
-        public static final double XY_KD = 0.25;
+        public static final double XY_KD = 0.45;
 
         // PID gains for rotation
         public static final double THETA_KP = 1.0;
@@ -279,7 +279,7 @@ public class Constants {
         public static final double SLOWDOWN_MIN = 0.2;
 
         // Minimum Speed for movements
-        public static final double MIN_SPEED = 0.4;
+        public static final double MIN_SPEED = 0.25;
 
         // Tolerances
         public static final double POSITION_TOLERANCE_METERS = 0.09;

@@ -27,31 +27,11 @@ public class AutoShootUntil {
             // .moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.5)
             // .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.5)
             // .moveThrough(Nodes.Start.START_SUBWAY_RIGHT, 0.5)
-
-            .startLog(Nodes.AllianceZoneBlue.BACK_RIGHT)
-            .parallel(
-                seq -> seq.recordLog(),
-                seq -> seq.moveTo(Nodes.AllianceZoneBlue.BACK_RIGHT)
-            )
-            .endLog()
-
+            .moveTo(Nodes.AllianceZoneBlue.BACK_RIGHT)
             .pointToTarget()
             .shootUntil(7.0)
-
-            .startLog(Nodes.Tower.APPROACH_RIGHT)
-            .parallel(
-                seq -> seq.recordLog(),
-                seq -> seq.moveTo(Nodes.Tower.APPROACH_RIGHT)
-            )
-            .endLog()
-
-            .startLog(Nodes.Tower.CLIMB)
-            .parallel(
-                seq -> seq.recordLog(),
-                seq -> seq.moveTo(Nodes.Tower.CLIMB)
-            )
-            .endLog()
-
+            .moveTo(Nodes.Tower.APPROACH_RIGHT)
+            .moveTo(Nodes.Tower.CLIMB)
             .build();
     }
 }
