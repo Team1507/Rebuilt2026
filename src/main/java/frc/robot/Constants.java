@@ -260,9 +260,9 @@ public class Constants {
     public static final class kMoveToPose {
 
         // PID gains for X/Y translation
-        public static final double XY_KP = 0.9;
+        public static final double XY_KP = 1.5;
         public static final double XY_KI = 0.0;
-        public static final double XY_KD = 0.1;
+        public static final double XY_KD = 0.35;
 
         // PID gains for rotation
         public static final double THETA_KP = 1.0;
@@ -271,11 +271,11 @@ public class Constants {
 
         // Deadband near target
         public static final double DEADBAND_ERROR = 0.05;
-        public static final double SLOWDOWN_START = 0.55;
+        public static final double SLOWDOWN_START = 0.95;
         public static final double SLOWDOWN_MIN = 0.18;
 
         // Minimum Speed for movements
-        public static final double MIN_SPEED = 0.7;
+        public static final double MIN_SPEED = 0.39159999999999995;
 
         // Tolerances
         public static final double POSITION_TOLERANCE_METERS = 0.09;

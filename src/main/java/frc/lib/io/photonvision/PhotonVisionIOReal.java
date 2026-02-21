@@ -58,7 +58,7 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
             cameras[i] = new PhotonCamera(cfg.name);
             estimators[i] = new PhotonPoseEstimator(
                 kVision.APRILTAG_LAYOUT,
-                PhotonPoseEstimator.PoseStrategy.PNP_DISTANCE_TRIG_SOLVE, // or LOWEST_AMBIGUITY
+                PhotonPoseEstimator.PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
                 cfg.robotToCamera
             );
         }

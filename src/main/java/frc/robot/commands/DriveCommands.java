@@ -252,51 +252,56 @@ public final class DriveCommands {
                 Pose2d current = swerve.getPose();
 
                 // -----------------------------
-                // 1. Compute vector to target
+                // 1. Vector to target
                 // -----------------------------
                 double dx = targetPose.getX() - current.getX();
                 double dy = targetPose.getY() - current.getY();
-
                 double distance = Math.hypot(dx, dy);
 
-                // Unit direction vector
                 double dirX = dx / (distance + 1e-9);
                 double dirY = dy / (distance + 1e-9);
 
                 // -----------------------------
-                // 2. PID on distance only
+                // 2. PID on distance (correct direction)
                 // -----------------------------
-                double speed = distancePID.calculate(0.0, distance);
+                double pidOut = distancePID.calculate(0.0, distance);
 
-                // Clamp to max speed
+                // PID output is allowed to be large; clamp later
+                double speed = pidOut;
+
+                // -----------------------------
+                // 3. Slowdown curve (dominant)
+                // -----------------------------
+                if (distance < kMoveToPose.SLOWDOWN_START) {
+                    double t = distance / kMoveToPose.SLOWDOWN_START;
+                    double slowdown = MathUtil.clamp(
+                        MathUtil.interpolate(1.0, kMoveToPose.SLOWDOWN_MIN, 1.0 - t),
+                        kMoveToPose.SLOWDOWN_MIN,
+                        1.0
+                    );
+                    speed *= slowdown;
+                }
+
+                // -----------------------------
+                // 4. Clamp to max speed
+                // -----------------------------
                 speed = MathUtil.clamp(speed, -maxSpeed, maxSpeed);
 
                 // -----------------------------
-                // 3. Apply slowdown curve
+                // 5. Apply MIN_SPEED floor
                 // -----------------------------
-
-                double scale = 1.0;
-                if (distance < kMoveToPose.SLOWDOWN_START) {
-                    scale = Math.max(kMoveToPose.SLOWDOWN_MIN, distance / kMoveToPose.SLOWDOWN_START);
-                }
-
-                speed *= scale;
-
-                // Minimum speed floor when close
-                 // tune this
-
-                if (distance < 0.20) { // only apply inside 20 cm
-                    speed = Math.copySign(Math.max(Math.abs(speed), kMoveToPose.MIN_SPEED), speed);
+                if (Math.abs(speed) < kMoveToPose.MIN_SPEED) {
+                    speed = Math.copySign(kMoveToPose.MIN_SPEED, speed);
                 }
 
                 // -----------------------------
-                // 4. Convert scalar speed → XY components
+                // 6. Convert scalar → XY
                 // -----------------------------
                 double xSpeed = dirX * speed;
                 double ySpeed = dirY * speed;
 
                 // -----------------------------
-                // 5. Rotation PID
+                // 7. Rotation PID
                 // -----------------------------
                 double thetaSpeed = thetaPID.calculate(
                     current.getRotation().getRadians(),
@@ -305,7 +310,7 @@ public final class DriveCommands {
                 thetaSpeed = MathUtil.clamp(thetaSpeed, -maxAngularSpeed, maxAngularSpeed);
 
                 // -----------------------------
-                // 6. Convert to robot-relative
+                // 8. Field → robot
                 // -----------------------------
                 ChassisSpeeds robotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(
                     xSpeed,
