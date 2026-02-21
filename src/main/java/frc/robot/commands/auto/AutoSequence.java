@@ -273,6 +273,16 @@ public class AutoSequence {
         return this;
     }
 
+    public AutoSequence pointToShoot() {
+        steps.add(DriveCommands.pointToTarget(record.swerve(), record.BLUshooter()::getTargetPose));
+        return this;
+    }
+
+    public AutoSequence headingToTarget(Pose2d targetPose) {
+        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> targetPose));
+        return this;
+    }
+    
     // may add more actions here:
     // - shoot()
     // - moveThrough(Pose2d...)

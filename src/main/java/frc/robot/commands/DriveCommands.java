@@ -112,6 +112,46 @@ public final class DriveCommands {
         return new Rotation2d(Math.atan2(dy, dx));
     }
 
+     public static Command pointToTarget(
+        SwerveSubsystem swerve,
+        Pose2d targetPose
+    ) {
+        PIDController headingController = new PIDController(6.0, 0.0, 0.1);
+        headingController.enableContinuousInput(-Math.PI, Math.PI);
+        return new CommandBuilder(swerve)
+            .named("PointToTarget")
+            .onExecute(() -> {
+                Pose2d current = swerve.getPose();
+
+                Rotation2d desiredHeading = computeHeadingToTarget(current, targetPose);
+
+                double rotRate = headingController.calculate(
+                    swerve.getHeading().getRadians(),
+                    desiredHeading.getRadians()
+                );
+
+                swerve.drive(new ChassisSpeeds(
+                    0.0,
+                    0.0,
+                    rotRate
+                ));
+            })
+            .isFinished(() -> {
+                Pose2d current = swerve.getPose();
+                Pose2d target = targetPose;
+
+                Rotation2d desiredHeading = computeHeadingToTarget(current, target);
+
+                double angleError = Math.abs(
+                    current.getRotation().minus(desiredHeading).getRadians()
+                );
+
+                return angleError < Math.toRadians(20.0); // 5 degree tolerance
+            })
+            
+            .onEnd(swerve::stop);
+    }
+
     // ==========================================================
     // Move Through Pose (no slowdown)
     // ==========================================================
