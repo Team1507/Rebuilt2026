@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.Timer;
 // Robot Commands
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShooterCoordinator;
+import frc.robot.commands.tuning.MoveLog;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.commands.AgitatorCommands;
 import frc.robot.commands.FeederCommands;
@@ -292,6 +293,36 @@ public class AutoSequence {
 
     public Command endAtTime(double endTime) {
         return Commands.waitUntil(() -> autoTimer.get() >= endTime);
+    }
+
+    public AutoSequence startLog(Pose2d targetPose) {
+        steps.add(MoveLog.startLog(record.swerve(), targetPose));
+        return this;
+    }
+
+    public AutoSequence endLog() {
+        steps.add(MoveLog.endLog());
+        return this;
+    }
+
+    public AutoSequence recordLog() {
+        steps.add(MoveLog.record());
+        return this;
+    }
+
+    public AutoSequence analyzeAllLogs() {
+        steps.add(MoveLog.analyzeAllLogs());
+        return this;
+    }
+
+    public AutoSequence logMoveTo(Pose2d target) {
+        return this
+        .startLog(target)
+        .deadline(
+            seq -> seq.moveTo(target),   // deadline
+            seq -> seq.recordLog()       // runs until moveTo finishes
+        )
+        .endLog();
     }
 
     /**

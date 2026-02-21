@@ -8,18 +8,20 @@
 
 package frc.robot.localization.vision;
 
+import java.util.Optional;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 
 import frc.lib.io.photonvision.PhotonVisionIO;
 import frc.lib.io.photonvision.PhotonVisionInputs;
-import frc.robot.Constants.kVision;
-import frc.robot.localization.LocalizationManager;
+
+// Logging
 import frc.lib.logging.Telemetry;
 
-import java.util.Optional;
-import java.util.function.Supplier;
+// Constants
+import frc.robot.Constants.kVision;
 
 public class PVManager extends SubsystemBase {
 
