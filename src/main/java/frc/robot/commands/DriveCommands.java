@@ -239,6 +239,11 @@ public final class DriveCommands {
             kMoveToPose.THETA_KI,
             kMoveToPose.THETA_KD
         );
+
+        // Stall tracking state (per command instance)
+        final double[] stallStartTime = { -1.0 };
+        final boolean[] finishedByStall = { false };
+
         thetaPID.enableContinuousInput(-Math.PI, Math.PI);
 
         return new CommandBuilder(swerve)
@@ -246,6 +251,9 @@ public final class DriveCommands {
             .onInitialize(() -> {
                 distancePID.reset();
                 thetaPID.reset();
+
+                stallStartTime[0] = -1.0;
+                finishedByStall[0] = false;
             })
             .onExecute(() -> {
 
@@ -258,26 +266,31 @@ public final class DriveCommands {
                 double dy = targetPose.getY() - current.getY();
                 double distance = Math.hypot(dx, dy);
 
-                double dirX = dx / (distance + 1e-9);
-                double dirY = dy / (distance + 1e-9);
+                if (distance < 1e-6) {
+                    swerve.stop();
+                    return;
+                }
+
+                double dirX = dx / distance;
+                double dirY = dy / distance;
 
                 // -----------------------------
-                // 2. PID on distance (correct direction)
+                // 2. PID on distance
                 // -----------------------------
                 double pidOut = distancePID.calculate(0.0, distance);
-
-                // PID output is allowed to be large; clamp later
                 double speed = pidOut;
 
                 // -----------------------------
-                // 3. Slowdown curve (dominant)
+                // 3. Slowdown curve (only if PID still aggressive)
                 // -----------------------------
-                if (distance < kMoveToPose.SLOWDOWN_START) {
+                if (distance < kMoveToPose.SLOWDOWN_START &&
+                    Math.abs(pidOut) > kMoveToPose.MIN_SPEED * 1.5) {
+
                     double t = distance / kMoveToPose.SLOWDOWN_START;
-                    double slowdown = MathUtil.clamp(
-                        MathUtil.interpolate(1.0, kMoveToPose.SLOWDOWN_MIN, 1.0 - t),
+                    double slowdown = MathUtil.interpolate(
                         kMoveToPose.SLOWDOWN_MIN,
-                        1.0
+                        1.0,
+                        t
                     );
                     speed *= slowdown;
                 }
@@ -288,10 +301,24 @@ public final class DriveCommands {
                 speed = MathUtil.clamp(speed, -maxSpeed, maxSpeed);
 
                 // -----------------------------
-                // 5. Apply MIN_SPEED floor
+                // 5. MIN_SPEED floor — tapered & scoped
                 // -----------------------------
-                if (Math.abs(speed) < kMoveToPose.MIN_SPEED) {
-                    speed = Math.copySign(kMoveToPose.MIN_SPEED, speed);
+                double floor = kMoveToPose.MIN_SPEED;
+
+                // Inside final settle region, allow the floor to decay to zero
+                if (distance < 2.0 * kMoveToPose.POSITION_TOLERANCE_METERS) {
+                    double t = distance / (2.0 * kMoveToPose.POSITION_TOLERANCE_METERS);
+                    floor = MathUtil.interpolate(0.0, kMoveToPose.MIN_SPEED, t);
+                }
+
+                if (Math.abs(speed) < floor) {
+                    speed = Math.copySign(floor, speed);
+                }
+
+                // Hard deadband at the very end — allow true stop
+                if (distance < kMoveToPose.POSITION_TOLERANCE_METERS &&
+                    Math.abs(speed) < 0.03) {
+                    speed = 0.0;
                 }
 
                 // -----------------------------
@@ -324,15 +351,45 @@ public final class DriveCommands {
             .isFinished(() -> {
                 Pose2d current = swerve.getPose();
 
-                boolean atPos =
-                    current.getTranslation().getDistance(targetPose.getTranslation()) <
-                    kMoveToPose.POSITION_TOLERANCE_METERS;
+                double dist =
+                    current.getTranslation().getDistance(targetPose.getTranslation());
 
-                boolean atAngle =
-                    Math.abs(current.getRotation().minus(targetPose.getRotation()).getRadians()) <
-                    kMoveToPose.ANGLE_TOLERANCE_RADIANS;
+                double angleError =
+                    Math.abs(current.getRotation().minus(targetPose.getRotation()).getRadians());
 
-                return atPos && atAngle;
+                boolean atPos = dist < kMoveToPose.POSITION_TOLERANCE_METERS;
+                boolean atAngle = angleError < kMoveToPose.ANGLE_TOLERANCE_RADIANS;
+
+                if (atPos && atAngle) return true;
+
+                boolean nearTarget = dist < 1.5 * kMoveToPose.POSITION_TOLERANCE_METERS;
+                if (!nearTarget) {
+                    stallStartTime[0] = -1.0;
+                    return false;
+                }
+
+                ChassisSpeeds speeds = swerve.getInputs().speeds;
+                double speedMag = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+
+                boolean effectivelyStopped = speedMag < kMoveToPose.STALL_THRESHOLD;
+                double now = Timer.getFPGATimestamp();
+
+                if (!effectivelyStopped) {
+                    stallStartTime[0] = -1.0;
+                    return false;
+                }
+
+                if (stallStartTime[0] < 0.0) {
+                    stallStartTime[0] = now;
+                    return false;
+                }
+
+                if ((now - stallStartTime[0]) > kMoveToPose.STALL_TIMEOUT) {
+                    finishedByStall[0] = true;
+                    return true;
+                }
+
+                return false;
             })
             .onEnd(swerve::stop);
     }

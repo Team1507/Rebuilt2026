@@ -198,6 +198,10 @@ public final class MoveLog {
 
     private static final class Analyzer {
 
+        // ------------------------------------------------------------
+        // Sample + Metrics
+        // ------------------------------------------------------------
+
         private static final class Sample {
             double time;
 
@@ -214,13 +218,30 @@ public final class MoveLog {
             double rotationLagScore;
             double oscillationScore;
             double minSpeedDeficiency;
-
-            // New: jitter near target (small dithering instead of clean settle)
             double jitterScore;
-
-            // New: rough settle time (time to first enter and stay within tolerance)
             double settleTime;
+
+            // Extra internal structure for better reasoning
+            double approachOscillation;
+            double nearTargetOscillation;
+            double avgCmdSpeedFar;
+            double avgActualSpeedFar;
+            double avgCmdSpeedNear;
+            double avgActualSpeedNear;
         }
+
+        private static final class Recommendations {
+            double xyKpNew;
+            double xyKdNew;
+            double slowdownStartNew;
+            double slowdownMinNew;
+            double minSpeedNew;
+            double thetaKdNew;
+        }
+
+        // ------------------------------------------------------------
+        // Entry point
+        // ------------------------------------------------------------
 
         public static void run(List<File> logs) {
             try {
@@ -251,7 +272,12 @@ public final class MoveLog {
                 out.write("Oscillation score: " + m.oscillationScore + "\n");
                 out.write("Jitter score (near target): " + m.jitterScore + "\n");
                 out.write("Min-speed deficiency: " + m.minSpeedDeficiency + "\n");
-                out.write("Approx settle time: " + m.settleTime + " s\n\n");
+                
+                if (Double.isNaN(m.settleTime)) {
+                    out.write("Settle time: N/A (direct arrival)\n\n");
+                } else {
+                    out.write("Approx settle time: " + m.settleTime + " s\n\n");
+                }
 
                 double confidence = computeConfidence(m);
                 out.write("Confidence Score: " + confidence + "\n\n");
@@ -289,19 +315,25 @@ public final class MoveLog {
                 out.write("ANGLE_TOLERANCE = " + angTol + "\n\n");
 
                 // Compute recommended constants
-                Recommendations rec = computeRecommendations(m, xyKp, xyKd, thetaKd, slowdownStart, minSpeed);
+                Recommendations rec = computeRecommendations(
+                    m,
+                    xyKp, xyKd, thetaKd,
+                    slowdownStart, slowdownMin, minSpeed
+                );
 
                 out.write("=== Recommended Constants ===\n");
                 out.write("XY_KP: " + xyKp + " -> " + rec.xyKpNew +
-                        "  (? " + (rec.xyKpNew - xyKp) + ")\n");
+                        "  (delta " + (rec.xyKpNew - xyKp) + ")\n");
                 out.write("XY_KD: " + xyKd + " -> " + rec.xyKdNew +
-                        "  (? " + (rec.xyKdNew - xyKd) + ")\n");
+                        "  (delta " + (rec.xyKdNew - xyKd) + ")\n");
                 out.write("SLOWDOWN_START: " + slowdownStart + " -> " + rec.slowdownStartNew +
-                        "  (? " + (rec.slowdownStartNew - slowdownStart) + ")\n");
+                        "  (delta " + (rec.slowdownStartNew - slowdownStart) + ")\n");
+                out.write("SLOWDOWN_MIN: " + slowdownMin + " -> " + rec.slowdownMinNew +
+                        "  (delta " + (rec.slowdownMinNew - slowdownMin) + ")\n");
                 out.write("MIN_SPEED: " + minSpeed + " -> " + rec.minSpeedNew +
-                        "  (? " + (rec.minSpeedNew - minSpeed) + ")\n");
+                        "  (delta " + (rec.minSpeedNew - minSpeed) + ")\n");
                 out.write("THETA_KD: " + thetaKd + " -> " + rec.thetaKdNew +
-                        "  (? " + (rec.thetaKdNew - thetaKd) + ")\n\n");
+                        "  (delta" + (rec.thetaKdNew - thetaKd) + ")\n\n");
 
                 out.write("=== Explanation ===\n");
                 out.write(generateSuggestions(m, rec));
@@ -357,91 +389,151 @@ public final class MoveLog {
         }
 
         // ------------------------------------------------------------
-        // Metric computation (v3)
+        // Metric computation (v4)
         // ------------------------------------------------------------
 
         private static Metrics computeMetrics(List<Sample> s) {
             Metrics m = new Metrics();
 
-            double totalSlowdownDist = 0;
+            double totalSlowdownDist = 0.0;
             int slowdownCount = 0;
 
-            double maxOvershoot = 0;
-            double rotationLag = 0;
-            double oscillation = 0;
-            double minSpeedDef = 0;
-            double jitter = 0;
+            double maxOvershoot = 0.0;
+            double rotationLag = 0.0;
+            double oscillation = 0.0;
+            double minSpeedDef = 0.0;
+            double jitter = 0.0;
 
-            // For settle time: first time we enter and stay within tolerance
+            double approachOsc = 0.0;
+            double nearOsc = 0.0;
+
+            double sumCmdFar = 0.0, sumActFar = 0.0;
+            int countFar = 0;
+            double sumCmdNear = 0.0, sumActNear = 0.0;
+            int countNear = 0;
+
             double posTol = kMoveToPose.POSITION_TOLERANCE_METERS;
             double angTol = kMoveToPose.ANGLE_TOLERANCE_RADIANS;
-            boolean inTolerance = false;
-            double firstInTolTime = -1.0;
+
+            double settleStartTime = Double.NaN;
+            double settleEndTime = Double.NaN;
 
             for (int i = 1; i < s.size(); i++) {
                 Sample a = s.get(i - 1);
                 Sample b = s.get(i);
 
-                double dist = Math.hypot(b.poseX - b.targetX, b.poseY - b.targetY);
-                double speedMag = Math.hypot(b.vx_actual, b.vy_actual);
+                double dx = b.poseX - b.targetX;
+                double dy = b.poseY - b.targetY;
+                double dist = Math.hypot(dx, dy);
+
+                double vxA = a.vx_actual;
+                double vyA = a.vy_actual;
+                double vxB = b.vx_actual;
+                double vyB = b.vy_actual;
+
+                double speedMag = Math.hypot(vxB, vyB);
                 double cmdSpeedMag = Math.hypot(b.vx_cmd, b.vy_cmd);
 
-                // Overshoot: near target but still moving fast
-                if (dist < posTol && speedMag > 0.5) {
-                    maxOvershoot = Math.max(maxOvershoot, speedMag);
+                boolean far = dist > 3.0 * posTol;
+                boolean near = dist < 2.0 * posTol;
+
+                // Overshoot: moving away from target while inside tolerance
+                if (dist < posTol) {
+                    double velDot = vxB * dx + vyB * dy;
+                    if (velDot > 0.0 && speedMag > 0.2) {
+                        maxOvershoot = Math.max(maxOvershoot, speedMag);
+                    }
                 }
 
-                // Slowdown distance: where commanded speed is small
-                if (cmdSpeedMag < 0.5) {
+                // Slowdown distance
+                if (cmdSpeedMag < 0.5 && dist > posTol) {
                     totalSlowdownDist += dist;
                     slowdownCount++;
                 }
 
-                // Rotation lag: actual omega much smaller than commanded
+                // Rotation lag
                 if (Math.abs(b.omega_cmd) > 0.1 &&
                     Math.abs(b.omega_actual) < Math.abs(b.omega_cmd) * 0.5) {
-                    rotationLag += 1;
+                    rotationLag += 1.0;
                 }
 
-                // Oscillation: sign changes of actual velocity at meaningful speed
-                if (Math.signum(a.vx_actual) != Math.signum(b.vx_actual) &&
-                    Math.abs(a.vx_actual) > 0.1 && Math.abs(b.vx_actual) > 0.1) {
-                    oscillation += 1;
+                // Vector oscillation
+                double dotPrev = vxA * vxB + vyA * vyB;
+                double magPrev = Math.hypot(vxA, vyA);
+                double magCurr = Math.hypot(vxB, vyB);
+
+                boolean meaningfulSpeed = magPrev > 0.1 && magCurr > 0.1;
+                boolean directionFlip = dotPrev < 0.0;
+
+                if (meaningfulSpeed && directionFlip) {
+                    oscillation += 1.0;
+                    if (far) approachOsc += 1.0;
+                    else if (near) nearOsc += 1.0;
                 }
 
-                // Jitter near target: small dithering when we should be "done"
-                if (dist < 2.0 * posTol &&
-                    cmdSpeedMag < 0.3 &&
-                    speedMag < 0.5 &&
-                    Math.signum(a.vx_actual) != Math.signum(b.vx_actual)) {
-                    jitter += 1;
+                // Jitter near target
+                if (near && cmdSpeedMag < 0.3 && speedMag < 0.5 && directionFlip) {
+                    jitter += 1.0;
                 }
 
-                // Min-speed deficiency: moving slower than half of MIN_SPEED
-                if (speedMag < kMoveToPose.MIN_SPEED * 0.5 && dist > posTol) {
-                    minSpeedDef += 1;
+                // Min-speed deficiency
+                if (speedMag < kMoveToPose.MIN_SPEED * 0.5 && dist > 2.0 * posTol) {
+                    minSpeedDef += 1.0;
                 }
 
-                // Settle time: first time we enter and stay within tolerance
-                boolean nowInTol = dist < posTol &&
-                                Math.abs(wrapAngle(b.poseTheta - b.targetTheta)) < angTol;
-                if (nowInTol && !inTolerance) {
-                    firstInTolTime = b.time;
-                    inTolerance = true;
-                } else if (!nowInTol && inTolerance) {
-                    // We left tolerance again; reset
-                    inTolerance = false;
-                    firstInTolTime = -1.0;
+                // Speed statistics
+                if (far) {
+                    sumCmdFar += cmdSpeedMag;
+                    sumActFar += speedMag;
+                    countFar++;
+                } else if (near) {
+                    sumCmdNear += cmdSpeedMag;
+                    sumActNear += speedMag;
+                    countNear++;
+                }
+
+                // -----------------------------
+                // Settle time (MIN_SPEED → target)
+                // -----------------------------
+
+                boolean atTarget =
+                    dist < posTol &&
+                    Math.abs(wrapAngle(b.poseTheta - b.targetTheta)) < angTol;
+
+                if (Double.isNaN(settleStartTime) &&
+                    cmdSpeedMag <= kMoveToPose.MIN_SPEED + 1e-3) {
+                    settleStartTime = b.time;
+                }
+
+                if (!Double.isNaN(settleStartTime) && atTarget) {
+                    settleEndTime = b.time;
+                    break;
                 }
             }
 
+            if (!Double.isNaN(settleStartTime) && !Double.isNaN(settleEndTime)) {
+                m.settleTime = settleEndTime - settleStartTime;
+            } else {
+                m.settleTime = Double.NaN;
+            }
+
             m.maxOvershoot = maxOvershoot;
-            m.avgSlowdownDistance = slowdownCount > 0 ? totalSlowdownDist / slowdownCount : 0;
+            m.avgSlowdownDistance = slowdownCount > 0
+                ? totalSlowdownDist / slowdownCount
+                : 0.0;
+
             m.rotationLagScore = rotationLag;
             m.oscillationScore = oscillation;
             m.minSpeedDeficiency = minSpeedDef;
             m.jitterScore = jitter;
-            m.settleTime = firstInTolTime < 0 ? s.get(s.size() - 1).time : firstInTolTime;
+
+            m.approachOscillation = approachOsc;
+            m.nearTargetOscillation = nearOsc;
+
+            m.avgCmdSpeedFar = countFar > 0 ? sumCmdFar / countFar : 0.0;
+            m.avgActualSpeedFar = countFar > 0 ? sumActFar / countFar : 0.0;
+            m.avgCmdSpeedNear = countNear > 0 ? sumCmdNear / countNear : 0.0;
+            m.avgActualSpeedNear = countNear > 0 ? sumActNear / countNear : 0.0;
 
             return m;
         }
@@ -453,90 +545,125 @@ public final class MoveLog {
         }
 
         // ------------------------------------------------------------
-        // Confidence score (v3)
+        // Confidence score (v4)
         // ------------------------------------------------------------
 
         private static double computeConfidence(Metrics m) {
             double score = 1.0;
 
-            // Overshoot is bad but you currently have 0.0, so light weight
-            score -= m.maxOvershoot * 0.3;
+            // Overshoot: bad but rare in vector control
+            score -= m.maxOvershoot * 0.4;
 
-            // Oscillation and jitter are what make it feel "jittery"
-            score -= m.oscillationScore * 0.015;
+            // Oscillation and jitter: primary "feel" killers
+            score -= m.approachOscillation * 0.01;
+            score -= m.nearTargetOscillation * 0.02;
             score -= m.jitterScore * 0.03;
 
-            // Min-speed deficiency matters, but less than jitter
+            // Min-speed deficiency: robot unwilling to move
             score -= m.minSpeedDeficiency * 0.005;
 
-            // Very long settle time should hurt confidence
+            // Very long settle time hurts confidence
             if (m.settleTime > 1.5) {
                 score -= (m.settleTime - 1.5) * 0.1;
             }
 
-            return Math.max(0, Math.min(1, score));
+            return Math.max(0.0, Math.min(1.0, score));
         }
 
         // ------------------------------------------------------------
-        // Recommendation structure
-        // ------------------------------------------------------------
-
-        private static final class Recommendations {
-            double xyKpNew;
-            double xyKdNew;
-            double slowdownStartNew;
-            double minSpeedNew;
-            double thetaKdNew;
-        }
-
-        // ------------------------------------------------------------
-        // Recommendation logic (v3)
+        // Recommendation logic (v4)
         // ------------------------------------------------------------
 
         private static Recommendations computeRecommendations(
                 Metrics m,
                 double xyKp, double xyKd, double thetaKd,
-                double slowdownStart, double minSpeed) {
+                double slowdownStart, double slowdownMin, double minSpeed) {
 
             Recommendations r = new Recommendations();
 
             double newKp = xyKp;
             double newKd = xyKd;
             double newSlowdownStart = slowdownStart;
+            double newSlowdownMin = slowdownMin;
             double newMinSpeed = minSpeed;
             double newThetaKd = thetaKd;
 
-            // Target slowdown distance ~ SLOWDOWN_START
-            double desiredSlowdown = slowdownStart;
-            if (m.avgSlowdownDistance > desiredSlowdown + 0.05) {
-                newSlowdownStart -= 0.04;
-            } else if (m.avgSlowdownDistance < desiredSlowdown - 0.05) {
-                newSlowdownStart += 0.04;
+            // 1. SlowdownStart: only if motion is otherwise clean
+            boolean motionClean =
+                m.jitterScore < 10 &&
+                m.nearTargetOscillation < 10 &&
+                m.maxOvershoot < 0.1;
+
+            boolean slowdownCurveActive =
+                kMoveToPose.SLOWDOWN_START > 0.3 &&
+                m.avgCmdSpeedFar > 0.6;
+
+            if (motionClean && slowdownCurveActive) {
+                double desiredSlowdown = slowdownStart;
+                if (m.avgSlowdownDistance > desiredSlowdown + 0.05) {
+                    // slowing too early -> start slowdown later
+                    newSlowdownStart = slowdownStart - 0.04;
+                } else if (m.avgSlowdownDistance < desiredSlowdown - 0.05) {
+                    // slowing too late -> start slowdown earlier
+                    newSlowdownStart = slowdownStart + 0.04;
+                }
+                newSlowdownStart = Math.max(newSlowdownStart, 0.2);
             }
 
-            // Min-speed deficiency: robot crawling far from target
-            if (m.minSpeedDeficiency > 50) {
-                newMinSpeed += 0.05;
+            // 2. MIN_SPEED: two-sided logic
+            // Far from target but crawling -> increase MIN_SPEED
+            if (m.minSpeedDeficiency > 50 && m.avgCmdSpeedFar > 0.4) {
+                newMinSpeed = minSpeed + 0.05;
             }
 
-            // Oscillation + jitter logic:
-            //  - First try increasing KD up to a ceiling
-            //  - If KD is already high, start backing off KP
-            if (m.oscillationScore > 40 || m.jitterScore > 20) {
-                if (newKd < 0.35) {
-                    newKd = Math.min(0.35, newKd + 0.05);
+            // Near target jitter + early slowdown -> MIN_SPEED likely too high
+            if (m.jitterScore > 20 &&
+                m.avgSlowdownDistance < slowdownStart - 0.1) {
+                newMinSpeed = Math.max(0.15, minSpeed - 0.05);
+            }
+
+            // 3. SLOWDOWN_MIN tuning
+            // Too much jitter near target → SLOWDOWN_MIN too high
+            if (m.jitterScore > 20 &&
+                m.avgCmdSpeedNear > 0.3 &&
+                m.nearTargetOscillation > 10) {
+                newSlowdownMin = Math.max(0.05, slowdownMin - 0.02);
+            }
+
+            // Robot dies early → SLOWDOWN_MIN too low
+            if (m.avgActualSpeedNear < 0.2 &&
+                m.avgCmdSpeedNear < 0.2 &&
+                m.nearTargetOscillation < 5 &&
+                m.jitterScore < 10 &&
+                m.settleTime > 1.0) {
+                newSlowdownMin = Math.min(0.4, slowdownMin + 0.02);
+            }
+
+            // 4. XY PID: oscillation / jitter tuning
+            double kdMax = 0.45;
+            double kpMin = 1.0;
+
+            if (m.nearTargetOscillation > 20 || m.jitterScore > 20) {
+                // First, try increasing KD up to kdMax
+                if (newKd < kdMax) {
+                    newKd = Math.min(kdMax, newKd + 0.05);
                 } else {
-                    // KD already high: reduce KP instead of cranking KD forever
-                    newKp = Math.max(1.5, newKp * 0.85);
+                    // KD already high: reduce KP
+                    newKp = Math.max(kpMin, newKp * 0.9);
                 }
             }
 
-            // If overshoot ever appears, reduce KP a bit
-            if (m.maxOvershoot > 0.1) {
-                newKp = Math.max(1.0, newKp * 0.9);
+            // Approach oscillation: robot "snakes" on the way in
+            if (m.approachOscillation > 30 && newKd < kdMax) {
+                newKd = Math.min(kdMax, newKd + 0.05);
             }
 
-            // Theta KD: only if rotation lag is significant
+            // Overshoot: reduce KP a bit
+            if (m.maxOvershoot > 0.1) {
+                newKp = Math.max(kpMin, newKp * 0.9);
+            }
+
+            // 5. Theta KD: rotation lag
             if (m.rotationLagScore > 10 && newThetaKd < 0.3) {
                 newThetaKd = Math.min(0.3, newThetaKd + 0.05);
             }
@@ -544,6 +671,7 @@ public final class MoveLog {
             r.xyKpNew = newKp;
             r.xyKdNew = newKd;
             r.slowdownStartNew = newSlowdownStart;
+            r.slowdownMinNew = newSlowdownMin;
             r.minSpeedNew = newMinSpeed;
             r.thetaKdNew = newThetaKd;
 
@@ -557,38 +685,63 @@ public final class MoveLog {
         private static String generateSuggestions(Metrics m, Recommendations r) {
             StringBuilder sb = new StringBuilder();
 
-            if (m.oscillationScore > 40 || m.jitterScore > 20) {
-                sb.append("• High oscillation/jitter detected near target (osc=")
-                .append(m.oscillationScore)
+            if (m.nearTargetOscillation > 20 || m.jitterScore > 20) {
+                sb.append("- Significant jitter/oscillation near the target (nearOsc=")
+                .append(m.nearTargetOscillation)
                 .append(", jitter=")
                 .append(m.jitterScore)
-                .append("). Consider the recommended XY_KP/XY_KD changes.\n");
+                .append("). The recommended XY_KP/XY_KD and MIN_SPEED/SLOWDOWN_MIN changes aim to improve final settle behavior.\n");
             }
 
-            if (m.avgSlowdownDistance > kMoveToPose.SLOWDOWN_START + 0.05) {
-                sb.append("• Slowdown appears to start too early (avg distance = ")
+            if (m.approachOscillation > 30) {
+                sb.append("- Noticeable oscillation while approaching the target (approachOsc=")
+                .append(m.approachOscillation)
+                .append("). Increasing XY_KD slightly can help damp the approach.\n");
+            }
+
+            // Slowdown / decel interpretation
+            boolean slowdownTuned =
+                Math.abs(r.slowdownStartNew - kMoveToPose.SLOWDOWN_START) > 1e-9;
+
+            // If PID dominates, say that—and do NOT also talk about changing slowdown start.
+            if (!slowdownTuned) {
+                sb.append("- Deceleration is dominated by PID behavior rather than the slowdown curve. ")
+                .append("Further SLOWDOWN_START tuning is unlikely to improve performance. ")
+                .append("(avg distance = ")
                 .append(m.avgSlowdownDistance)
-                .append(" m).\n");
-            } else if (m.avgSlowdownDistance < kMoveToPose.SLOWDOWN_START - 0.05) {
-                sb.append("• Slowdown appears to start too late (avg distance = ")
-                .append(m.avgSlowdownDistance)
-                .append(" m).\n");
+                .append(" m)\n");
+            } else {
+                if (m.avgSlowdownDistance > kMoveToPose.SLOWDOWN_START + 0.05) {
+                    sb.append("- Slowdown appears to start too early (avg distance = ")
+                    .append(m.avgSlowdownDistance)
+                    .append(" m). The suggested SLOWDOWN_START change will delay deceleration.\n");
+                } else if (m.avgSlowdownDistance < kMoveToPose.SLOWDOWN_START - 0.05) {
+                    sb.append("- Slowdown appears to start too late (avg distance = ")
+                    .append(m.avgSlowdownDistance)
+                    .append(" m). The suggested SLOWDOWN_START change will start deceleration sooner.\n");
+                }
             }
 
             if (m.minSpeedDeficiency > 50) {
-                sb.append("• Robot spends a lot of time below half MIN_SPEED far from target (")
+                sb.append("- Robot spends a lot of time below half MIN_SPEED far from target (")
                 .append(m.minSpeedDeficiency)
                 .append(" samples). Increasing MIN_SPEED may help it commit to motion.\n");
             }
 
             if (m.maxOvershoot > 0.1) {
-                sb.append("• Some overshoot detected near the target (max speed ")
+                sb.append("- Some overshoot detected near the target (max speed ")
                 .append(m.maxOvershoot)
                 .append(" m/s). Reducing XY_KP slightly can help.\n");
             }
 
+            if (m.rotationLagScore > 10) {
+                sb.append("- Rotation lags behind commanded omega (lag samples=")
+                .append(m.rotationLagScore)
+                .append("). Increasing THETA_KD can help the robot track heading more crisply.\n");
+            }
+
             if (sb.length() == 0) {
-                sb.append("No major issues detected. Motion looks reasonably tuned; fine-tune KP/KD based on feel if desired.\n");
+                sb.append("No major issues detected. Motion looks reasonably tuned; fine-tune KP/KD, SLOWDOWN_START, and SLOWDOWN_MIN based on feel if desired.\n");
             }
 
             return sb.toString();
@@ -612,4 +765,5 @@ public final class MoveLog {
             }
         }
     }
+
 }
