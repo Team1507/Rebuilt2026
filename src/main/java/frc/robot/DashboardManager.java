@@ -98,6 +98,9 @@ public class DashboardManager {
 
     private final BooleanPublisher pubLocalizationSeeded =
         nt.getBooleanTopic("Localization/PoseSeeded").publish();
+    private final BooleanPublisher resetSeedPub =
+        nt.getBooleanTopic("ResetPoseSeed").publish();
+
     private final DoublePublisher pubQuestBattery =
         nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
     private final BooleanPublisher pubQuestIsTracking =
@@ -184,6 +187,17 @@ public class DashboardManager {
         pubShooterIdleRPM.set(shooterIdleRPM);
 
         pubLocalizationSeeded.set(localization.localizationManager().isStartupSeeded());
+
+        boolean resetSeed =
+            nt.getEntry("ResetPoseSeed").getBoolean(false);
+
+        if (resetSeed) {
+            localization.localizationManager().resetVisionSeed();
+            nt.getEntry("ResetPoseSeed").setBoolean(false);
+        }
+
+
+
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
         pubQuestIsTracking.set(localization.questNav().isTracking());
 
@@ -197,7 +211,7 @@ public class DashboardManager {
         boolean yelFeederRun = nt.getEntry("Manual Mode/Feeder/YEL/Run").getBoolean(false);
         boolean hopperRun = nt.getEntry("Manual Mode/Hopper/Run").getBoolean(false);
         boolean intakeArmRun = nt.getEntry("Manual Mode/Intake/Arm/Run").getBoolean(false);
-        boolean intakeRollerRun = nt.getEntry("Manual Mode/Intake/Roller/Run").getBoolean(false);
+        boolean intakeRollerRun = nt.getEntry("Manual Mode/Inta     ke/Roller/Run").getBoolean(false);
         boolean bluShooterRun = nt.getEntry("Manual Mode/Shooter/BLU/Run").getBoolean(false);
         boolean yelShooterRun = nt.getEntry("Manual Mode/Shooter/YEL/Run").getBoolean(false);
 
