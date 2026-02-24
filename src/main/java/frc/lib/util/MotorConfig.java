@@ -19,6 +19,9 @@ public record MotorConfig(
         double kS,
         double kA,
 
+        double kG,
+        MotorConfig.GravityType gravityType,
+
         double peakForwardVoltage,
         double peakReverseVoltage
 ) {
@@ -30,11 +33,19 @@ public record MotorConfig(
         MOTION_MAGIC
     }
 
+    public static enum GravityType {
+        NONE,
+        COSINE,
+        SINE,
+        CONSTANT
+    }
+
     // Duty-cycle constructor
     public MotorConfig(double peakForwardVoltage, double peakReverseVoltage) {
         this(ControlMode.DUTY_CYCLE,
              0,0,0,
              0,0,0,
+             0.0, GravityType.NONE,
              peakForwardVoltage,
              peakReverseVoltage);
     }
@@ -46,26 +57,31 @@ public record MotorConfig(
         this(ControlMode.VELOCITY,
              kP,kI,kD,
              kV,kS,kA,
+             0.0, GravityType.NONE,
              peakForwardVoltage,
              peakReverseVoltage);
     }
 
     // Position constructor
     public MotorConfig(double kP, double kI, double kD,
+                       double kG, GravityType gravityType,
                        double peakForwardVoltage, double peakReverseVoltage) {
         this(ControlMode.POSITION,
              kP,kI,kD,
              0,0,0,
+             kG, gravityType,
              peakForwardVoltage,
              peakReverseVoltage);
     }
 
     public MotorConfig(ControlMode controlMode,
                        double kP, double kI, double kD,
+                       double kG, GravityType gravityType,
                        double peakForwardVoltage, double peakReverseVoltage) {
         this(controlMode,
              kP,kI,kD,
              0,0,0,
+             kG, gravityType,
              peakForwardVoltage,
              peakReverseVoltage);
     }

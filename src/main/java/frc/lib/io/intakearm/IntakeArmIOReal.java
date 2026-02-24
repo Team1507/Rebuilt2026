@@ -10,6 +10,7 @@ package frc.lib.io.intakearm;
 
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
@@ -23,16 +24,16 @@ import frc.robot.framework.base.Subsystems1507;
  */
 public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
 
+    private final MotorConfig bluConfig;
     private final TalonFXS bluMotor;
     private final TalonFXS yelMotor;
 
     private final GearRatio ratio = IntakeArmHardware.RATIO;
 
-    private final PositionDutyCycle positionRequest =
-        new PositionDutyCycle(0).withSlot(0);
-
     public IntakeArmIOReal(MotorConfig bluConfig, MotorConfig yelConfig) {
+        this.bluConfig = bluConfig;
         this.bluMotor = new TalonFXS(IntakeArmHardware.BLU_ID);
+
         this.yelMotor = new TalonFXS(IntakeArmHardware.YEL_ID);
 
         configureFXSMotor(bluConfig, bluMotor);
@@ -60,11 +61,28 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
         inputs.yelTempC = yelMotor.getDeviceTemp().getValueAsDouble();
     }
 
+    // -------------------------
+    // Gravity Feedforward
+    // -------------------------
+    private double computeGravityFF(double armDeg) {
+        return switch (bluConfig.gravityType()) {
+            case NONE -> 0.0; 
+            case CONSTANT -> bluConfig.kG();
+            case COSINE -> bluConfig.kG() * Math.cos(Math.toRadians(armDeg));
+            case SINE -> bluConfig.kG() * Math.sin(Math.toRadians(armDeg)); 
+        }; 
+    }
+
     @Override
     public void setPositionDeg(double degrees) {
         double motorRot = ratio.toMotor(degrees);
-        bluMotor.setControl(positionRequest.withPosition(motorRot));
-        // YEL follows automatically
+        
+        double ffVolts = computeGravityFF(degrees);
+        
+        bluMotor.setControl( new PositionVoltage(motorRot) 
+            .withSlot(0) 
+            .withFeedForward(ffVolts)
+        ); // YEL follows automatically 
     }
 
     @Override

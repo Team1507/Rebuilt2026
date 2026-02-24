@@ -328,7 +328,7 @@ public class RobotContainer {
         // Left bumper: slow mode while held, normal when released, reseed heading on press
         bottomDriver.leftBumper()
             .onTrue(Commands.runOnce(() -> {
-                kSwerve.MAX_SPEED = 0.3 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+                kSwerve.MAX_SPEED = 0.3 * kSwerve.MAX_SPEED;
                 kSwerve.MAX_ANGULAR_RATE = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
                 ctreDrivetrain.seedFieldCentric();
             }));

@@ -17,6 +17,7 @@ import edu.wpi.first.math.geometry.*;
 import frc.lib.math.FlywheelModel;
 import frc.lib.util.MotorConfig;
 import frc.lib.util.MotorConfig.ControlMode;
+import frc.lib.util.MotorConfig.GravityType;
 import frc.robot.generated.ctre.TunerConstants;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
@@ -81,6 +82,8 @@ public class Constants {
             0.09375, // kS
             0.245,   // kV
             0.0,     // kA
+
+            0.8, GravityType.CONSTANT,
 
             // Output limits
             8, -8
@@ -159,12 +162,14 @@ public class Constants {
             public static final double RETRACTED_ANGLE_DEGREES = 0.15;
 
             public static final MotorConfig BLU_CONFIG = new MotorConfig(
-                0.01, 0.0, 0.0,   // PID
-                4, -4             // voltage limits
+                0.01, 0.0, 0.0,                   // PID
+                0.8, GravityType.COSINE,    // Gravity
+                4, -4                   // voltage limits
             );
 
             public static final MotorConfig YEL_CONFIG = new MotorConfig(
                 0.01, 0.0, 0.0,
+                0.8, GravityType.COSINE,
                 4, -4
             );
         }
