@@ -38,12 +38,6 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
 
         configureFXSMotor(bluConfig, bluMotor);
         configureFXSMotor(yelConfig, yelMotor);
-
-        // YEL follows BLU, but reversed
-        yelMotor.setControl(new Follower(
-            bluMotor.getDeviceID(),
-            MotorAlignmentValue.Opposed
-        ));
     }
 
     @Override
@@ -82,7 +76,12 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
         bluMotor.setControl( new PositionVoltage(motorRot) 
             .withSlot(0) 
             .withFeedForward(ffVolts)
-        ); // YEL follows automatically 
+        );
+
+        yelMotor.setControl(new PositionVoltage(motorRot) 
+            .withSlot(0) 
+            .withFeedForward(ffVolts)
+        );
     }
 
     @Override

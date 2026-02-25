@@ -155,6 +155,8 @@ public class DashboardManager {
     /* ---------------- Periodic update ---------------- */
 
     public void updateInputs() {
+        SmartDashboard.putNumber("Intake/Arm/Current BLU Position", subsystems.intakeArm().getBLUPositionDegrees());
+        SmartDashboard.putNumber("Intake/Arm/Current YEL Position", subsystems.intakeArm().getYELPositionDegrees());
 
         double now = Timer.getFPGATimestamp();
         if (now - lastUpdateTime < DASHBOARD_PERIOD) return;

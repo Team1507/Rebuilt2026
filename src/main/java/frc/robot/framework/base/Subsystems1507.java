@@ -14,11 +14,14 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.MotorConfig;
 import frc.lib.util.MotorConfig.ControlMode;
+import frc.lib.util.MotorConfig.GravityType;;
 
 public abstract class Subsystems1507 extends SubsystemBase {
    
@@ -44,6 +47,9 @@ public abstract class Subsystems1507 extends SubsystemBase {
     protected void configureFXSMotor(MotorConfig config, TalonFXS motor) {
         TalonFXSConfiguration cfg = new TalonFXSConfiguration();
 
+        cfg.ExternalFeedback.RotorToSensorRatio = 1.0;
+        cfg.ExternalFeedback.SensorToMechanismRatio = 1.0;
+
         cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
 
         if (config.mode() != ControlMode.DUTY_CYCLE) {
@@ -54,6 +60,17 @@ public abstract class Subsystems1507 extends SubsystemBase {
             cfg.Slot0.kV = config.kV();
             cfg.Slot0.kS = config.kS();
             cfg.Slot0.kA = config.kA();
+        }
+
+        if (config.gravityType() == GravityType.COSINE) {
+            cfg.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+            cfg.Slot0.kG = config.kG();
+        }
+
+        if (config.motorInverted()) {
+            cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        } else {
+            cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         }
 
         cfg.Voltage.withPeakForwardVoltage(Volts.of(config.peakForwardVoltage()))

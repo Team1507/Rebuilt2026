@@ -72,6 +72,7 @@ public class Constants {
          */
         public static final MotorConfig CONFIG = new MotorConfig(
             ControlMode.MOTION_MAGIC,
+            false,
 
             // PID slot 0
             0.11,   // kP
@@ -104,10 +105,10 @@ public class Constants {
             0.11, 0.0, 0.0,
 
             // Feedforward
-            0.09375, 0.245, 0.0,
+            0.09931, 0.42, 0.0,
 
             // Voltage limits
-            8, -8
+            12, -12
         );
     }
 
@@ -156,20 +157,22 @@ public class Constants {
 
         public static final class kArm {
 
-            public static final double MAX_ANGLE_DEGREES = 0.65;
+            public static final double MAX_ANGLE_DEGREES = 60.0;
             public static final double MIN_ANGLE_DEGREES = 0.0;
-            public static final double DEPLOYED_ANGLE_DEGREES = 0.64;
-            public static final double RETRACTED_ANGLE_DEGREES = 0.15;
+            public static final double DEPLOYED_ANGLE_DEGREES = 55.0;
+            public static final double RETRACTED_ANGLE_DEGREES = 15.0;
 
             public static final MotorConfig BLU_CONFIG = new MotorConfig(
-                0.01, 0.0, 0.0,                   // PID
-                0.8, GravityType.COSINE,    // Gravity
-                4, -4                   // voltage limits
+                false,
+                0.5, 0.0, 0.0,       // PID
+                0.1, GravityType.COSINE,   // Gravity
+                4, -4      // voltage limits
             );
 
             public static final MotorConfig YEL_CONFIG = new MotorConfig(
-                0.01, 0.0, 0.0,
-                0.8, GravityType.COSINE,
+                true,
+                0.5, 0.0, 0.0,
+                0.1, GravityType.COSINE,
                 4, -4
             );
         }
@@ -182,7 +185,7 @@ public class Constants {
     public static final class kShooter {
 
         // General shooter limits
-        public static final double MAX_RPM = 2400.0;
+        public static final double MAX_RPM = 500.0;
         public static final double TARGET_TOLERANCE = 2.0;
 
         // ------------------------------------------------------------
@@ -195,12 +198,12 @@ public class Constants {
             /* kI */ 0.0,
             /* kD */ 0.0,
 
-            /* kV */ 0.1052631579,
-            /* kS */ 0.245,
+            /* kV */ 0.12231,
+            /* kS */ 0.32,
             /* kA */ 0.0,
 
-            /* peakForwardVoltage */ 8,
-            /* peakReverseVoltage */ -8
+            /* peakForwardVoltage */ 12,
+            /* peakReverseVoltage */ -12
         );
 
         public static final MotorConfig YEL_CONFIG = new MotorConfig(
@@ -208,8 +211,8 @@ public class Constants {
             /* kI */ 0.0,
             /* kD */ 0.0,
 
-            /* kV */ 0.1052631579,
-            /* kS */ 0.245,
+            /* kV */ 0.12231,
+            /* kS */ 0.32,
             /* kA */ 0.0,
 
             /* peakForwardVoltage */ 8,

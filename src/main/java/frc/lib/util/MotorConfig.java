@@ -10,6 +10,7 @@ package frc.lib.util;
 
 public record MotorConfig(
         MotorConfig.ControlMode mode,
+        boolean motorInverted,
 
         double kP,
         double kI,
@@ -42,7 +43,7 @@ public record MotorConfig(
 
     // Duty-cycle constructor
     public MotorConfig(double peakForwardVoltage, double peakReverseVoltage) {
-        this(ControlMode.DUTY_CYCLE,
+        this(ControlMode.DUTY_CYCLE, false,
              0,0,0,
              0,0,0,
              0.0, GravityType.NONE,
@@ -54,7 +55,7 @@ public record MotorConfig(
     public MotorConfig(double kP, double kI, double kD,
                        double kV, double kS, double kA,
                        double peakForwardVoltage, double peakReverseVoltage) {
-        this(ControlMode.VELOCITY,
+        this(ControlMode.VELOCITY, false,
              kP,kI,kD,
              kV,kS,kA,
              0.0, GravityType.NONE,
@@ -63,10 +64,10 @@ public record MotorConfig(
     }
 
     // Position constructor
-    public MotorConfig(double kP, double kI, double kD,
+    public MotorConfig(boolean motorInverted, double kP, double kI, double kD,
                        double kG, GravityType gravityType,
                        double peakForwardVoltage, double peakReverseVoltage) {
-        this(ControlMode.POSITION,
+        this(ControlMode.POSITION,motorInverted,
              kP,kI,kD,
              0,0,0,
              kG, gravityType,
@@ -74,11 +75,11 @@ public record MotorConfig(
              peakReverseVoltage);
     }
 
-    public MotorConfig(ControlMode controlMode,
+    public MotorConfig(ControlMode controlMode, boolean motorInverted,
                        double kP, double kI, double kD,
                        double kG, GravityType gravityType,
                        double peakForwardVoltage, double peakReverseVoltage) {
-        this(controlMode,
+        this(controlMode, motorInverted,
              kP,kI,kD,
              0,0,0,
              kG, gravityType,

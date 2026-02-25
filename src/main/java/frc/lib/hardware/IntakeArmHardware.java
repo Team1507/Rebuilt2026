@@ -22,7 +22,7 @@ public final class IntakeArmHardware {
     public static final int YEL_ID = 14;
 
     /** Shared gear ratio for both arms. */
-    public static final GearRatio RATIO = GearRatio.gearBox(100, 1);
+    public static final GearRatio RATIO = GearRatio.gearBox(1, 1);
 
     private IntakeArmHardware() {}
 }
