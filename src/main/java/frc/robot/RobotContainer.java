@@ -222,12 +222,12 @@ public class RobotContainer {
     // Feeder
     public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
-            new FeederIOReal(kFeeder.CONFIG, true));  // BLUE
+            new FeederIOReal(kFeeder.BLU_CONFIG, true));  // BLUE
 
 
     public final FeederSubsystem feederYELsystem =
         new FeederSubsystem(
-            new FeederIOReal(kFeeder.CONFIG, false)); // YELLOW
+            new FeederIOReal(kFeeder.YEL_CONFIG, false)); // YELLOW
 
     // Hopper
     public final HopperSubsystem hopperSubsystem =
