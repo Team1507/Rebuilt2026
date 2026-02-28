@@ -22,6 +22,7 @@ import frc.robot.generated.ctre.TunerConstants;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DutyCycle;
 
 /**
  * Central location for all robot-wide constants.
@@ -43,8 +44,12 @@ public class Constants {
          * Hardware (CAN ID) lives in AgitatorHardware.
          */
         public static final MotorConfig CONFIG = new MotorConfig(
+            true,
             // Output limits
+            
+            
             8, -8
+            
         );
 
         /** Duty cycles for agitator behavior. */
@@ -59,8 +64,8 @@ public class Constants {
     public static final class kClimber {
 
         /** Mechanism setpoints (in mechanism units, not motor rotations). */
-        public static final double UP = 27.0;
-        public static final double DOWN = 20.0;
+        public static final double UP = 0.0;
+        public static final double DOWN = -1.6;
 
         /** Robot-relative aliases for convenience. */
         public static final double ROBOT_UP = DOWN;
@@ -102,7 +107,7 @@ public class Constants {
 
         public static final MotorConfig BLU_CONFIG = new MotorConfig(
             ControlMode.VELOCITY, 
-            true,
+            true, 
             // PID
             0.11, 0.0, 0.0,
 
@@ -166,7 +171,9 @@ public class Constants {
         public static final double OUTTAKE_ROLLER_DUTY = -0.5;
 
         public static final MotorConfig ROLLER_CONFIG = new MotorConfig(
-            8, -8
+            false,
+            7, -7
+
         );
 
         public static final class kArm {

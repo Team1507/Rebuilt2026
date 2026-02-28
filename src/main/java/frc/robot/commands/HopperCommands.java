@@ -40,7 +40,8 @@ public final class HopperCommands {
         return new CommandBuilder(hopper)
             .named("HopperRetract")
             .onExecute(() -> hopper.setPosition(kHopper.SHOOT_POS))
-            .onEnd(hopper::stop);
+            .onEnd(() -> hopper.stop());
+
     }
 
     /** Manual hopper control (Elastic UI / SmartDashboard). */

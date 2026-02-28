@@ -19,6 +19,8 @@ public interface HopperIO {
     /** Set the hopper to a target position in degrees. */
     void setPositionDeg(double degrees);
 
+    boolean getMagSensor();
+
     /** Stop the hopper motor. */
-    void stop();
+    void hopperStop();
 }

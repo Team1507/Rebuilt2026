@@ -158,6 +158,10 @@ public class DashboardManager {
         SmartDashboard.putNumber("Intake/Arm/Current BLU Position", subsystems.intakeArm().getBLUPositionDegrees());
         SmartDashboard.putNumber("Intake/Arm/Current YEL Position", subsystems.intakeArm().getYELPositionDegrees());
 
+        SmartDashboard.putNumber("Climber/Current Position", subsystems.climber().getPosition());
+
+        SmartDashboard.putNumber("Hopper/Current Position", subsystems.hopper().getPositionDegrees());
+        SmartDashboard.putBoolean("BluShooterSensor", subsystems.BLUshooter().getSensor());
         double now = Timer.getFPGATimestamp();
         if (now - lastUpdateTime < DASHBOARD_PERIOD) return;
         lastUpdateTime = now;
