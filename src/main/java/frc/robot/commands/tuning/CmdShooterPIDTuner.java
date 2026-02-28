@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.wpi.first.wpilibj.Filesystem;
 // WPI Libraries
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -918,19 +919,25 @@ public class CmdShooterPIDTuner extends Command {
      * (or local filesystem when running in simulation).
      */
     private void writeFullReportToFile() {
-        // Build timestamp: YYYY-MM-DD_HH-MM-SS
-        String timestamp = java.time.LocalDateTime.now()
-            .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-    
-        String filePath = edu.wpi.first.wpilibj.RobotBase.isReal()
-            ? "/u/shooter_pid_report_" + timestamp + ".txt"
-            : "shooter_pid_report_" + timestamp + ".txt";
-    
-        System.out.println("Writing PID report to: " + filePath);
-    
-        try (FileWriter writer = new FileWriter(new File(filePath))) {
-            writer.write(fullReport.toString());
-        } catch (IOException e) {
+        try {
+            // Create directory inside the operating directory
+            File dir = new File(Filesystem.getOperatingDirectory(), "pidreports");
+            dir.mkdirs();
+
+            // Build timestamp: YYYY-MM-DD_HH-MM-SS
+            String timestamp = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+
+            // Create the file inside that directory
+            File file = new File(dir, "shooter_pid_report_" + timestamp + ".txt");
+
+            System.out.println("Writing PID report to: " + file.getAbsolutePath());
+
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(fullReport.toString());
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

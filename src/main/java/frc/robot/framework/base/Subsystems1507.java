@@ -36,6 +36,11 @@ public abstract class Subsystems1507 extends SubsystemBase {
             cfg.Slot0.kV = config.kV();
             cfg.Slot0.kS = config.kS();
             cfg.Slot0.kA = config.kA();
+        } 
+        if (config.motorInverted()) {
+            cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        } else {
+            cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         }
 
         cfg.Voltage.withPeakForwardVoltage(Volts.of(config.peakForwardVoltage()))

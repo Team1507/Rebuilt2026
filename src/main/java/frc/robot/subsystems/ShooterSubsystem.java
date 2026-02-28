@@ -225,6 +225,8 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
     public double getKI() { return io.getKI(); }
     public double getKD() { return io.getKD(); }
 
+    public boolean getSensor() {return inputs.ballFired;}
+
     // ------------------------------------------------------------
     // Periodic
     // ------------------------------------------------------------

@@ -36,8 +36,9 @@ public final class ShooterHardware {
     // ------------------------------------------------------------
     // Sensor DIO
     // ------------------------------------------------------------
-    public static final int BLU_DIO = 1;
-    public static final int YEL_DIO = 2;
+    public static final int BLU_DIO = 6;
+    public static final int YEL_DIO = 7;
+    
 
     // ------------------------------------------------------------
     // Gear Ratio (motor → wheel)

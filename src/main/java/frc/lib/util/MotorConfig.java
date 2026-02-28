@@ -42,8 +42,8 @@ public record MotorConfig(
     }
 
     // Duty-cycle constructor
-    public MotorConfig(double peakForwardVoltage, double peakReverseVoltage) {
-        this(ControlMode.DUTY_CYCLE, false,
+    public MotorConfig(boolean inverted, double peakForwardVoltage, double peakReverseVoltage) {
+        this(ControlMode.DUTY_CYCLE, inverted,
              0,0,0,
              0,0,0,
              0.0, GravityType.NONE,

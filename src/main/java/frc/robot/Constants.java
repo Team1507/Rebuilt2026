@@ -22,6 +22,7 @@ import frc.robot.generated.ctre.TunerConstants;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DutyCycle;
 
 /**
  * Central location for all robot-wide constants.
@@ -43,8 +44,12 @@ public class Constants {
          * Hardware (CAN ID) lives in AgitatorHardware.
          */
         public static final MotorConfig CONFIG = new MotorConfig(
+            true,
             // Output limits
+            
+            
             8, -8
+            
         );
 
         /** Duty cycles for agitator behavior. */
@@ -59,8 +64,8 @@ public class Constants {
     public static final class kClimber {
 
         /** Mechanism setpoints (in mechanism units, not motor rotations). */
-        public static final double UP = 27.0;
-        public static final double DOWN = 20.0;
+        public static final double UP = 0.0;
+        public static final double DOWN = -1.6;
 
         /** Robot-relative aliases for convenience. */
         public static final double ROBOT_UP = DOWN;
@@ -100,7 +105,21 @@ public class Constants {
         public static final double FEED_RPM = 500.0;
         public static final double VOMIT_RPM = -250.0;
 
-        public static final MotorConfig CONFIG = new MotorConfig(
+        public static final MotorConfig BLU_CONFIG = new MotorConfig(
+            ControlMode.VELOCITY, 
+            true, 
+            // PID
+            0.11, 0.0, 0.0,
+
+            // Feedforward
+            0.09931, 0.42, 0.0,
+            0.0, GravityType.NONE, 
+
+            // Voltage limits
+            12, -12
+        );
+
+        public static final MotorConfig YEL_CONFIG = new MotorConfig(
             // PID
             0.11, 0.0, 0.0,
 
@@ -109,7 +128,7 @@ public class Constants {
 
             // Voltage limits
             12, -12
-        );
+        ); 
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -152,7 +171,9 @@ public class Constants {
         public static final double OUTTAKE_ROLLER_DUTY = -0.5;
 
         public static final MotorConfig ROLLER_CONFIG = new MotorConfig(
-            8, -8
+            false,
+            7, -7
+
         );
 
         public static final class kArm {
@@ -185,7 +206,7 @@ public class Constants {
     public static final class kShooter {
 
         // General shooter limits
-        public static final double MAX_RPM = 500.0;
+        public static final double MAX_RPM = 4000.0;
         public static final double TARGET_TOLERANCE = 2.0;
 
         // ------------------------------------------------------------
@@ -194,22 +215,25 @@ public class Constants {
         // ------------------------------------------------------------
 
         public static final MotorConfig BLU_CONFIG = new MotorConfig(
-            /* kP */ 0.02,
+            ControlMode.VELOCITY, 
+            true,
+            /* kP */ 0.1,
             /* kI */ 0.0,
-            /* kD */ 0.0,
+            /* kD */ 0.02,
 
             /* kV */ 0.12231,
             /* kS */ 0.32,
             /* kA */ 0.0,
+            0.0, GravityType.NONE, 
 
             /* peakForwardVoltage */ 12,
             /* peakReverseVoltage */ -12
         );
 
         public static final MotorConfig YEL_CONFIG = new MotorConfig(
-            /* kP */ 0.02,
+            /* kP */ 0.1,
             /* kI */ 0.0,
-            /* kD */ 0.0,
+            /* kD */ 0.02,
 
             /* kV */ 0.12231,
             /* kS */ 0.32,
@@ -349,8 +373,8 @@ public class Constants {
             public static final String NAME = "Bluecam";
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
-                    new Translation3d(-0.288925, 0.314325, 0.015875),
-                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(70))
+                    new Translation3d(-0.225, 0.18, 0.675),
+                    new Rotation3d(0, Math.toRadians(15), 0.0)
                 );
         }
 
@@ -359,8 +383,8 @@ public class Constants {
             public static final String NAME = "Yellowcam";
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
-                    new Translation3d(-0.288925, -0.314325, 0.015875),
-                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(210))
+                    new Translation3d(-0.25, -0.25, 0.21),
+                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(235))
                 );
         }
     }
@@ -377,8 +401,8 @@ public class Constants {
         // Mount transform: robot origin -> QuestNav sensor
         public static final Transform3d ROBOT_TO_QUEST =
             new Transform3d(
-                -0.381, 0.0, 0.307,
-                new Rotation3d(0.0, 0.0, Math.toRadians(180.0))
+                -0.22, 0.27, 0.297 ,
+                new Rotation3d(0.0, 0.0, Math.toRadians(90.0))
             );
     }
 }

@@ -35,10 +35,13 @@ public class HopperSubsystem extends SubsystemBase {
     }
 
     public double getPositionDegrees() {
-        return inputs.positionDeg;
+        return inputs.position;
     }
 
     public void stop() {
-        io.stop();
+        io.hopperStop();
+    }
+    public void MagnetOffset (){
+        
     }
 }

@@ -52,6 +52,7 @@ import frc.lib.io.swerve.*;
 // Hardware Config / Vendor Libraries
 import frc.robot.generated.ctre.CommandSwerveDrivetrain;
 import frc.robot.generated.ctre.TunerConstants;
+import frc.lib.hardware.HopperHardware;
 import frc.lib.hardware.ShooterHardware;
 
 // Shooter ML Model
@@ -222,18 +223,18 @@ public class RobotContainer {
     // Feeder
     public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
-            new FeederIOReal(kFeeder.CONFIG, true));  // BLUE
+            new FeederIOReal(kFeeder.BLU_CONFIG, true));  // BLUE
 
 
     public final FeederSubsystem feederYELsystem =
         new FeederSubsystem(
-            new FeederIOReal(kFeeder.CONFIG, false)); // YELLOW
+            new FeederIOReal(kFeeder.YEL_CONFIG, false)); // YELLOW
 
     // Hopper
     public final HopperSubsystem hopperSubsystem =
         new HopperSubsystem(
             new HopperIOReal(kHopper.CONFIG));
-
+  
     // Intake Arm
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
@@ -322,8 +323,8 @@ public class RobotContainer {
     private void configureDriverControls() {
 
         // Reset field-centric heading
-        bottomDriver.a()
-            .onTrue(ctreDrivetrain.runOnce(ctreDrivetrain::seedFieldCentric));
+        // bottomDriver.a()
+        //     .onTrue(ctreDrivetrain.runOnce(ctreDrivetrain::seedFieldCentric));
 
         // Left bumper: slow mode while held, normal when released, reseed heading on press
         bottomDriver.leftBumper()
@@ -371,6 +372,14 @@ public class RobotContainer {
                     .alongWith(IntakeRollerCommands.stop(intakeRollerSubsystem))
             );
 
+        bottomDriver.a()
+            .whileTrue(IntakeRollerCommands.intake(intakeRollerSubsystem))
+            .onFalse(IntakeRollerCommands.stop(intakeRollerSubsystem));
+
+        bottomDriver.b()
+            .whileTrue(IntakeRollerCommands.outtake(intakeRollerSubsystem))
+            .onFalse(IntakeRollerCommands.stop(intakeRollerSubsystem));
+            
         // Shooting
         bottomDriver.rightTrigger()
             .whileTrue(ShooterCoordinator.shootModelBased(
@@ -382,8 +391,10 @@ public class RobotContainer {
             ));
 
         // Climber
-        topDriver.y().onTrue(ClimberCommands.robotUp(climberSubsystem));
-        topDriver.x().onTrue(ClimberCommands.robotDown(climberSubsystem));
+
+        //need to hold the button for the climber to move up or down
+        topDriver.y().whileTrue(ClimberCommands.robotUp(climberSubsystem));
+        topDriver.x().whileTrue(ClimberCommands.robotDown(climberSubsystem));
 
         // Agitator
         topDriver.povUp().whileTrue(AgitatorCommands.toShooter(agitatorSubsystem));

@@ -14,7 +14,7 @@ package frc.lib.io.intakeroller;
 public class IntakeRollerInputs {
 
     /** Current duty cycle output (-1 to 1). */
-    public double dutyCycle = 0.0;
+    public double dutyCycle;
 
     /** Motor current (amps). */
     public double currentA = 0.0;

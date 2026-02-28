@@ -16,6 +16,10 @@ public class HopperInputs {
     /** Hopper position in degrees. */
     public double positionDeg = 0.0;
 
+    public double position = 0.0;
+
+    public boolean magSensor = false;
+
     /** Raw motor rotations. */
     public double motorRot = 0.0;
 
@@ -24,4 +28,7 @@ public class HopperInputs {
 
     /** Motor temperature (Celsius). */
     public double temperatureC = 0.0;
+
+    public boolean hopperRetracted = false;
+    
 }
