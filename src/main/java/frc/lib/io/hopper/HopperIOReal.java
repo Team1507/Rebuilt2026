@@ -47,7 +47,7 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
 
     @Override
     public void setPositionDeg(double degrees) {
-        double motorRot = degrees / 360.0;
+        double motorRot = ratio.toMotor(degrees);
         motor.setControl(positionRequest.withPosition(motorRot));
     }
 

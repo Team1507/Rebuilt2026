@@ -217,7 +217,7 @@ public class DashboardManager {
         boolean yelFeederRun = nt.getEntry("Manual Mode/Feeder/YEL/Run").getBoolean(false);
         boolean hopperRun = nt.getEntry("Manual Mode/Hopper/Run").getBoolean(false);
         boolean intakeArmRun = nt.getEntry("Manual Mode/Intake/Arm/Run").getBoolean(false);
-        boolean intakeRollerRun = nt.getEntry("Manual Mode/Inta     ke/Roller/Run").getBoolean(false);
+        boolean intakeRollerRun = nt.getEntry("Manual Mode/Intake/Roller/Run").getBoolean(false);
         boolean bluShooterRun = nt.getEntry("Manual Mode/Shooter/BLU/Run").getBoolean(false);
         boolean yelShooterRun = nt.getEntry("Manual Mode/Shooter/YEL/Run").getBoolean(false);
 

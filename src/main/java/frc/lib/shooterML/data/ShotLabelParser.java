@@ -17,12 +17,14 @@ public class ShotLabelParser {
             case "scored":
             case "made":
             case "yes":
+            case "y":
             case "went in":
                 return new ShotLabel(true);
 
             case "missed":
             case "miss":
             case "no":
+            case "n":
             case "did not score":
                 return new ShotLabel(false);
 

@@ -61,7 +61,7 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
 
     private ShotTrainer shotTrainer;
     private boolean lastBallSensor = false;
-
+    private double lastShotTime;
     // ------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------
@@ -246,13 +246,22 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
         // Shot sensor edge detection
         // -----------------------------
         boolean current = inputs.ballFired;
+        boolean fallingEdge = lastBallSensor && !current;
 
-        if (shotTrainer != null && current && !lastBallSensor) {
+        double now = Timer.getFPGATimestamp();
+
+        boolean debounced = (now - lastShotTime) > 0.1;
+
+        if (shotTrainer != null && fallingEdge && debounced) {
+            lastShotTime = now;
             shotTrainer.notifyShotFired(Timer.getFPGATimestamp());
         }
 
         lastBallSensor = current;
 
+        if (shotTrainer !=null){
+            shotTrainer.update();
+        }
         // -----------------------------
         // Telemetry logging
         // -----------------------------

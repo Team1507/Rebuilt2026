@@ -86,6 +86,7 @@ public class ShotTrainer {
         t.getEntry("stator").setDouble(r.statorCurrent);
         t.getEntry("supply").setDouble(r.supplyCurrent);
         t.getEntry("error").setDouble(r.closedLoopError);
+        t.getEntry("label").setString("unlabeled");
     }
 
     public void update() {

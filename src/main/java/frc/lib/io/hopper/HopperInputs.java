@@ -14,7 +14,7 @@ package frc.lib.io.hopper;
 public class HopperInputs {
 
     /** Hopper position in degrees. */
-    public double positionDeg = 0.0;
+    public double positionDeg;
 
     public double position = 0.0;
 

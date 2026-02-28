@@ -139,7 +139,7 @@ public class Constants {
 
         /** Hopper target positions (in degrees). */ 
         public static final double LOAD_POS = 0.0; 
-        public static final double SHOOT_POS = 90.0;
+        public static final double SHOOT_POS = 0.73;
 
         /**
          * MotorConfig now contains ONLY tuning values.
@@ -167,8 +167,8 @@ public class Constants {
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kIntake {
 
-        public static final double INTAKE_ROLLER_DUTY = 0.5;
-        public static final double OUTTAKE_ROLLER_DUTY = -0.5;
+        public static final double INTAKE_ROLLER_DUTY = 0.35;
+        public static final double OUTTAKE_ROLLER_DUTY = -0.35;
 
         public static final MotorConfig ROLLER_CONFIG = new MotorConfig(
             false,
@@ -178,10 +178,10 @@ public class Constants {
 
         public static final class kArm {
 
-            public static final double MAX_ANGLE_DEGREES = 60.0;
+            public static final double MAX_ANGLE_DEGREES = 63.0;
             public static final double MIN_ANGLE_DEGREES = 0.0;
-            public static final double DEPLOYED_ANGLE_DEGREES = 55.0;
-            public static final double RETRACTED_ANGLE_DEGREES = 15.0;
+            public static final double DEPLOYED_ANGLE_DEGREES = 62.0;
+            public static final double RETRACTED_ANGLE_DEGREES = 1.0;
 
             public static final MotorConfig BLU_CONFIG = new MotorConfig(
                 false,
