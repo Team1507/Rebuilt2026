@@ -37,7 +37,7 @@ public class ShotTrainer {
 
     private final NetworkTable rootTable =
         NetworkTableInstance.getDefault()
-            .getTable("Shooter")
+            .getTable("Shooter ML")
             .getSubTable("UnlabeledShots");
 
     public ShotTrainer(

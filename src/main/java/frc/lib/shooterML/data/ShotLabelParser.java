@@ -16,6 +16,7 @@ public class ShotLabelParser {
         switch (label.toLowerCase()) {
             case "scored":
             case "made":
+            case "yes":
             case "went in":
                 return new ShotLabel(true);
 
