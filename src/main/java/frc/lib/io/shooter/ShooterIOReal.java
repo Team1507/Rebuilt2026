@@ -58,7 +58,7 @@ public class ShooterIOReal extends Subsystems1507 implements ShooterIO {
         this.ballSensor = new DigitalInput(sensorDIO);
 
         // Apply PID/FF/voltage limits to the motor
-        configureFXMotor(config, motor);
+        configureFXMotor(motor, config);
     }
 
     /**

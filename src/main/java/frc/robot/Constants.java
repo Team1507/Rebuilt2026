@@ -22,7 +22,6 @@ import frc.robot.generated.ctre.TunerConstants;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.DutyCycle;
 
 /**
  * Central location for all robot-wide constants.
@@ -43,14 +42,12 @@ public class Constants {
          * MotorConfig now contains ONLY tuning values.
          * Hardware (CAN ID) lives in AgitatorHardware.
          */
-        public static final MotorConfig CONFIG = new MotorConfig(
-            true,
-            // Output limits
-            
-            
-            8, -8
-            
-        );
+        public static final MotorConfig CONFIG =
+            MotorConfig.builder()
+                .inverted(true)
+                .voltageLimits(8, -8)
+                .build();
+
 
         /** Duty cycles for agitator behavior. */
         public static final double AGITATE_TO_SHOOTER_DUTY = 0.5;
@@ -75,25 +72,21 @@ public class Constants {
          * MotorConfig now contains ONLY tuning values.
          * Hardware (CAN ID, servo port, gear ratio) lives in ClimberHardware.
          */
-        public static final MotorConfig CONFIG = new MotorConfig(
-            ControlMode.MOTION_MAGIC,
-            false,
+        public static final MotorConfig CONFIG_SLOT0 =
+            MotorConfig.builder(ControlMode.MOTION_MAGIC)
+                .pid(0.11, 0.0, 0.0)
+                .feedforward(0.245, 0.09375, 0.0)
+                .gravity(0.0, GravityType.CONSTANT)
+                .voltageLimits(12.0, -12.0)
+                .build();
 
-            // PID slot 0
-            0.11,   // kP
-            0.0,    // kI
-            0.0,    // kD
-
-            // Motion Magic feedforward
-            0.09375, // kS
-            0.245,   // kV
-            0.0,     // kA
-
-            0.8, GravityType.CONSTANT,
-
-            // Output limits
-            8, -8
-        );
+        public static final MotorConfig CONFIG_SLOT1 =
+            MotorConfig.builder(ControlMode.MOTION_MAGIC)
+                .slot(1)
+                .pid(0.11, 0.0, 0.0)
+                .feedforward(0.245, 0.09375, 0.0)
+                .gravity(0.8, GravityType.CONSTANT)
+                .build();
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -105,30 +98,21 @@ public class Constants {
         public static final double FEED_RPM = 500.0;
         public static final double VOMIT_RPM = -250.0;
 
-        public static final MotorConfig BLU_CONFIG = new MotorConfig(
-            ControlMode.VELOCITY, 
-            true, 
-            // PID
-            0.11, 0.0, 0.0,
+        public static final MotorConfig BLU_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(true)
+                .pid(0.11, 0.0, 0.0)
+                .feedforward(0.42, 0.09931, 0.0)
+                .voltageLimits(12.0, -12.0)
+                .build();
 
-            // Feedforward
-            0.09931, 0.42, 0.0,
-            0.0, GravityType.NONE, 
-
-            // Voltage limits
-            12, -12
-        );
-
-        public static final MotorConfig YEL_CONFIG = new MotorConfig(
-            // PID
-            0.11, 0.0, 0.0,
-
-            // Feedforward
-            0.09931, 0.42, 0.0,
-
-            // Voltage limits
-            12, -12
-        ); 
+        public static final MotorConfig YEL_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(false)
+                .pid(0.11, 0.0, 0.02)
+                .feedforward(0.42, 0.09931, 0.0)
+                .voltageLimits(12.0, -12.0)
+                .build();
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -149,20 +133,11 @@ public class Constants {
          * MotorConfig now contains ONLY tuning values.
          * Hardware (CAN ID, gear ratio) lives in HopperHardware.
          */
-        public static final MotorConfig CONFIG = new MotorConfig(
-            // PID
-            0.11,  // kP
-            0.0,   // kI
-            0.0,   // kD
-
-            // Feedforward (unused for position control)
-            0.0,   // kS
-            0.0,   // kV
-            0.0,   // kA
-
-            // Voltage limits
-            8, -8
-        );
+        public static final MotorConfig CONFIG =
+            MotorConfig.builder(ControlMode.POSITION)
+                .pid(0.11, 0.0, 0.02)
+                .voltageLimits(8.0, -8.0)
+                .build();
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -176,11 +151,10 @@ public class Constants {
         public static final double OUTTAKE_ROLLER_DUTY = -0.35;
         
 
-        public static final MotorConfig ROLLER_CONFIG = new MotorConfig(
-            false,
-            7, -7
-
-        );
+        public static final MotorConfig ROLLER_CONFIG =
+            MotorConfig.builder(ControlMode.DUTY_CYCLE)
+                .voltageLimits(7.0, -7.0)
+                .build();
 
         public static final class kArm {
 
@@ -192,20 +166,22 @@ public class Constants {
             public static final double MANUAL_POSITIVE_POWER = 0.2;
             public static final double MANUAL_NEGATIVE_POWER = -0.2;
 
-            public static final MotorConfig BLU_CONFIG = new MotorConfig(
-                false,
-                0.5, 0.0, 0.0,       // PID
-                0.1, GravityType.COSINE,   // Gravity
-                4, -4      // voltage limits
-            );
+            public static final MotorConfig BLU_CONFIG =
+                MotorConfig.builder(ControlMode.POSITION)
+                    .inverted(false)
+                    .pid(0.5, 0.0, 0.0)
+                    .gravity(0.1, GravityType.COSINE)
+                    .voltageLimits(4, -4)
+                    .build();
 
-            public static final MotorConfig YEL_CONFIG = new MotorConfig(
-                true,
-                0.5, 0.0, 0.0,
-                0.1, GravityType.COSINE,
-                4, -4
-            );
 
+            public static final MotorConfig YEL_CONFIG =
+                MotorConfig.builder(ControlMode.POSITION)
+                    .inverted(true)
+                    .pid(0.5, 0.0, 0.0)
+                    .gravity(0.1, GravityType.COSINE)
+                    .voltageLimits(4, -4)
+                    .build();
         }
     }
 
@@ -225,34 +201,23 @@ public class Constants {
         // Hardware (CAN IDs, ratio, transform) is now in ShooterHardware
         // ------------------------------------------------------------
 
-        public static final MotorConfig BLU_CONFIG = new MotorConfig(
-            ControlMode.VELOCITY, 
-            true,
-            /* kP */ 0.1,
-            /* kI */ 0.0,
-            /* kD */ 0.02,
+        public static final MotorConfig BLU_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(true)
+                .pid(0.1, 0.0, 0.02)
+                .feedforward(0.32, 0.12231, 0.0)
+                .voltageLimits(12.0, -12.0)
+                .build();
 
-            /* kV */ 0.12231,
-            /* kS */ 0.32,
-            /* kA */ 0.0,
-            0.0, GravityType.NONE, 
 
-            /* peakForwardVoltage */ 12,
-            /* peakReverseVoltage */ -12
-        );
+        public static final MotorConfig YEL_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(true)
+                .pid(0.1, 0.0, 0.02)
+                .feedforward(0.32, 0.12231, 0.0)
+                .voltageLimits(12.0, -12.0)
+                .build();
 
-        public static final MotorConfig YEL_CONFIG = new MotorConfig(
-            /* kP */ 0.1,
-            /* kI */ 0.0,
-            /* kD */ 0.02,
-
-            /* kV */ 0.12231,
-            /* kS */ 0.32,
-            /* kA */ 0.0,
-
-            /* peakForwardVoltage */ 8,
-            /* peakReverseVoltage */ -8
-        );
 
         // ------------------------------------------------------------
         // Simulation Behavior

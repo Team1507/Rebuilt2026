@@ -45,10 +45,18 @@ public final class HopperCommands {
     }
 
     /** Manual hopper control (Elastic UI / SmartDashboard). */
-    public static Command manual(HopperSubsystem hopper, Supplier<Double> angleSupplier) {
+    public static Command manualPosition(HopperSubsystem hopper, Supplier<Double> position) {
         return new CommandBuilder(hopper)
             .named("HopperManual")
-            .onExecute(() -> hopper.setPosition(angleSupplier.get()))
+            .onExecute(() -> hopper.setPosition(position.get()))
+            .onEnd(hopper::stop);
+    }
+
+    /** Manual hopper control (Joystick). */
+    public static Command manualPower(HopperSubsystem hopper, Supplier<Double> power) {
+        return new CommandBuilder(hopper)
+            .named("HopperManual")
+            .onExecute(() -> hopper.runPower(power.get()))
             .onEnd(hopper::stop);
     }
 

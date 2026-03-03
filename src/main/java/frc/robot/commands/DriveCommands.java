@@ -12,7 +12,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -431,6 +430,13 @@ public final class DriveCommands {
 
                 return false;
             })
+            .onEnd(swerve::stop);
+    }
+
+    public static Command lock(SwerveSubsystem swerve) {
+        return new CommandBuilder(swerve)
+            .named("SwerveLock")
+            .onExecute(swerve::lock)
             .onEnd(swerve::stop);
     }
 }

@@ -28,8 +28,6 @@ public final class IntakeArmCommands {
                 if(isSafe.get()){
                     arm.setPosition(RETRACTED_ANGLE_DEGREES);
                 }
-            
-
             })
             .isFinished(() ->arm.isAtPosition(RETRACTED_ANGLE_DEGREES, 2)) 
             .onEnd(arm::stop);
@@ -43,8 +41,6 @@ public final class IntakeArmCommands {
                 if(isSafe.get()){
                     arm.setPosition(DEPLOYED_ANGLE_DEGREES);
                 }
-                
-
             })
             .isFinished(() ->(arm.isAtPosition(DEPLOYED_ANGLE_DEGREES, 2)))
             .onEnd(arm::stop);
@@ -60,7 +56,15 @@ public final class IntakeArmCommands {
     }
 
     /** Manual control (Elastic UI / SmartDashboard). */
-    public static Command manual(IntakeArmSubsystem arm, Supplier<Double> angleSupplier) {
+    public static Command manualAngle(IntakeArmSubsystem arm, Supplier<Double> angleSupplier) {
+        return new CommandBuilder(arm)
+            .named("IntakeArmManual")
+            .onExecute(() -> arm.setPosition(angleSupplier.get()))
+            .onEnd(arm::stop);
+    }
+
+    /** Manual control (Joystick)). */
+    public static Command manualPower(IntakeArmSubsystem arm, Supplier<Double> angleSupplier) {
         return new CommandBuilder(arm)
             .named("IntakeArmManual")
             .onExecute(() -> arm.setPosition(angleSupplier.get()))
@@ -74,5 +78,4 @@ public final class IntakeArmCommands {
             .onInitialize(arm::stop)
             .isFinished(true);
     }
-
 }

@@ -33,7 +33,8 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
     public HopperIOReal(MotorConfig config) {
         this.motor = new TalonFXS(HopperHardware.HOPPER_ID);
         this.ratio = ClimberHardware.RATIO;
-        configureFXSMotor(config, motor);
+        
+        configureFXSMotor(motor, config);
     }
 
     @Override

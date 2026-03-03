@@ -21,8 +21,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj.RobotBase;
 
-import static edu.wpi.first.units.Units.*;
-
 // Commands
 import frc.robot.commands.*;
 import frc.robot.commands.auto.routines.*;
@@ -52,8 +50,8 @@ import frc.lib.io.swerve.*;
 // Hardware Config / Vendor Libraries
 import frc.robot.generated.ctre.CommandSwerveDrivetrain;
 import frc.robot.generated.ctre.TunerConstants;
-import frc.lib.hardware.HopperHardware;
 import frc.lib.hardware.ShooterHardware;
+import frc.lib.hardware.FeederHardware;
 
 // Shooter ML Model
 import frc.lib.shooterML.data.*;
@@ -91,11 +89,13 @@ public class RobotContainer {
     private final SwerveSubsystem swerve =
         new SwerveSubsystem(new SwerveIOReal(ctreDrivetrain));
 
-    private Command createDriveCommand() {
+    private Command defaultDriveCommand() {
         return swerve.run(() -> {
-            double vx = -bottomDriver.getLeftY() * kSwerve.MAX_SPEED;
-            double vy = -bottomDriver.getLeftX() * kSwerve.MAX_SPEED;
-            double omega = -bottomDriver.getRightX() * kSwerve.MAX_ANGULAR_RATE;
+            double scale = bottomDriver.leftBumper().getAsBoolean() ? 0.3 : 1.0;
+
+            double vx = -bottomDriver.getLeftY() * kSwerve.MAX_SPEED * scale;
+            double vy = -bottomDriver.getLeftX() * kSwerve.MAX_SPEED * scale;
+            double omega = -bottomDriver.getRightX() * kSwerve.MAX_ANGULAR_RATE * scale;
 
             swerve.drive(new ChassisSpeeds(vx, vy, omega));
         });
@@ -218,28 +218,22 @@ public class RobotContainer {
     // Climber
     public final ClimberSubsystem climberSubsystem =
         new ClimberSubsystem(
-            new ClimberIOReal(kClimber.CONFIG));
+            new ClimberIOReal(kClimber.CONFIG_SLOT0, kClimber.CONFIG_SLOT1));
 
     // Feeder
     public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
-            new FeederIOReal(kFeeder.BLU_CONFIG, true));  // BLUE
+            new FeederIOReal(FeederHardware.BLU_ID, kFeeder.BLU_CONFIG));  // BLUE
 
 
     public final FeederSubsystem feederYELsystem =
         new FeederSubsystem(
-            new FeederIOReal(kFeeder.YEL_CONFIG, false)); // YELLOW
+            new FeederIOReal(FeederHardware.YEL_ID, kFeeder.YEL_CONFIG)); // YELLOW
 
     // Hopper
     public final HopperSubsystem hopperSubsystem =
         new HopperSubsystem(
             new HopperIOReal(kHopper.CONFIG));
-
-    private Command createHopperCommand() {
-        return hopperSubsystem.run(() -> {
-            hopperSubsystem.runPower(topDriver.getRightY());
-        });
-    }
   
     // Intake Arm
     public final IntakeArmSubsystem intakeArmSubsystem =
@@ -248,13 +242,6 @@ public class RobotContainer {
                 ? new IntakeArmIOReal(kIntake.kArm.BLU_CONFIG, kIntake.kArm.YEL_CONFIG)
                 : new IntakeArmIOSim()
         );
-
-    private Command createIntakeArmCommand() {
-        return intakeArmSubsystem.run(() -> {
-            intakeArmSubsystem.runPower(topDriver.getLeftY());
-        });
-    }
-
 
     // Intake Roller
     public final IntakeRollerSubsystem intakeRollerSubsystem =
@@ -322,13 +309,23 @@ public class RobotContainer {
     // Default commands
     // ==========================================================
     private void configureDefaultCommands() {
-        swerve.setDefaultCommand(createDriveCommand());
 
-        intakeArmSubsystem.setDefaultCommand(createIntakeArmCommand());
-        hopperSubsystem.setDefaultCommand(createHopperCommand());
+        // Swerve Default Commands
+        swerve.setDefaultCommand(defaultDriveCommand());
 
-        RobotModeTriggers.disabled().whileTrue(
-            swerve.run(swerve::stop).ignoringDisable(true)
+        RobotModeTriggers.disabled()
+            .whileTrue(
+                Commands.run(swerve::stop, swerve).ignoringDisable(true)
+            );
+
+        // Intake Arm Default Command
+        intakeArmSubsystem.setDefaultCommand(
+            IntakeArmCommands.manualPower(intakeArmSubsystem, () -> topDriver.getLeftY())
+        );
+
+        // Hopper Default Command
+        hopperSubsystem.setDefaultCommand(
+            HopperCommands.manualPower(hopperSubsystem, () -> topDriver.getRightY())
         );
     }
 
@@ -341,16 +338,6 @@ public class RobotContainer {
         // Reset field-centric heading
         // bottomDriver.a()
         //     .onTrue(ctreDrivetrain.runOnce(ctreDrivetrain::seedFieldCentric));
-
-        // Left bumper: slow mode while held, normal when released, reseed heading on press
-        bottomDriver.leftBumper()
-            .whileTrue(Commands.run(() -> {
-                double vx = (-bottomDriver.getLeftY() * kSwerve.MAX_SPEED) * 0.3;
-                double vy = (-bottomDriver.getLeftX() * kSwerve.MAX_SPEED) * 0.3;
-                double omega = (-bottomDriver.getRightX() * kSwerve.MAX_ANGULAR_RATE) * 0.3;
-
-                swerve.drive(new ChassisSpeeds(vx, vy, omega));
-            }));
 
         // Preplanned poses
         bottomDriver.povDown()

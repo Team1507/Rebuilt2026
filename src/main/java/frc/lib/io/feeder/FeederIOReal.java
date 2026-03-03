@@ -27,9 +27,9 @@ public class FeederIOReal extends Subsystems1507 implements FeederIO {
     private final VelocityVoltage velocityRequest =
         new VelocityVoltage(0).withSlot(0);
 
-    public FeederIOReal(MotorConfig config, boolean isBlue) {
-        this.motor = new TalonFX(isBlue ? FeederHardware.BLU_ID : FeederHardware.YEL_ID);
-        configureFXMotor(config, motor);
+    public FeederIOReal(int canID, MotorConfig config) {
+        this.motor = new TalonFX(canID);
+        configureFXMotor(motor, config);
     }
 
     @Override

@@ -25,7 +25,7 @@ public class AgitatorIOReal extends Subsystems1507 implements AgitatorIO {
 
     public AgitatorIOReal(MotorConfig config) {
         this.motor = new TalonFX(AgitatorHardware.AGITATOR_ID);
-        configureFXMotor(config, motor);
+        configureFXMotor(motor, config);
     }
 
     @Override

@@ -31,13 +31,13 @@ public class ClimberIOReal extends Subsystems1507 implements ClimberIO {
     private final PositionDutyCycle positionRequest =
         new PositionDutyCycle(0).withSlot(0);
 
-    public ClimberIOReal(MotorConfig config) {
+    public ClimberIOReal(MotorConfig configSlot0, MotorConfig configSlot1) {
         this.motor = new TalonFX(ClimberHardware.CLIMBER_MOTOR_ID);
         this.servo = new Servo(ClimberHardware.SERVO_PORT);
         this.limitSwitch = new DigitalInput(ClimberHardware.LIMIT_SWITCH_PORT);
         this.ratio = ClimberHardware.RATIO;
 
-        configureFXMotor(config, motor);
+        configureFXMotor(motor, configSlot0, configSlot1);
     }
 
     @Override

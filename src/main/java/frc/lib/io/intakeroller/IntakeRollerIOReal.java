@@ -25,7 +25,7 @@ public class IntakeRollerIOReal extends Subsystems1507 implements IntakeRollerIO
 
     public IntakeRollerIOReal(MotorConfig config) {
         this.motor = new TalonFX(IntakeRollerHardware.ROLLER_ID);
-        configureFXMotor(config, motor);
+        configureFXMotor(motor, config);
     }
 
     @Override

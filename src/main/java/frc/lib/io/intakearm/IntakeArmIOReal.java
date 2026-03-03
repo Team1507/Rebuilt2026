@@ -36,8 +36,8 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
 
         this.yelMotor = new TalonFXS(IntakeArmHardware.YEL_ID);
 
-        configureFXSMotor(bluConfig, bluMotor);
-        configureFXSMotor(yelConfig, yelMotor);
+        configureFXSMotor(bluMotor, bluConfig);
+        configureFXSMotor(yelMotor, yelConfig);
     }
 
     @Override

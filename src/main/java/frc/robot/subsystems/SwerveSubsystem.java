@@ -58,6 +58,18 @@ public class SwerveSubsystem extends SubsystemBase {
         io.driveRobotRelative(speeds);
     }
 
+    /** Changes the position of the swerve modules to lock the robot in place */
+    public void lock() {
+        SwerveModuleState[] lockStates = new SwerveModuleState[] {
+            new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
+            new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+            new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+            new SwerveModuleState(0, Rotation2d.fromDegrees(45))
+        };
+
+        io.setModuleStates(lockStates);
+    }
+
     /** Directly set module states (used by autos / PathPlanner). */
     public void setModuleStates(SwerveModuleState[] states) {
         io.setModuleStates(states);

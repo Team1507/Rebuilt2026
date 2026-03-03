@@ -237,10 +237,10 @@ public class DashboardManager {
             FeederCommands.manual(subsystems.YELfeeder(), () -> manualYELFeederRPM).schedule();
 
         if (hopperRun && !prevHopperRun)
-            HopperCommands.manual(subsystems.hopper(), () -> manualHopperAngle).schedule();
+            HopperCommands.manualPosition(subsystems.hopper(), () -> manualHopperAngle).schedule();
 
         if (intakeArmRun && !prevIntakeArmRun)
-            IntakeArmCommands.manual(subsystems.intakeArm(), () -> manualIntakeArmAngle).schedule();
+            IntakeArmCommands.manualAngle(subsystems.intakeArm(), () -> manualIntakeArmAngle).schedule();
 
         if (intakeRollerRun && !prevIntakeRollerRun)
             IntakeRollerCommands.manual(subsystems.intakeRoller(), () -> manualIntakeRollerDuty).schedule();
