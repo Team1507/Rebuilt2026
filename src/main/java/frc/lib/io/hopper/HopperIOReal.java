@@ -11,7 +11,6 @@ package frc.lib.io.hopper;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFXS;
 
-import frc.lib.hardware.ClimberHardware;
 import frc.lib.hardware.HopperHardware;
 import frc.lib.math.GearRatio;
 import frc.lib.util.MotorConfig;
@@ -24,50 +23,61 @@ import edu.wpi.first.wpilibj.DigitalInput;
  */
 public class HopperIOReal extends Subsystems1507 implements HopperIO {
 
-    private final  DigitalInput magSensor = new DigitalInput(0);
+    private final DigitalInput magSensor = new DigitalInput(0);
     private final TalonFXS motor;
     private final GearRatio ratio;
+
     private final PositionDutyCycle positionRequest =
         new PositionDutyCycle(0).withSlot(0);
 
     public HopperIOReal(MotorConfig config) {
         this.motor = new TalonFXS(HopperHardware.HOPPER_ID);
-        this.ratio = ClimberHardware.RATIO;
-        
+        this.ratio = HopperHardware.RATIO; // <-- use hopper ratio, not climber ratio
+
         configureFXSMotor(motor, config);
     }
 
     @Override
     public void updateInputs(HopperInputs inputs) {
+        // Raw sensor units from TalonFXS
         inputs.motorRot = motor.getPosition().getValueAsDouble();
-        inputs.positionDeg = inputs.motorRot * 360.0;
-        inputs.position = ratio.toOutput(inputs.motorRot);
+
+        // Convert sensor units → real-world inches using scaling
+        inputs.position = ratio.sensorToReal(inputs.motorRot);
+
+        // Hopper does NOT use degrees; remove incorrect conversion
+        inputs.positionDeg = 0.0;
 
         inputs.currentA = motor.getStatorCurrent().getValueAsDouble();
         inputs.temperatureC = motor.getDeviceTemp().getValueAsDouble();
+
+        // Hopper is extended if real-world inches exceed safe threshold
         inputs.hopperExtended = inputs.position > kHopper.SAFE_EXTENDED;
     }
 
     @Override
     public void setPositionDeg(double degrees) {
-        double motorRot = ratio.toMotor(degrees);
-        motor.setControl(positionRequest.withPosition(motorRot));
-    }
+        // Hopper is linear, not rotational — convert inches instead
+        double targetInches = degrees; // if commands still use degrees, rename later
+        double sensorUnits = ratio.realToSensor(targetInches);
 
-     @Override
-    public boolean getMagSensor() {
-        return !magSensor.get(); 
+        motor.setControl(positionRequest.withPosition(sensorUnits));
     }
 
     @Override
-     public void runPower(double power) {
+    public boolean getMagSensor() {
+        return !magSensor.get();
+    }
+
+    @Override
+    public void runPower(double power) {
         motor.set(power);
     }
 
     @Override
     public void hopperStop() {
-        if(getMagSensor()){
-        motor.set(0);
+        if (getMagSensor()) {
+            motor.set(0);
+        }
     }
-}
 }

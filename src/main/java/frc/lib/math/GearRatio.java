@@ -169,10 +169,6 @@ public class GearRatio {
      *   motorStart → 0
      *   motorEnd   → realEnd
      * </pre>
-     * and computes:
-     * <pre>
-     *   real = slope * motor + offset
-     * </pre>
      *
      * @param motorStart raw motor/sensor value corresponding to real = 0
      * @param motorEnd   raw motor/sensor value at the second calibration point
@@ -206,31 +202,31 @@ public class GearRatio {
     }
 
     // -----------------------------
-    // Gear ratio conversion helpers (now scaled)
+    // Gear ratio conversion helpers (UNSCALED)
     // -----------------------------
 
     /**
-     * Converts output speed (in real-world units) into motor speed (in real-world units),
-     * applying both the gear ratio and the linear scaling transform.
+     * Converts output shaft speed to motor shaft speed.
+     * <p>
+     * Example: with an 8:1 reduction, {@code toMotor(500)} returns 4000.
      *
-     * @param outputSpeed real-world mechanism speed
-     * @return equivalent real-world motor speed
+     * @param outputSpeed speed of the mechanism output (RPM, RPS, etc.)
+     * @return equivalent motor shaft speed in the same units
      */
     public double toMotor(double outputSpeed) {
-        double motorRot = outputSpeed * motorToOutput;
-        return sensorToReal(motorRot);
+        return outputSpeed * motorToOutput;
     }
 
     /**
-     * Converts motor speed (in real-world units) into output speed (in real-world units),
-     * applying both the gear ratio and the linear scaling transform.
+     * Converts motor shaft speed to output shaft speed.
+     * <p>
+     * Example: with an 8:1 reduction, {@code toOutput(4000)} returns 500.
      *
-     * @param motorSpeed real-world motor speed
-     * @return equivalent real-world mechanism speed
+     * @param motorSpeed speed of the motor shaft (RPM, RPS, etc.)
+     * @return equivalent mechanism output speed in the same units
      */
     public double toOutput(double motorSpeed) {
-        double motorRot = realToSensor(motorSpeed);
-        return motorRot / motorToOutput;
+        return motorSpeed / motorToOutput;
     }
 
     /**
