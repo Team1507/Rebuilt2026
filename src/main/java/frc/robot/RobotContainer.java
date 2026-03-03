@@ -91,7 +91,9 @@ public class RobotContainer {
 
     private Command defaultDriveCommand() {
         return swerve.run(() -> {
-            double scale = bottomDriver.leftBumper().getAsBoolean() ? 0.3 : 1.0;
+            double scale = bottomDriver.leftBumper().getAsBoolean() 
+                ? kSwerve.kScale.CREEP 
+                : kSwerve.kScale.NORMAL;
 
             double vx = -bottomDriver.getLeftY() * kSwerve.MAX_SPEED * scale;
             double vy = -bottomDriver.getLeftX() * kSwerve.MAX_SPEED * scale;
@@ -161,12 +163,14 @@ public class RobotContainer {
 
 
     // pose + model
+    // ----------------------------
     private final Supplier<Pose2d> poseSupplier = localizationManager::getFusedPose;
 
     private final ShooterModel shooterModelConfig =
         ModelLoader.load("model.json", poseSupplier);
 
     // subsystems (note: NO ShotTrainer arg)
+    // ----------------------------
     public final ShooterSubsystem shooterBLUsystem =
         new ShooterSubsystem(
             shooterBLUIO,
@@ -192,6 +196,7 @@ public class RobotContainer {
         );
 
     // trainers (ShooterSubsystem implements ShooterTelemetryProvider)
+    // ----------------------------
     public final ShotTrainer shotBLUTrainer =
         new ShotTrainer(
             shooterBLUsystem,
@@ -211,16 +216,19 @@ public class RobotContainer {
     // ==========================================================
 
     // Agitator
+    // ----------------------------
     private final AgitatorSubsystem agitatorSubsystem =
         new AgitatorSubsystem(
             new AgitatorIOReal(kAgitator.CONFIG));
 
     // Climber
+    // ----------------------------
     public final ClimberSubsystem climberSubsystem =
         new ClimberSubsystem(
             new ClimberIOReal(kClimber.CONFIG_SLOT0, kClimber.CONFIG_SLOT1));
 
     // Feeder
+    // ----------------------------
     public final FeederSubsystem feederBLUsystem =
         new FeederSubsystem(
             new FeederIOReal(FeederHardware.BLU_ID, kFeeder.BLU_CONFIG));  // BLUE
@@ -231,11 +239,13 @@ public class RobotContainer {
             new FeederIOReal(FeederHardware.YEL_ID, kFeeder.YEL_CONFIG)); // YELLOW
 
     // Hopper
+    // ----------------------------
     public final HopperSubsystem hopperSubsystem =
         new HopperSubsystem(
             new HopperIOReal(kHopper.CONFIG));
   
     // Intake Arm
+    // ----------------------------
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
             RobotBase.isReal()
@@ -244,6 +254,7 @@ public class RobotContainer {
         );
 
     // Intake Roller
+    // ----------------------------
     public final IntakeRollerSubsystem intakeRollerSubsystem =
         new IntakeRollerSubsystem(
             RobotBase.isReal()
@@ -311,6 +322,7 @@ public class RobotContainer {
     private void configureDefaultCommands() {
 
         // Swerve Default Commands
+        // ----------------------------
         swerve.setDefaultCommand(defaultDriveCommand());
 
         RobotModeTriggers.disabled()
@@ -319,11 +331,13 @@ public class RobotContainer {
             );
 
         // Intake Arm Default Command
+        // ----------------------------
         intakeArmSubsystem.setDefaultCommand(
             IntakeArmCommands.manualPower(intakeArmSubsystem, () -> topDriver.getLeftY())
         );
 
         // Hopper Default Command
+        // ----------------------------
         hopperSubsystem.setDefaultCommand(
             HopperCommands.manualPower(hopperSubsystem, () -> topDriver.getRightY())
         );
@@ -335,19 +349,9 @@ public class RobotContainer {
     // ==========================================================
     private void configureDriverControls() {
 
-        // Reset field-centric heading
-        // bottomDriver.a()
-        //     .onTrue(ctreDrivetrain.runOnce(ctreDrivetrain::seedFieldCentric));
-
-        // Preplanned poses
-        bottomDriver.povDown()
-            .onTrue(DriveCommands.moveToPose(swerve, Tower.APPROACH_LEFT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
-
-        bottomDriver.povLeft()
-            .onTrue(DriveCommands.moveToPose(swerve, Hub.APPROACH_LEFT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
-
-        bottomDriver.povRight()
-            .onTrue(DriveCommands.moveToPose(swerve, Hub.APPROACH_RIGHT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+        // ----------------------------
+        // Drive
+        // ----------------------------
 
         // Maintain heading to shooter target while driving
         bottomDriver.rightStick()
@@ -360,11 +364,28 @@ public class RobotContainer {
                 )
             );
 
+        // ----------------------------
+        // Preplanned poses
+        // ----------------------------
+        bottomDriver.povDown()
+            .onTrue(DriveCommands.moveToPose(swerve, Tower.APPROACH_LEFT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+
+        bottomDriver.povLeft()
+            .onTrue(DriveCommands.moveToPose(swerve, Hub.APPROACH_LEFT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+
+        bottomDriver.povRight()
+            .onTrue(DriveCommands.moveToPose(swerve, Hub.APPROACH_RIGHT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+
+        // ----------------------------
         // Intake
+        // ----------------------------
+
         topDriver.rightTrigger(0.5)
             .onTrue(IntakeRollerCommands.highRollerSpeed(intakeRollerSubsystem));
+
         topDriver.leftTrigger(0.5)
             .onTrue(IntakeRollerCommands.lowRollerSpeed(intakeRollerSubsystem));
+
         bottomDriver.leftTrigger(0.5)
             .whileTrue(
                 HopperCommands.extend(hopperSubsystem)
@@ -376,14 +397,16 @@ public class RobotContainer {
                     .alongWith(IntakeRollerCommands.stop(intakeRollerSubsystem))
                 
             );
-            bottomDriver.b()
+
+        bottomDriver.b()
             .whileTrue (IntakeRollerCommands.outtake(intakeRollerSubsystem))
             .onFalse(IntakeRollerCommands.stop(intakeRollerSubsystem));
-            
-      
-            
+        
+        // ----------------------------
         // Shooting
-        //shoot ML
+        // ----------------------------
+
+        // shoot ML
         bottomDriver.rightTrigger()
             .whileTrue(ShooterCoordinator.shootModelBased(
                 shooterBLUsystem,
@@ -393,7 +416,7 @@ public class RobotContainer {
                 
             ));
 
-            //Shoot lob
+        // Shoot lob
         bottomDriver.rightBumper()
             .whileTrue(ShooterCoordinator.shootFixedRPM(
                 shooterBLUsystem,
@@ -401,17 +424,21 @@ public class RobotContainer {
                 feederBLUsystem,
                 feederYELsystem,
                 
-                2800,
-                2800
+                kShooter.kRPM.LOB
             ));
         
+        // ----------------------------
         // Climber
+        //----------------------------
 
         //need to hold the button for the climber to move up or down
         topDriver.y().whileTrue(ClimberCommands.robotUp(climberSubsystem));
         topDriver.x().whileTrue(ClimberCommands.robotDown(climberSubsystem));
 
+        // ----------------------------
         // Agitator
+        // ----------------------------
+
         topDriver.povUp().whileTrue(AgitatorCommands.toShooter(agitatorSubsystem));
         topDriver.povDown().whileTrue(AgitatorCommands.toIntake(agitatorSubsystem));
 

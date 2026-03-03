@@ -146,10 +146,10 @@ public class DashboardManager {
         SmartDashboard.putData("Auto Mode", autoChooser);
 
         SmartDashboard.putData("Run Blue Shooter PID Tuner",
-            new CmdShooterPIDTuner(subsystems.BLUshooter(), kShooter.MAX_RPM));
+            new CmdShooterPIDTuner(subsystems.BLUshooter(), kShooter.kRPM.MAX));
 
         SmartDashboard.putData("Run Yellow Shooter PID Tuner",
-            new CmdShooterPIDTuner(subsystems.YELshooter(), kShooter.MAX_RPM));
+            new CmdShooterPIDTuner(subsystems.YELshooter(), kShooter.kRPM.MAX));
     }
 
     /* ---------------- Periodic update ---------------- */

@@ -71,25 +71,24 @@ public final class ShooterCoordinator {
         ShooterSubsystem shooterYEL,
         FeederSubsystem feederBLU,
         FeederSubsystem feederYEL,
-        double shooterRPMBLU,
-        double shooterRPMYEL
+        double shooterRPM
     ) {
         return new CommandBuilder(
             shooterBLU, shooterYEL, feederBLU, feederYEL
         )
         .named("ShootFixedRPM")
         .onInitialize(() -> {
-            shooterBLU.setTargetRPM(shooterRPMBLU);
-            shooterYEL.setTargetRPM(shooterRPMYEL);
+            shooterBLU.setTargetRPM(shooterRPM);
+            shooterYEL.setTargetRPM(shooterRPM);
         })
         .onExecute(() -> {
 
-            boolean bluReady = shooterBLU.getShooterRPM() >= shooterRPMBLU - TARGET_TOLERANCE;
-            boolean yelReady = shooterYEL.getShooterRPM() >= shooterRPMYEL - TARGET_TOLERANCE;
+            boolean bluReady = shooterBLU.getShooterRPM() >= shooterRPM - TARGET_TOLERANCE;
+            boolean yelReady = shooterYEL.getShooterRPM() >= shooterRPM - TARGET_TOLERANCE;
 
             if (bluReady && yelReady) {
-                feederBLU.runRPM(shooterRPMBLU * 0.75);
-                feederYEL.runRPM(shooterRPMYEL * 0.75);
+                feederBLU.runRPM(shooterRPM * 0.75);
+                feederYEL.runRPM(shooterRPM * 0.75);
             }
         })
         .onEnd(interrupted -> {

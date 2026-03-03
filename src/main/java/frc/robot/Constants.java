@@ -192,8 +192,13 @@ public class Constants {
     public static final class kShooter {
 
         // General shooter limits
-        public static final double MAX_RPM = 4000.0;
-        public static final double SAFE_RPM = 2800;
+        public static final class kRPM {
+            public static final double MAX  = 4000.0;
+            public static final double LOB  = 2800.0;
+            public static final double IDLE = 500.0;
+            public static final double SAFE = 2800.0;
+        }
+
         public static final double TARGET_TOLERANCE = 2.0;
 
         // ------------------------------------------------------------
@@ -245,6 +250,12 @@ public class Constants {
     // ║                       SWERVE CONSTANTS                        ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kSwerve {
+
+        public static final class kScale {
+            public static final double CREEP    = 0.3;
+            public static final double NORMAL   = 0.5;
+        }
+        
         public static final double MAX_SPEED =
             0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
 
