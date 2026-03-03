@@ -53,8 +53,8 @@ public class Constants {
 
 
         /** Duty cycles for agitator behavior. */
-        public static final double AGITATE_TO_SHOOTER_DUTY = 0.5;
-        public static final double AGITATE_TO_INTAKE_DUTY = -0.5;
+        public static final double AGITATE_TO_SHOOTER_DUTY = 0.3;
+        public static final double AGITATE_TO_INTAKE_DUTY = -0.3;
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -126,8 +126,8 @@ public class Constants {
 
         /** Hopper target positions (in degrees). */ 
         public static final double RETRACTED_POS = 0.0; 
-        public static final double EXTENDED_POS = 0.73;
-        public static final double SAFE_EXTENDED = 0.5;
+        public static final double EXTENDED_POS = 12.0;
+        public static final double SAFE_EXTENDED = 7.5;
         
         public static final double MANUAL_POSITIVE_POWER = -0.2;
         public static final double MANUAL_NEGATIVE_POWER = 0.2;
@@ -161,10 +161,10 @@ public class Constants {
 
         public static final class kArm {
 
-            public static final double MAX_ANGLE_DEGREES = 65.0;
+            public static final double MAX_ANGLE_DEGREES = 125.0;
             public static final double MIN_ANGLE_DEGREES = 0.0;
-            public static final double DEPLOYED_ANGLE_DEGREES = 63.0;
-            public static final double RETRACTED_ANGLE_DEGREES = 47.0;
+            public static final double DEPLOYED_ANGLE_DEGREES = 135.0;
+            public static final double RETRACTED_ANGLE_DEGREES = 100.0;
 
             public static final double MANUAL_POSITIVE_POWER = 0.2;
             public static final double MANUAL_NEGATIVE_POWER = -0.2;
@@ -201,7 +201,7 @@ public class Constants {
         // General shooter limits
         public static final class kRPM {
             public static final double MAX  = 4000.0;
-            public static final double LOB  = 2800.0;
+            public static final double LOB  = 3400.0;
             public static final double IDLE = 500.0;
             public static final double SAFE = 2800.0;
         }
@@ -224,7 +224,7 @@ public class Constants {
 
         public static final MotorConfig YEL_CONFIG =
             MotorConfig.builder(ControlMode.VELOCITY)
-                .inverted(true)
+                .inverted(false)
                 .pid(0.1, 0.0, 0.02)
                 .feedforward(0.32, 0.12231, 0.0)
                 .voltageLimits(12.0, -12.0)
@@ -260,7 +260,7 @@ public class Constants {
 
         public static final class kScale {
             public static final double CREEP    = 0.3;
-            public static final double NORMAL   = 0.5;
+            public static final double NORMAL   = 0.65;
         }
         
         public static final double MAX_SPEED =

@@ -24,7 +24,7 @@ public final class HopperHardware {
     public static final GearRatio RATIO = 
         GearRatio
             .gearBox(20, 1)
-            .withScaling(0.0, 0.73, 12.0);
+            .withScaling(0.0, 46.3, 12.0);
 
     public interface RobotIO {
         boolean getMagSensor();

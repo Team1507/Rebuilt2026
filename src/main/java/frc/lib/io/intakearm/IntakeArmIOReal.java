@@ -43,8 +43,8 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
         inputs.bluMotorRot = bluMotor.getPosition().getValueAsDouble();
         inputs.yelMotorRot = yelMotor.getPosition().getValueAsDouble();
 
-        inputs.bluPositionDeg = ratio.toOutput(inputs.bluMotorRot);
-        inputs.yelPositionDeg = ratio.toOutput(inputs.yelMotorRot);
+        inputs.bluPositionDeg = ratio.sensorToReal(inputs.bluMotorRot);
+        inputs.yelPositionDeg = ratio.sensorToReal(inputs.yelMotorRot);
 
         inputs.bluReverseLimit =
             bluMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
@@ -73,7 +73,7 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
 
     @Override
     public void setPositionDeg(double degrees) {
-        double motorRot = ratio.toMotor(degrees);
+        double motorRot = ratio.realToSensor(degrees);
         
         double ffVolts = computeGravityFF(degrees);
         

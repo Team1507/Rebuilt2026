@@ -21,7 +21,8 @@ import java.util.function.Supplier;
  * These commands are lightweight, allocation-free, and built using
  * the CommandBuilder to minimize cyclic load and maximize clarity.
  */
-public final class AgitatorCommands {
+public final class 
+AgitatorCommands {
 
     private AgitatorCommands() {} // static-only class
 

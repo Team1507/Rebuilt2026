@@ -364,6 +364,11 @@ public class RobotContainer {
                 )
             );
 
+        bottomDriver.x()
+            .whileTrue(
+                DriveCommands.lock(swerve)
+            );
+
         // ----------------------------
         // Preplanned poses
         // ----------------------------

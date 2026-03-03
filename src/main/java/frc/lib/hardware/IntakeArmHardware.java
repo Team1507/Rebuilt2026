@@ -25,7 +25,7 @@ public final class IntakeArmHardware {
     public static final GearRatio RATIO = 
         GearRatio
             .gearBox(100, 1)
-            .withScaling(0.0, 63.0, 120.0);
+            .withScaling(0.0, 63.0, 135.0);
 
     private IntakeArmHardware() {}
 }

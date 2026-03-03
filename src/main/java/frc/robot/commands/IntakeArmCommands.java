@@ -67,7 +67,7 @@ public final class IntakeArmCommands {
     public static Command manualPower(IntakeArmSubsystem arm, Supplier<Double> angleSupplier) {
         return new CommandBuilder(arm)
             .named("IntakeArmManual")
-            .onExecute(() -> arm.setPosition(angleSupplier.get()))
+            .onExecute(() -> arm.runPower(angleSupplier.get()))
             .onEnd(arm::stop);
     }
 

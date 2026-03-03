@@ -64,16 +64,16 @@ public class DashboardManager {
     // Hopper
 
     private final DoublePublisher pubHopperCurrentPos =
-        nt.getDoubleTopic("Hopper/CurrentPositionDeg").publish();
+        nt.getDoubleTopic("Hopper/CurrentPosition").publish();
     private final BooleanPublisher pubHopperIsExtended =
         nt.getBooleanTopic("Hopper/IsExtended").publish();
 
     // Intake Arm
 
     private final DoublePublisher pubIntakeBLUPos =
-        nt.getDoubleTopic("Intake/Arm/BLU/CurrentPositionDeg").publish();
+        nt.getDoubleTopic("Intake/Arm/BLU/Current Position").publish();
     private final DoublePublisher pubIntakeYELPos =
-        nt.getDoubleTopic("Intake/Arm/YEL/CurrentPositionDeg").publish();
+        nt.getDoubleTopic("Intake/Arm/YEL/Current Position").publish();
 
     private final BooleanPublisher pubIntakeBLURevLimit =
         nt.getBooleanTopic("Intake/Arm/BLU/ReverseLimit").publish();
@@ -191,6 +191,7 @@ public class DashboardManager {
 
         SmartDashboard.putData("Run Yellow Shooter PID Tuner",
             new CmdShooterPIDTuner(subsystems.YELshooter(), kShooter.kRPM.MAX));
+            
     }
 
     /* ---------------- Periodic update ---------------- */

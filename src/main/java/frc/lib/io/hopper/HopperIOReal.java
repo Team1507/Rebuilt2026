@@ -45,9 +45,6 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
         // Convert sensor units → real-world inches using scaling
         inputs.position = ratio.sensorToReal(inputs.motorRot);
 
-        // Hopper does NOT use degrees; remove incorrect conversion
-        inputs.positionDeg = 0.0;
-
         inputs.currentA = motor.getStatorCurrent().getValueAsDouble();
         inputs.temperatureC = motor.getDeviceTemp().getValueAsDouble();
 
