@@ -206,55 +206,31 @@ public class GearRatio {
     }
 
     // -----------------------------
-    // Degree helpers
+    // Gear ratio conversion helpers (now scaled)
     // -----------------------------
 
     /**
-     * Converts motor rotations into mechanism degrees using the gear ratio.
+     * Converts output speed (in real-world units) into motor speed (in real-world units),
+     * applying both the gear ratio and the linear scaling transform.
      *
-     * @param motorRot motor rotations
-     * @return mechanism degrees
-     */
-    public double motorToDegrees(double motorRot) {
-        return toOutput(motorRot) * 360.0;
-    }
-
-    /**
-     * Converts mechanism degrees into motor rotations using the gear ratio.
-     *
-     * @param degrees mechanism degrees
-     * @return motor rotations
-     */
-    public double degreesToMotor(double degrees) {
-        return toMotor(degrees / 360.0);
-    }
-
-    // -----------------------------
-    // Gear ratio conversion helpers
-    // -----------------------------
-
-    /**
-     * Converts output shaft speed to motor shaft speed.
-     * <p>
-     * Example: with an 8:1 reduction, {@code toMotor(500)} returns 4000.
-     *
-     * @param outputSpeed speed of the mechanism output (RPM, RPS, etc.)
-     * @return equivalent motor shaft speed in the same units
+     * @param outputSpeed real-world mechanism speed
+     * @return equivalent real-world motor speed
      */
     public double toMotor(double outputSpeed) {
-        return outputSpeed * motorToOutput;
+        double motorRot = outputSpeed * motorToOutput;
+        return sensorToReal(motorRot);
     }
 
     /**
-     * Converts motor shaft speed to output shaft speed.
-     * <p>
-     * Example: with an 8:1 reduction, {@code toOutput(4000)} returns 500.
+     * Converts motor speed (in real-world units) into output speed (in real-world units),
+     * applying both the gear ratio and the linear scaling transform.
      *
-     * @param motorSpeed speed of the motor shaft (RPM, RPS, etc.)
-     * @return equivalent mechanism output speed in the same units
+     * @param motorSpeed real-world motor speed
+     * @return equivalent real-world mechanism speed
      */
     public double toOutput(double motorSpeed) {
-        return motorSpeed / motorToOutput;
+        double motorRot = realToSensor(motorSpeed);
+        return motorRot / motorToOutput;
     }
 
     /**
