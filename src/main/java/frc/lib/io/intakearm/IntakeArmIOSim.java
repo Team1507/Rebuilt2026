@@ -71,6 +71,10 @@ public class IntakeArmIOSim implements IntakeArmIO {
     public void setPositionDeg(double degrees) {
         targetMotorRot = ratio.toMotor(degrees);
     }
+    @Override
+    public void runPower(double power){
+        
+    }
 
     @Override
     public void stop() {

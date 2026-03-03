@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.io.intakearm.IntakeArmIO;
 import frc.lib.io.intakearm.IntakeArmInputs;
-
+import frc.robot.Constants.kIntake;
 /**
  * Thin, IO-based intake arm subsystem.
  */
@@ -46,7 +46,17 @@ public class IntakeArmSubsystem extends SubsystemBase {
         return Math.abs(inputs.bluPositionDeg - targetDeg) < toleranceDeg &&
                Math.abs(inputs.yelPositionDeg - targetDeg) < toleranceDeg;
     }
-
+    public void runPower(double power) {
+        if(power > 0.5) {
+            io.runPower(kIntake.kArm.MANUAL_POSITIVE_POWER);
+        }
+        else if(power< -0.5){
+            io.runPower(kIntake.kArm.MANUAL_NEGATIVE_POWER);
+        }
+        else {
+            io.runPower(0);
+        }
+    }
     public void stop() {
         io.stop();
     }

@@ -161,6 +161,7 @@ public class DashboardManager {
         SmartDashboard.putNumber("Climber/Current Position", subsystems.climber().getPosition());
 
         SmartDashboard.putNumber("Hopper/Current Position", subsystems.hopper().getPositionDegrees());
+        SmartDashboard.putBoolean("Hopper/is safe extened", subsystems.hopper().isHopperExtended());
         SmartDashboard.putBoolean("BluShooterSensor", subsystems.BLUshooter().getSensor());
         double now = Timer.getFPGATimestamp();
         if (now - lastUpdateTime < DASHBOARD_PERIOD) return;

@@ -34,7 +34,7 @@ public class Robot extends LoggedRobot {
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
         m_robotContainer.getDashboard().updateInputs();
-    }
+        }
 
     @Override
     public void disabledInit() {}

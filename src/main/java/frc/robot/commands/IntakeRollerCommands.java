@@ -29,7 +29,7 @@ public final class IntakeRollerCommands {
     public static Command intake(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller)
             .named("IntakeRollerIntake")
-            .onInitialize(() -> roller.run(kIntake.INTAKE_ROLLER_DUTY))
+            .onInitialize(() -> roller.run())
             .isFinished(true); // one-shot command
     }
 
@@ -56,4 +56,17 @@ public final class IntakeRollerCommands {
             .onInitialize(roller::stop)
             .isFinished(true);
     }
+    public static Command highRollerSpeed(IntakeRollerSubsystem roller) {
+        return new CommandBuilder(roller) 
+            .named("IntakeRollerSetDutyHigh")
+            .onInitialize(()->roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_HIGH))
+            .isFinished(true);
+    }
+    public static Command lowRollerSpeed(IntakeRollerSubsystem roller) {
+        return new CommandBuilder(roller) 
+            .named("IntakeRollerSetDutyLow")
+            .onInitialize(()->roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_LOW))
+            .isFinished(true);
+    }
+    
 }

@@ -30,5 +30,7 @@ public class HopperInputs {
     public double temperatureC = 0.0;
 
     public boolean hopperRetracted = false;
+
+    public boolean hopperExtended = false;
     
 }

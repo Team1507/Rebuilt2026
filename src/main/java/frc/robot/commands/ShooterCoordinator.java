@@ -13,9 +13,7 @@ import frc.lib.util.CommandBuilder;
 
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
-import frc.robot.subsystems.AgitatorSubsystem;
 
-import frc.robot.Constants.kAgitator;
 import frc.robot.Constants.kFeeder;
 import static frc.robot.Constants.kShooter.TARGET_TOLERANCE;
 
@@ -41,11 +39,10 @@ public final class ShooterCoordinator {
         ShooterSubsystem shooterBLU,
         ShooterSubsystem shooterYEL,
         FeederSubsystem feederBLU,
-        FeederSubsystem feederYEL,
-        AgitatorSubsystem agitator
+        FeederSubsystem feederYEL
     ) {
         return new CommandBuilder(
-            shooterBLU, shooterYEL, feederBLU, feederYEL, agitator
+            shooterBLU, shooterYEL, feederBLU, feederYEL
         )
         .named("ShootModelBased")
         .onExecute(() -> {
@@ -56,13 +53,11 @@ public final class ShooterCoordinator {
             if (ready(shooterBLU) && ready(shooterYEL)) {
                 feederBLU.runRPM(kFeeder.FEED_RPM);
                 feederYEL.runRPM(kFeeder.FEED_RPM);
-                agitator.run(kAgitator.AGITATE_TO_SHOOTER_DUTY);
             }
         })
         .onEnd(interrupted -> {
             feederBLU.stop();
             feederYEL.stop();
-            agitator.stop();
             shooterBLU.stop();
             shooterYEL.stop();
         });
@@ -76,12 +71,11 @@ public final class ShooterCoordinator {
         ShooterSubsystem shooterYEL,
         FeederSubsystem feederBLU,
         FeederSubsystem feederYEL,
-        AgitatorSubsystem agitator,
         double shooterRPMBLU,
         double shooterRPMYEL
     ) {
         return new CommandBuilder(
-            shooterBLU, shooterYEL, feederBLU, feederYEL, agitator
+            shooterBLU, shooterYEL, feederBLU, feederYEL
         )
         .named("ShootFixedRPM")
         .onInitialize(() -> {
@@ -94,15 +88,13 @@ public final class ShooterCoordinator {
             boolean yelReady = shooterYEL.getShooterRPM() >= shooterRPMYEL - TARGET_TOLERANCE;
 
             if (bluReady && yelReady) {
-                feederBLU.runRPM(kFeeder.FEED_RPM);
-                feederYEL.runRPM(kFeeder.FEED_RPM);
-                agitator.run(kAgitator.AGITATE_TO_SHOOTER_DUTY);
+                feederBLU.runRPM(shooterRPMBLU * 0.75);
+                feederYEL.runRPM(shooterRPMYEL * 0.75);
             }
         })
         .onEnd(interrupted -> {
             feederBLU.stop();
             feederYEL.stop();
-            agitator.stop();
             shooterBLU.stop();
             shooterYEL.stop();
         });

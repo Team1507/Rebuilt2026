@@ -15,6 +15,7 @@ import frc.lib.hardware.ClimberHardware;
 import frc.lib.hardware.HopperHardware;
 import frc.lib.math.GearRatio;
 import frc.lib.util.MotorConfig;
+import frc.robot.Constants.kHopper;
 import frc.robot.framework.base.Subsystems1507;
 import edu.wpi.first.wpilibj.DigitalInput;
 
@@ -43,6 +44,7 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
 
         inputs.currentA = motor.getStatorCurrent().getValueAsDouble();
         inputs.temperatureC = motor.getDeviceTemp().getValueAsDouble();
+        inputs.hopperExtended = inputs.position > kHopper.SAFE_EXTENDED;
     }
 
     @Override
@@ -54,6 +56,11 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
      @Override
     public boolean getMagSensor() {
         return !magSensor.get(); 
+    }
+
+    @Override
+     public void runPower(double power) {
+        motor.set(power);
     }
 
     @Override

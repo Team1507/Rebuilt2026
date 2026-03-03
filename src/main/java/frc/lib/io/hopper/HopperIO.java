@@ -21,6 +21,8 @@ public interface HopperIO {
 
     boolean getMagSensor();
 
+    void runPower(double power);
+    
     /** Stop the hopper motor. */
     void hopperStop();
 }

@@ -138,8 +138,12 @@ public class Constants {
     public static final class kHopper {
 
         /** Hopper target positions (in degrees). */ 
-        public static final double LOAD_POS = 0.0; 
-        public static final double SHOOT_POS = 0.73;
+        public static final double RETRACTED_POS = 0.0; 
+        public static final double EXTENDED_POS = 0.73;
+        public static final double SAFE_EXTENDED = 0.5;
+        
+        public static final double MANUAL_POSITIVE_POWER = -0.2;
+        public static final double MANUAL_NEGATIVE_POWER = 0.2;
 
         /**
          * MotorConfig now contains ONLY tuning values.
@@ -167,8 +171,10 @@ public class Constants {
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kIntake {
 
-        public static final double INTAKE_ROLLER_DUTY = 0.35;
+        public static final double INTAKE_ROLLER_DUTY_LOW = 0.35;
+        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.5;
         public static final double OUTTAKE_ROLLER_DUTY = -0.35;
+        
 
         public static final MotorConfig ROLLER_CONFIG = new MotorConfig(
             false,
@@ -178,10 +184,13 @@ public class Constants {
 
         public static final class kArm {
 
-            public static final double MAX_ANGLE_DEGREES = 63.0;
+            public static final double MAX_ANGLE_DEGREES = 65.0;
             public static final double MIN_ANGLE_DEGREES = 0.0;
-            public static final double DEPLOYED_ANGLE_DEGREES = 62.0;
-            public static final double RETRACTED_ANGLE_DEGREES = 1.0;
+            public static final double DEPLOYED_ANGLE_DEGREES = 63.0;
+            public static final double RETRACTED_ANGLE_DEGREES = 47.0;
+
+            public static final double MANUAL_POSITIVE_POWER = 0.2;
+            public static final double MANUAL_NEGATIVE_POWER = -0.2;
 
             public static final MotorConfig BLU_CONFIG = new MotorConfig(
                 false,
@@ -196,6 +205,7 @@ public class Constants {
                 0.1, GravityType.COSINE,
                 4, -4
             );
+
         }
     }
 
@@ -207,6 +217,7 @@ public class Constants {
 
         // General shooter limits
         public static final double MAX_RPM = 4000.0;
+        public static final double SAFE_RPM = 2800;
         public static final double TARGET_TOLERANCE = 2.0;
 
         // ------------------------------------------------------------
@@ -269,10 +280,10 @@ public class Constants {
     // ║                       SWERVE CONSTANTS                        ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kSwerve {
-        public static double MAX_SPEED =
+        public static final double MAX_SPEED =
             0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
 
-        public static double MAX_ANGULAR_RATE =
+        public static final double MAX_ANGULAR_RATE =
             RotationsPerSecond.of(0.75).in(RadiansPerSecond);
     }
 

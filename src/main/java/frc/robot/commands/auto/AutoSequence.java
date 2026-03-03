@@ -25,6 +25,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShooterCoordinator;
 import frc.robot.commands.tuning.MoveLog;
 import frc.robot.framework.SubsystemsRecord;
+import frc.robot.Constants.kIntake;
 import frc.robot.commands.AgitatorCommands;
 import frc.robot.commands.FeederCommands;
 import frc.robot.commands.HopperCommands;
@@ -217,13 +218,13 @@ public class AutoSequence {
      * steps.add(new IntakeCommand(intakeSubsystem));
      */
     public AutoSequence intakeDeploy() {
-        steps.add(IntakeArmCommands.down(record.intakeArm()));
+        steps.add(IntakeArmCommands.down(record.intakeArm(), () -> record.hopper().isHopperExtended()));
         steps.add(IntakeRollerCommands.intake(record.intakeRoller()));
         return this;
     }
 
     public AutoSequence intakeRetract() {
-        steps.add(IntakeArmCommands.up(record.intakeArm()));
+        steps.add(IntakeArmCommands.up(record.intakeArm(), () -> record.hopper().isHopperExtended()));
         steps.add(IntakeRollerCommands.stop(record.intakeRoller()));
         return this;
     }
@@ -238,8 +239,7 @@ public class AutoSequence {
             record.BLUshooter(),
             record.YELshooter(),
             record.BLUfeeder(),
-            record.YELfeeder(),
-            record.agitator()
+            record.YELfeeder()
         ));
         return this;
     }
@@ -259,8 +259,7 @@ public class AutoSequence {
                     record.BLUshooter(),
                     record.YELshooter(),
                     record.BLUfeeder(),
-                    record.YELfeeder(),
-                    record.agitator()
+                    record.YELfeeder()
                 ),
                 Commands.waitUntil(() -> autoTimer.get() >= endTime)
             )

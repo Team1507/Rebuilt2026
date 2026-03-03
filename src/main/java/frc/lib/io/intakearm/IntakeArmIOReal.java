@@ -83,6 +83,11 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
             .withFeedForward(ffVolts)
         );
     }
+    @Override
+     public void runPower(double power) {
+        bluMotor.set(power);
+        yelMotor.set(power);
+    }
 
     @Override
     public void stop() {

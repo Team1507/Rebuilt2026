@@ -234,6 +234,12 @@ public class RobotContainer {
     public final HopperSubsystem hopperSubsystem =
         new HopperSubsystem(
             new HopperIOReal(kHopper.CONFIG));
+
+    private Command createHopperCommand() {
+        return hopperSubsystem.run(() -> {
+            hopperSubsystem.runPower(topDriver.getRightY());
+        });
+    }
   
     // Intake Arm
     public final IntakeArmSubsystem intakeArmSubsystem =
@@ -242,6 +248,13 @@ public class RobotContainer {
                 ? new IntakeArmIOReal(kIntake.kArm.BLU_CONFIG, kIntake.kArm.YEL_CONFIG)
                 : new IntakeArmIOSim()
         );
+
+    private Command createIntakeArmCommand() {
+        return intakeArmSubsystem.run(() -> {
+            intakeArmSubsystem.runPower(topDriver.getLeftY());
+        });
+    }
+
 
     // Intake Roller
     public final IntakeRollerSubsystem intakeRollerSubsystem =
@@ -309,13 +322,16 @@ public class RobotContainer {
     // Default commands
     // ==========================================================
     private void configureDefaultCommands() {
-
         swerve.setDefaultCommand(createDriveCommand());
+
+        intakeArmSubsystem.setDefaultCommand(createIntakeArmCommand());
+        hopperSubsystem.setDefaultCommand(createHopperCommand());
 
         RobotModeTriggers.disabled().whileTrue(
             swerve.run(swerve::stop).ignoringDisable(true)
         );
     }
+
 
     // ==========================================================
     // Driver controls
@@ -328,16 +344,12 @@ public class RobotContainer {
 
         // Left bumper: slow mode while held, normal when released, reseed heading on press
         bottomDriver.leftBumper()
-            .onTrue(Commands.runOnce(() -> {
-                kSwerve.MAX_SPEED = 0.3 * kSwerve.MAX_SPEED;
-                kSwerve.MAX_ANGULAR_RATE = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
-                ctreDrivetrain.seedFieldCentric();
-            }));
+            .whileTrue(Commands.run(() -> {
+                double vx = (-bottomDriver.getLeftY() * kSwerve.MAX_SPEED) * 0.3;
+                double vy = (-bottomDriver.getLeftX() * kSwerve.MAX_SPEED) * 0.3;
+                double omega = (-bottomDriver.getRightX() * kSwerve.MAX_ANGULAR_RATE) * 0.3;
 
-        bottomDriver.leftBumper()
-            .onFalse(Commands.runOnce(() -> {
-                kSwerve.MAX_SPEED = 0.65 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-                kSwerve.MAX_ANGULAR_RATE = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
+                swerve.drive(new ChassisSpeeds(vx, vy, omega));
             }));
 
         // Preplanned poses
@@ -362,34 +374,50 @@ public class RobotContainer {
             );
 
         // Intake
+        topDriver.rightTrigger(0.5)
+            .onTrue(IntakeRollerCommands.highRollerSpeed(intakeRollerSubsystem));
+        topDriver.leftTrigger(0.5)
+            .onTrue(IntakeRollerCommands.lowRollerSpeed(intakeRollerSubsystem));
         bottomDriver.leftTrigger(0.5)
             .whileTrue(
-                IntakeArmCommands.down(intakeArmSubsystem)
+                HopperCommands.extend(hopperSubsystem)
                     .alongWith(IntakeRollerCommands.intake(intakeRollerSubsystem))
+                    .alongWith(IntakeArmCommands.down(intakeArmSubsystem, () -> hopperSubsystem.isHopperExtended()))
             )
             .onFalse(
-                IntakeArmCommands.up(intakeArmSubsystem)
+                IntakeArmCommands.up(intakeArmSubsystem, () -> hopperSubsystem.isHopperExtended())
                     .alongWith(IntakeRollerCommands.stop(intakeRollerSubsystem))
+                
             );
-
-        bottomDriver.a()
-            .whileTrue(IntakeRollerCommands.intake(intakeRollerSubsystem))
-            .onFalse(IntakeRollerCommands.stop(intakeRollerSubsystem));
-
-        bottomDriver.b()
-            .whileTrue(IntakeRollerCommands.outtake(intakeRollerSubsystem))
+            bottomDriver.b()
+            .whileTrue (IntakeRollerCommands.outtake(intakeRollerSubsystem))
             .onFalse(IntakeRollerCommands.stop(intakeRollerSubsystem));
             
+      
+            
         // Shooting
+        //shoot ML
         bottomDriver.rightTrigger()
             .whileTrue(ShooterCoordinator.shootModelBased(
                 shooterBLUsystem,
                 shooterYELsystem,
                 feederBLUsystem,
-                feederYELsystem,
-                agitatorSubsystem
+                feederYELsystem
+                
             ));
 
+            //Shoot lob
+        bottomDriver.rightBumper()
+            .whileTrue(ShooterCoordinator.shootFixedRPM(
+                shooterBLUsystem,
+                shooterYELsystem,
+                feederBLUsystem,
+                feederYELsystem,
+                
+                2800,
+                2800
+            ));
+        
         // Climber
 
         //need to hold the button for the climber to move up or down

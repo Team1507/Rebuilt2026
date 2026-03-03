@@ -31,7 +31,7 @@ public final class HopperCommands {
     public static Command extend(HopperSubsystem hopper) {
         return new CommandBuilder(hopper)
             .named("HopperExtend")
-            .onExecute(() -> hopper.setPosition(kHopper.LOAD_POS))
+            .onExecute(() -> hopper.setPosition(kHopper.EXTENDED_POS))
             .onEnd(hopper::stop);
     }
 
@@ -39,7 +39,7 @@ public final class HopperCommands {
     public static Command retract(HopperSubsystem hopper) {
         return new CommandBuilder(hopper)
             .named("HopperRetract")
-            .onExecute(() -> hopper.setPosition(kHopper.SHOOT_POS))
+            .onExecute(() -> hopper.setPosition(kHopper.RETRACTED_POS))
             .onEnd(() -> hopper.stop());
 
     }

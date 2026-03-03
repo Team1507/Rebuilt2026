@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.io.hopper.HopperIO;
 import frc.lib.io.hopper.HopperInputs;
+import frc.robot.Constants.kHopper;
 
 /**
  * Thin, IO-based hopper subsystem.
@@ -38,10 +39,26 @@ public class HopperSubsystem extends SubsystemBase {
         return inputs.position;
     }
 
+    public void runPower(double power)
+    {
+        if(power > 0.5) {
+            io.runPower(kHopper.MANUAL_POSITIVE_POWER);
+        }
+        else if(power< -0.5){
+            io.runPower(kHopper.MANUAL_NEGATIVE_POWER);
+        }
+        else {
+            io.runPower(0);
+        }
+    }
     public void stop() {
         io.hopperStop();
     }
     public void MagnetOffset (){
         
+    }
+
+    public boolean isHopperExtended(){
+        return inputs.hopperExtended;
     }
 }

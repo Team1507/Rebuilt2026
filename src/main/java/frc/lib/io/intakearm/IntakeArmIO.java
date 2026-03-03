@@ -19,6 +19,7 @@ public interface IntakeArmIO {
     /** Set the target arm angle (degrees). */
     void setPositionDeg(double degrees);
 
+    void runPower(double power);
     /** Stop both motors. */
     void stop();
 }
