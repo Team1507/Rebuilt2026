@@ -26,7 +26,10 @@ public final class ClimberHardware {
     public static final int LIMIT_SWITCH_PORT = 9; // example, update as needed
 
     /** Gear ratio for the climber gearbox. */
-    public static final GearRatio RATIO = GearRatio.gearBox(64, 1);
+    public static final GearRatio RATIO = 
+        GearRatio
+            .gearBox(64, 1)
+            .withScaling(0.0, 23.0, 1.0, 27.0);
 
     /** Transform from robot center to climber (optional). */
     public static final Transform2d ROBOT_TO_CLIMBER = new Transform2d();

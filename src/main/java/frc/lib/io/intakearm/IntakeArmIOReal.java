@@ -8,11 +8,9 @@
 
 package frc.lib.io.intakearm;
 
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.ReverseLimitValue;
 
 import frc.lib.hardware.IntakeArmHardware;
 import frc.lib.math.GearRatio;
@@ -47,6 +45,12 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
 
         inputs.bluPositionDeg = ratio.toOutput(inputs.bluMotorRot);
         inputs.yelPositionDeg = ratio.toOutput(inputs.yelMotorRot);
+
+        inputs.bluReverseLimit =
+            bluMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
+
+        inputs.yelReverseLimit =
+            yelMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
 
         inputs.bluCurrentA = bluMotor.getStatorCurrent().getValueAsDouble();
         inputs.yelCurrentA = yelMotor.getStatorCurrent().getValueAsDouble();

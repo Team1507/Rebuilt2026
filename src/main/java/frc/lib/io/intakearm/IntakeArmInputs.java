@@ -19,6 +19,10 @@ public class IntakeArmInputs {
     /** YEL arm position in mechanism degrees. */
     public double yelPositionDeg = 0.0;
 
+    /** Arm limit switches */
+    public boolean bluReverseLimit = false;
+    public boolean yelReverseLimit = false;
+
     /** Raw motor rotations. */
     public double bluMotorRot = 0.0;
     public double yelMotorRot = 0.0;

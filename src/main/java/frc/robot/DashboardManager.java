@@ -50,6 +50,49 @@ public class DashboardManager {
     private final NetworkTable nt =
         NetworkTableInstance.getDefault().getTable("SmartDashboard");
 
+    /* ---------------- Publishers for inputs ---------------- */
+
+    // Agitator
+
+    // Climber
+
+    private final DoublePublisher pubClimberCurrentPos =
+        nt.getDoubleTopic("Climber/CurrentPosition").publish();
+
+    // Feeder
+
+    // Hopper
+
+    private final DoublePublisher pubHopperCurrentPos =
+        nt.getDoubleTopic("Hopper/CurrentPositionDeg").publish();
+    private final BooleanPublisher pubHopperIsExtended =
+        nt.getBooleanTopic("Hopper/IsExtended").publish();
+
+    // Intake Arm
+
+    private final DoublePublisher pubIntakeBLUPos =
+        nt.getDoubleTopic("Intake/Arm/BLU/CurrentPositionDeg").publish();
+    private final DoublePublisher pubIntakeYELPos =
+        nt.getDoubleTopic("Intake/Arm/YEL/CurrentPositionDeg").publish();
+
+    private final BooleanPublisher pubIntakeBLURevLimit =
+        nt.getBooleanTopic("Intake/Arm/BLU/ReverseLimit").publish();
+
+    private final BooleanPublisher pubIntakeYELRevLimit =
+        nt.getBooleanTopic("Intake/Arm/YEL/ReverseLimit").publish();
+
+    // Intake Roller
+
+    // Shooter
+
+    private final BooleanPublisher pubBLUShooterSensor =
+        nt.getBooleanTopic("Shooter/BLU/Sensor").publish();
+
+    private final BooleanPublisher pubYELShooterSensor =
+        nt.getBooleanTopic("Shooter/YEL/Sensor").publish();
+
+    // Swerve
+
     /* ---------------- Publishers for manual values ---------------- */
 
     private final DoublePublisher pubAgitatorDuty =
@@ -98,8 +141,6 @@ public class DashboardManager {
 
     private final BooleanPublisher pubLocalizationSeeded =
         nt.getBooleanTopic("Localization/PoseSeeded").publish();
-    private final BooleanPublisher resetSeedPub =
-        nt.getBooleanTopic("ResetPoseSeed").publish();
 
     private final DoublePublisher pubQuestBattery =
         nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
@@ -155,30 +196,67 @@ public class DashboardManager {
     /* ---------------- Periodic update ---------------- */
 
     public void updateInputs() {
-        SmartDashboard.putNumber("Intake/Arm/Current BLU Position", subsystems.intakeArm().getBLUPositionDegrees());
-        SmartDashboard.putNumber("Intake/Arm/Current YEL Position", subsystems.intakeArm().getYELPositionDegrees());
 
-        SmartDashboard.putNumber("Climber/Current Position", subsystems.climber().getPosition());
-
-        SmartDashboard.putNumber("Hopper/Current Position", subsystems.hopper().getPositionDegrees());
-        SmartDashboard.putBoolean("Hopper/is safe extened", subsystems.hopper().isHopperExtended());
-        SmartDashboard.putBoolean("BluShooterSensor", subsystems.BLUshooter().getSensor());
         double now = Timer.getFPGATimestamp();
         if (now - lastUpdateTime < DASHBOARD_PERIOD) return;
         lastUpdateTime = now;
 
+        /* -------- Set Publisher Inputs -------- */
+
+        // Agitator
+
+        // Climber
+
+        var climberInputs = subsystems.climber().getInputs();
+
+        pubClimberCurrentPos.set(climberInputs.position);
+
+        // Feeder
+
+        // Hopper
+
+        var hopperInputs = subsystems.hopper().getInputs();
+
+        pubHopperCurrentPos.set(hopperInputs.position);
+        pubHopperIsExtended.set(hopperInputs.hopperRetracted);
+
+        // Intake Arm
+
+        var intakeInputs = subsystems.intakeArm().getInputs();
+
+        pubIntakeBLUPos.set(intakeInputs.bluPositionDeg);
+        pubIntakeYELPos.set(intakeInputs.yelPositionDeg);
+
+        pubIntakeBLURevLimit.set(intakeInputs.bluReverseLimit);
+
+        pubIntakeYELRevLimit.set(intakeInputs.yelReverseLimit);
+
+        // Intake Roller
+
+        // Shooter
+
+        var bluShooterInputs = subsystems.BLUshooter().getInputs();
+
+        pubBLUShooterSensor.set(bluShooterInputs.ballFired);
+
+        var yelShooterInputs = subsystems.YELshooter().getInputs();
+
+        pubYELShooterSensor.set(yelShooterInputs.ballFired);
+
+        // Swerve
+
         /* -------- Read manual values -------- */
 
-        manualAgitatorDuty = nt.getEntry("Manual Mode/Agitator/Target DC").getDouble(manualAgitatorDuty);
-        manualClimberPosition = nt.getEntry("Manual Mode/Climber/Target Position").getDouble(manualClimberPosition);
-        manualBLUFeederRPM = nt.getEntry("Manual Mode/Feeder/BLU/Target RPM").getDouble(manualBLUFeederRPM);
-        manualYELFeederRPM = nt.getEntry("Manual Mode/Feeder/YEL/Target RPM").getDouble(manualYELFeederRPM);
-        manualHopperAngle = nt.getEntry("Manual Mode/Hopper/Target Angle").getDouble(manualHopperAngle);
-        manualIntakeArmAngle = nt.getEntry("Manual Mode/Intake/Arm/Target Angle").getDouble(manualIntakeArmAngle);
-        manualIntakeRollerDuty = nt.getEntry("Manual Mode/Intake/Roller/Target DC").getDouble(manualIntakeRollerDuty);
-        manualBLUShooterRPM = nt.getEntry("Manual Mode/Shooter/BLU/Target RPM").getDouble(manualBLUShooterRPM);
-        manualYELShooterRPM = nt.getEntry("Manual Mode/Shooter/YEL/Target RPM").getDouble(manualYELShooterRPM);
-        shooterIdleRPM = nt.getEntry("Shooter/Shooter Idle RPM").getDouble(shooterIdleRPM);
+        manualAgitatorDuty      = nt.getEntry("Manual Mode/Agitator/Target DC").getDouble(manualAgitatorDuty);
+        manualClimberPosition   = nt.getEntry("Manual Mode/Climber/Target Position").getDouble(manualClimberPosition);
+        manualBLUFeederRPM      = nt.getEntry("Manual Mode/Feeder/BLU/Target RPM").getDouble(manualBLUFeederRPM);
+        manualYELFeederRPM      = nt.getEntry("Manual Mode/Feeder/YEL/Target RPM").getDouble(manualYELFeederRPM);
+        manualHopperAngle       = nt.getEntry("Manual Mode/Hopper/Target Angle").getDouble(manualHopperAngle);
+        manualIntakeArmAngle    = nt.getEntry("Manual Mode/Intake/Arm/Target Angle").getDouble(manualIntakeArmAngle);
+        manualIntakeRollerDuty  = nt.getEntry("Manual Mode/Intake/Roller/Target DC").getDouble(manualIntakeRollerDuty);
+        manualBLUShooterRPM     = nt.getEntry("Manual Mode/Shooter/BLU/Target RPM").getDouble(manualBLUShooterRPM);
+        manualYELShooterRPM     = nt.getEntry("Manual Mode/Shooter/YEL/Target RPM").getDouble(manualYELShooterRPM);
+        shooterIdleRPM          = nt.getEntry("Shooter/Shooter Idle RPM").getDouble(shooterIdleRPM);
 
         /* -------- Publish values back to Elastic -------- */
 
@@ -203,8 +281,6 @@ public class DashboardManager {
             nt.getEntry("ResetPoseSeed").setBoolean(false);
         }
 
-
-
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
         pubQuestIsTracking.set(localization.questNav().isTracking());
 
@@ -212,15 +288,15 @@ public class DashboardManager {
 
         /* -------- Read RUN button states -------- */
 
-        boolean agitatorRun = nt.getEntry("Manual Mode/Agitator/Run").getBoolean(false);
-        boolean climberRun  = nt.getEntry("Manual Mode/Climber/Run").getBoolean(false);
-        boolean bluFeederRun = nt.getEntry("Manual Mode/Feeder/BLU/Run").getBoolean(false);
-        boolean yelFeederRun = nt.getEntry("Manual Mode/Feeder/YEL/Run").getBoolean(false);
-        boolean hopperRun = nt.getEntry("Manual Mode/Hopper/Run").getBoolean(false);
-        boolean intakeArmRun = nt.getEntry("Manual Mode/Intake/Arm/Run").getBoolean(false);
+        boolean agitatorRun     = nt.getEntry("Manual Mode/Agitator/Run").getBoolean(false);
+        boolean climberRun      = nt.getEntry("Manual Mode/Climber/Run").getBoolean(false);
+        boolean bluFeederRun    = nt.getEntry("Manual Mode/Feeder/BLU/Run").getBoolean(false);
+        boolean yelFeederRun    = nt.getEntry("Manual Mode/Feeder/YEL/Run").getBoolean(false);
+        boolean hopperRun       = nt.getEntry("Manual Mode/Hopper/Run").getBoolean(false);
+        boolean intakeArmRun    = nt.getEntry("Manual Mode/Intake/Arm/Run").getBoolean(false);
         boolean intakeRollerRun = nt.getEntry("Manual Mode/Intake/Roller/Run").getBoolean(false);
-        boolean bluShooterRun = nt.getEntry("Manual Mode/Shooter/BLU/Run").getBoolean(false);
-        boolean yelShooterRun = nt.getEntry("Manual Mode/Shooter/YEL/Run").getBoolean(false);
+        boolean bluShooterRun   = nt.getEntry("Manual Mode/Shooter/BLU/Run").getBoolean(false);
+        boolean yelShooterRun   = nt.getEntry("Manual Mode/Shooter/YEL/Run").getBoolean(false);
 
         /* -------- Rising-edge: schedule commands -------- */
 

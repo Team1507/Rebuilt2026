@@ -199,6 +199,10 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
         return targetPose;
     }
 
+    public ShooterInputs getInputs() {
+        return inputs;
+    }
+
     /** @return applied voltage (real or simulated) */
     public double getShooterVoltage() {
         return inputs.appliedVolts;

@@ -34,16 +34,21 @@ public abstract class Subsystems1507 extends SubsystemBase {
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
 
+        // Apply all slot configs
         for (MotorConfig config : configs) {
             applySlot(cfg, config);
         }
 
+        // Global motor settings (from slot0 config)
         cfg.MotorOutput.Inverted = configs[0].motorInverted()
                 ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
 
         cfg.Voltage.withPeakForwardVoltage(Volts.of(configs[0].peakForwardVoltage()))
                 .withPeakReverseVoltage(Volts.of(configs[0].peakReverseVoltage()));
+
+        // Apply limit switch settings (from slot0 config)
+        applyLimitSwitches(cfg.HardwareLimitSwitch, configs[0]);
 
         safeApply(motor, cfg);
     }
@@ -60,16 +65,21 @@ public abstract class Subsystems1507 extends SubsystemBase {
 
         cfg.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
 
+        // Apply all slot configs
         for (MotorConfig config : configs) {
             applySlot(cfg, config);
         }
 
+        // Global motor settings (from slot0 config)
         cfg.MotorOutput.Inverted = configs[0].motorInverted()
                 ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
 
         cfg.Voltage.withPeakForwardVoltage(Volts.of(configs[0].peakForwardVoltage()))
                 .withPeakReverseVoltage(Volts.of(configs[0].peakReverseVoltage()));
+
+        // Apply limit switch settings (from slot0 config)
+        applyLimitSwitches(cfg.HardwareLimitSwitch, configs[0]);
 
         safeApply(motor, cfg);
     }
@@ -95,9 +105,7 @@ public abstract class Subsystems1507 extends SubsystemBase {
 
     // ============================================================
     // APPLY PID / FF / GRAVITY TO EACH SLOT TYPE
-    // (Duplicated because CTRE made them unrelated classes)
     // ============================================================
-
     private void applyToSlot(Slot0Configs slot, MotorConfig config) {
         if (config.mode() != ControlMode.DUTY_CYCLE) {
             slot.kP = config.kP();
@@ -159,6 +167,24 @@ public abstract class Subsystems1507 extends SubsystemBase {
             }
             slot.kG = config.kG();
         }
+    }
+
+    // ============================================================
+    // LIMIT SWITCH CONFIGURATION
+    // ============================================================
+    private void applyLimitSwitches(HardwareLimitSwitchConfigs hw, MotorConfig config) {
+
+        // Forward limit switch
+        hw.ForwardLimitEnable = config.forwardLimitEnable();
+        hw.ForwardLimitAutosetPositionEnable = config.forwardLimitAutosetEnable();
+        hw.ForwardLimitAutosetPositionValue = config.forwardLimitAutosetValue();
+        hw.ForwardLimitType = config.forwardLimitType();
+
+        // Reverse limit switch
+        hw.ReverseLimitEnable = config.reverseLimitEnable();
+        hw.ReverseLimitAutosetPositionEnable = config.reverseLimitAutosetEnable();
+        hw.ReverseLimitAutosetPositionValue = config.reverseLimitAutosetValue();
+        hw.ReverseLimitType = config.reverseLimitType();
     }
 
     // ============================================================

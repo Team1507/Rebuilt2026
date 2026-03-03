@@ -35,8 +35,16 @@ public class HopperSubsystem extends SubsystemBase {
         io.setPositionDeg(degrees);
     }
 
+    public HopperInputs getInputs() {
+        return inputs;
+    }
+
     public double getPositionDegrees() {
         return inputs.position;
+    }
+
+    public boolean isHopperExtended(){
+        return inputs.hopperExtended;
     }
 
     public void runPower(double power)
@@ -56,9 +64,5 @@ public class HopperSubsystem extends SubsystemBase {
     }
     public void MagnetOffset (){
         
-    }
-
-    public boolean isHopperExtended(){
-        return inputs.hopperExtended;
     }
 }

@@ -46,10 +46,15 @@ public class IntakeRollerSubsystem extends SubsystemBase {
         io.stop();
     }
 
-    public double getDutyCycle() {
-        return inputs.dutyCycle;
+    public IntakeRollerInputs getInputs() {
+        return inputs;
     }
+
     public void setDutyCycle(double duty) {
         inputs.cmdDutyCycle = duty;
+    }
+
+    public double getDutyCycle() {
+        return inputs.dutyCycle;
     }
 }

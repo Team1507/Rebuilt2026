@@ -34,12 +34,24 @@ public class IntakeArmSubsystem extends SubsystemBase {
         io.setPositionDeg(degrees);
     }
 
+    public IntakeArmInputs getInputs() {
+        return inputs;
+    }
+
     public double getBLUPositionDegrees() {
         return inputs.bluPositionDeg;
     }
 
     public double getYELPositionDegrees() {
         return inputs.yelPositionDeg;
+    }
+
+    public boolean getBLUReverseLimit() {
+        return inputs.bluReverseLimit;
+    }
+
+    public boolean getYELReverseLimit() {
+        return inputs.yelReverseLimit;
     }
 
     public boolean isAtPosition(double targetDeg, double toleranceDeg) {

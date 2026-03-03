@@ -46,6 +46,10 @@ public class FeederSubsystem extends SubsystemBase {
         io.stop();
     }
 
+    public FeederInputs getInputs() {
+        return inputs;
+    }
+
     public double getVelocityRPM() {
         return inputs.velocityRPM;
     }

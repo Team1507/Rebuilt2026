@@ -21,7 +21,10 @@ public final class HopperHardware {
     public static final int HOPPER_ID = 16;
 
     /** Gear ratio for the hopper gearbox. */
-    public static final GearRatio RATIO = GearRatio.gearBox(20, 1);
+    public static final GearRatio RATIO = 
+        GearRatio
+            .gearBox(20, 1)
+            .withScaling(0.0, 0.73, 12.0);
 
     public interface RobotIO {
         boolean getMagSensor();

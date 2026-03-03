@@ -39,6 +39,10 @@ public class AgitatorSubsystem extends SubsystemBase {
         io.stop();
     }
 
+    public AgitatorInputs getInputs() {
+        return inputs;
+    }
+
     public double getDutyCycle() {
         return inputs.dutyCycle;
     }

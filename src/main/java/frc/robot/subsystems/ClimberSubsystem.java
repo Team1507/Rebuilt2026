@@ -46,6 +46,10 @@ public class ClimberSubsystem extends SubsystemBase {
         return Math.abs(inputs.position - targetPosition) <= tol;
     }
 
+    public ClimberInputs getInputs() {
+        return inputs;
+    }
+
     public double getPosition() {
         return inputs.position;
     }

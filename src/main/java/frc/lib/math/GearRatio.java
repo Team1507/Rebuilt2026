@@ -21,11 +21,22 @@ import java.util.List;
  * <p>
  * This class also includes a builder for constructing multi-stage gear
  * or pulley reductions by multiplying individual stage ratios.
+ * <p>
+ * Additionally, GearRatio can apply a linear scaling transform to convert
+ * arbitrary sensor units (such as CTRE motor position values) into
+ * real-world units (degrees, inches, etc.). This allows mechanisms to be
+ * expressed in meaningful physical units rather than raw sensor values.
  */
 public class GearRatio {
 
     /** Motor-to-output speed ratio (motorSpeed / outputSpeed). */
     private final double motorToOutput;
+
+    /** Linear scaling slope: realUnits = slope * sensor + offset. */
+    private double slope = 1.0;
+
+    /** Linear scaling offset: realUnits = slope * sensor + offset. */
+    private double offset = 0.0;
 
     /**
      * Creates a GearRatio with a precomputed motor-to-output ratio.
@@ -120,7 +131,106 @@ public class GearRatio {
     }
 
     // -----------------------------
-    // Conversion helpers
+    // Scaling helpers
+    // -----------------------------
+
+    /**
+     * Applies a linear scaling transform using two known calibration points.
+     * <p>
+     * This maps:
+     * <pre>
+     *   motorStart → realStart
+     *   motorEnd   → realEnd
+     * </pre>
+     * and computes a linear transform such that:
+     * <pre>
+     *   real = slope * motor + offset
+     * </pre>
+     *
+     * @param motorStart raw motor/sensor value at the first calibration point
+     * @param realStart  real-world value at the first calibration point
+     * @param motorEnd   raw motor/sensor value at the second calibration point
+     * @param realEnd    real-world value at the second calibration point
+     * @return this GearRatio for chaining
+     */
+    public GearRatio withScaling(double motorStart, double realStart,
+                                 double motorEnd, double realEnd) {
+        this.slope = (realEnd - realStart) / (motorEnd - motorStart);
+        this.offset = realStart - slope * motorStart;
+        return this;
+    }
+
+    /**
+     * Applies a linear scaling transform assuming the real-world value at
+     * {@code motorStart} is zero.
+     * <p>
+     * This maps:
+     * <pre>
+     *   motorStart → 0
+     *   motorEnd   → realEnd
+     * </pre>
+     * and computes:
+     * <pre>
+     *   real = slope * motor + offset
+     * </pre>
+     *
+     * @param motorStart raw motor/sensor value corresponding to real = 0
+     * @param motorEnd   raw motor/sensor value at the second calibration point
+     * @param realEnd    real-world value at the second calibration point
+     * @return this GearRatio for chaining
+     */
+    public GearRatio withScaling(double motorStart, double motorEnd, double realEnd) {
+        this.slope = realEnd / (motorEnd - motorStart);
+        this.offset = -slope * motorStart;
+        return this;
+    }
+
+    /**
+     * Converts a raw motor/sensor value into a real-world scaled value.
+     *
+     * @param motorValue raw motor or sensor reading
+     * @return scaled real-world value
+     */
+    public double sensorToReal(double motorValue) {
+        return slope * motorValue + offset;
+    }
+
+    /**
+     * Converts a real-world value back into the raw motor/sensor units.
+     *
+     * @param realValue real-world value
+     * @return equivalent motor/sensor reading
+     */
+    public double realToSensor(double realValue) {
+        return (realValue - offset) / slope;
+    }
+
+    // -----------------------------
+    // Degree helpers
+    // -----------------------------
+
+    /**
+     * Converts motor rotations into mechanism degrees using the gear ratio.
+     *
+     * @param motorRot motor rotations
+     * @return mechanism degrees
+     */
+    public double motorToDegrees(double motorRot) {
+        return toOutput(motorRot) * 360.0;
+    }
+
+    /**
+     * Converts mechanism degrees into motor rotations using the gear ratio.
+     *
+     * @param degrees mechanism degrees
+     * @return motor rotations
+     */
+    public double degreesToMotor(double degrees) {
+        return toMotor(degrees / 360.0);
+    }
+
+    // -----------------------------
+    // Gear ratio conversion helpers
     // -----------------------------
 
     /**

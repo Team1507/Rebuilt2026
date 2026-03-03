@@ -14,14 +14,17 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+
+import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
+
 import frc.lib.math.FlywheelModel;
 import frc.lib.util.MotorConfig;
 import frc.lib.util.MotorConfig.ControlMode;
 import frc.lib.util.MotorConfig.GravityType;
 import frc.robot.generated.ctre.TunerConstants;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 
 /**
  * Central location for all robot-wide constants.
@@ -171,6 +174,8 @@ public class Constants {
                     .inverted(false)
                     .pid(0.5, 0.0, 0.0)
                     .gravity(0.1, GravityType.COSINE)
+                    .reverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
+                    .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .voltageLimits(4, -4)
                     .build();
 
@@ -180,6 +185,8 @@ public class Constants {
                     .inverted(true)
                     .pid(0.5, 0.0, 0.0)
                     .gravity(0.1, GravityType.COSINE)
+                    .reverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
+                    .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .voltageLimits(4, -4)
                     .build();
         }
