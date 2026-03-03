@@ -14,5 +14,7 @@ public class ShooterInputs {
     public double statorCurrent = 0.0;
     public double supplyCurrent = 0.0;
 
+    public double distanceToTarget = 0.0;
+
     public boolean ballFired = false;
 }

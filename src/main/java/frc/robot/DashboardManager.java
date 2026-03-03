@@ -88,8 +88,20 @@ public class DashboardManager {
     private final BooleanPublisher pubBLUShooterSensor =
         nt.getBooleanTopic("Shooter/BLU/Sensor").publish();
 
+    private final DoublePublisher pubBLUShooterDistanceToTarget =
+        nt.getDoubleTopic("Shooter/BLU/Distance To Target").publish();
+
+    private final DoublePublisher pubBLUShooterCurrentRPM =
+        nt.getDoubleTopic("Shooter/BLU/Current RPM").publish();
+
     private final BooleanPublisher pubYELShooterSensor =
         nt.getBooleanTopic("Shooter/YEL/Sensor").publish();
+
+    private final DoublePublisher pubYELShooterDistanceToTarget =
+        nt.getDoubleTopic("Shooter/YEL/Distance To Target").publish();
+
+    private final DoublePublisher pubYELShooterCurrentRPM =
+        nt.getDoubleTopic("Shooter/BLU/Current RPM").publish();
 
     // Swerve
 
@@ -238,11 +250,15 @@ public class DashboardManager {
 
         var bluShooterInputs = subsystems.BLUshooter().getInputs();
 
+        pubBLUShooterCurrentRPM.set(subsystems.BLUshooter().getShooterRPM());
         pubBLUShooterSensor.set(bluShooterInputs.ballFired);
+        pubBLUShooterDistanceToTarget.set(bluShooterInputs.distanceToTarget);
 
         var yelShooterInputs = subsystems.YELshooter().getInputs();
 
+        pubYELShooterCurrentRPM.set(subsystems.YELshooter().getShooterRPM());
         pubYELShooterSensor.set(yelShooterInputs.ballFired);
+        pubYELShooterDistanceToTarget.set(yelShooterInputs.distanceToTarget);
 
         // Swerve
 

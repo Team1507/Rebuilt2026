@@ -153,7 +153,7 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
         Pose2d robotPose = poseSupplier.get();
         Pose2d shooterPose = kinematics.shooterPose(robotPose);
 
-        double distance = shooterPose.getTranslation().getDistance(targetPose.getTranslation());
+        inputs.distanceToTarget = shooterPose.getTranslation().getDistance(targetPose.getTranslation());
 
         return new ShotRecord(
             getShooterRPM(),
@@ -162,7 +162,7 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
             inputs.supplyCurrent,
             getClosedLoopError(),
             shooterPose,
-            distance
+            inputs.distanceToTarget
         );
     }
 
