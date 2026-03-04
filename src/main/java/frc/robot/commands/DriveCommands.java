@@ -279,28 +279,25 @@ public final class DriveCommands {
             kMoveToPose.THETA_KD
         );
 
-        // Stall tracking state (per command instance)
-        final double[] stallStartTime = { -1.0 };
-        final boolean[] finishedByStall = { false };
-
         thetaPID.enableContinuousInput(-Math.PI, Math.PI);
 
+        // Stall detection
+        final double[] stallStartTime = { -1.0 };
+
         return new CommandBuilder(swerve)
-            .named("MoveToPose_VectorPID")
+            .named("MoveToPose_VectorPID_NoMinSpeed")
             .onInitialize(() -> {
                 distancePID.reset();
                 thetaPID.reset();
-
                 stallStartTime[0] = -1.0;
-                finishedByStall[0] = false;
             })
             .onExecute(() -> {
 
                 Pose2d current = swerve.getPose();
 
-                // -----------------------------
+                // -----------------------------------------
                 // 1. Vector to target
-                // -----------------------------
+                // -----------------------------------------
                 double dx = targetPose.getX() - current.getX();
                 double dy = targetPose.getY() - current.getY();
                 double distance = Math.hypot(dx, dy);
@@ -313,71 +310,59 @@ public final class DriveCommands {
                 double dirX = dx / distance;
                 double dirY = dy / distance;
 
-                // -----------------------------
-                // 2. PID on distance
-                // -----------------------------
+                // -----------------------------------------
+                // 2. PID on distance (inverted form)
+                // -----------------------------------------
                 double pidOut = distancePID.calculate(0.0, distance);
                 double speed = pidOut;
 
-                // -----------------------------
-                // 3. Slowdown curve (only if PID still aggressive)
-                // -----------------------------
-                if (distance < kMoveToPose.SLOWDOWN_START &&
-                    Math.abs(pidOut) > kMoveToPose.MIN_SPEED * 1.5) {
+                // -----------------------------------------
+                // 3. Terminal slowdown ramp (correct fix)
+                // -----------------------------------------
+                double slowdownStart = kMoveToPose.SLOWDOWN_START; // e.g. 0.30 m
+                double minSpeedAtZero = 0.0; // allow true stop
 
-                    double t = distance / kMoveToPose.SLOWDOWN_START;
-                    double slowdown = MathUtil.interpolate(
-                        kMoveToPose.SLOWDOWN_MIN,
-                        1.0,
-                        t
-                    );
-                    speed *= slowdown;
+                double maxAllowedSpeed;
+                if (distance > slowdownStart) {
+                    maxAllowedSpeed = maxSpeed;
+                } else {
+                    double t = distance / slowdownStart; // 1 → 0 as you approach
+                    maxAllowedSpeed = MathUtil.interpolate(minSpeedAtZero, maxSpeed, t);
                 }
 
-                // -----------------------------
-                // 4. Clamp to max speed
-                // -----------------------------
-                speed = MathUtil.clamp(speed, -maxSpeed, maxSpeed);
+                speed = MathUtil.clamp(speed, -maxAllowedSpeed, maxAllowedSpeed);
 
-                // -----------------------------
-                // 5. MIN_SPEED floor — tapered & scoped
-                // -----------------------------
-                double floor = kMoveToPose.MIN_SPEED;
-
-                // Inside final settle region, allow the floor to decay to zero
-                if (distance < 2.0 * kMoveToPose.POSITION_TOLERANCE_METERS) {
-                    double t = distance / (2.0 * kMoveToPose.POSITION_TOLERANCE_METERS);
-                    floor = MathUtil.interpolate(0.0, kMoveToPose.MIN_SPEED, t);
-                }
-
-                if (Math.abs(speed) < floor) {
-                    speed = Math.copySign(floor, speed);
-                }
-
-                // Hard deadband at the very end — allow true stop
+                // -----------------------------------------
+                // 4. Final deadband (no oscillation)
+                // -----------------------------------------
                 if (distance < kMoveToPose.POSITION_TOLERANCE_METERS &&
-                    Math.abs(speed) < 0.03) {
+                    Math.abs(speed) < 0.05) {
                     speed = 0.0;
                 }
 
-                // -----------------------------
-                // 6. Convert scalar → XY
-                // -----------------------------
+                // -----------------------------------------
+                // 5. Convert scalar → XY
+                // -----------------------------------------
                 double xSpeed = dirX * speed;
                 double ySpeed = dirY * speed;
 
-                // -----------------------------
-                // 7. Rotation PID
-                // -----------------------------
+                // -----------------------------------------
+                // 6. Rotation PID + angular slowdown
+                // -----------------------------------------
                 double thetaSpeed = thetaPID.calculate(
                     current.getRotation().getRadians(),
                     targetPose.getRotation().getRadians()
                 );
+
+                // Angular slowdown near target
+                double angleScale = MathUtil.clamp(distance / slowdownStart, 0.25, 1.0);
+                thetaSpeed *= angleScale;
+
                 thetaSpeed = MathUtil.clamp(thetaSpeed, -maxAngularSpeed, maxAngularSpeed);
 
-                // -----------------------------
-                // 8. Field → robot
-                // -----------------------------
+                // -----------------------------------------
+                // 7. Field → robot
+                // -----------------------------------------
                 ChassisSpeeds robotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(
                     xSpeed,
                     ySpeed,
@@ -388,6 +373,7 @@ public final class DriveCommands {
                 swerve.driveRobotRelative(robotRelative);
             })
             .isFinished(() -> {
+
                 Pose2d current = swerve.getPose();
 
                 double dist =
@@ -401,6 +387,7 @@ public final class DriveCommands {
 
                 if (atPos && atAngle) return true;
 
+                // Stall detection near target
                 boolean nearTarget = dist < 1.5 * kMoveToPose.POSITION_TOLERANCE_METERS;
                 if (!nearTarget) {
                     stallStartTime[0] = -1.0;
@@ -423,12 +410,7 @@ public final class DriveCommands {
                     return false;
                 }
 
-                if ((now - stallStartTime[0]) > kMoveToPose.STALL_TIMEOUT) {
-                    finishedByStall[0] = true;
-                    return true;
-                }
-
-                return false;
+                return (now - stallStartTime[0]) > kMoveToPose.STALL_TIMEOUT;
             })
             .onEnd(swerve::stop);
     }
