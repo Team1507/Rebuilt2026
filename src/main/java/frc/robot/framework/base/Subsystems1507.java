@@ -16,6 +16,7 @@ import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.MotorConfig;
@@ -47,11 +48,17 @@ public abstract class Subsystems1507 extends SubsystemBase {
         cfg.Voltage.withPeakForwardVoltage(Volts.of(configs[0].peakForwardVoltage()))
                 .withPeakReverseVoltage(Volts.of(configs[0].peakReverseVoltage()));
 
+        // NEW: Apply brake or coast mode
+        cfg.MotorOutput.NeutralMode = configs[0].brakeMode()
+                ? NeutralModeValue.Brake
+                : NeutralModeValue.Coast;
+
         // Apply limit switch settings (from slot0 config)
         applyLimitSwitches(cfg.HardwareLimitSwitch, configs[0]);
 
         safeApply(motor, cfg);
     }
+
 
     // ============================================================
     // FXS (Minion) CONFIGURATION
@@ -78,11 +85,17 @@ public abstract class Subsystems1507 extends SubsystemBase {
         cfg.Voltage.withPeakForwardVoltage(Volts.of(configs[0].peakForwardVoltage()))
                 .withPeakReverseVoltage(Volts.of(configs[0].peakReverseVoltage()));
 
+        // NEW: Apply brake or coast mode
+        cfg.MotorOutput.NeutralMode = configs[0].brakeMode()
+                ? NeutralModeValue.Brake
+                : NeutralModeValue.Coast;
+
         // Apply limit switch settings (from slot0 config)
         applyLimitSwitches(cfg.HardwareLimitSwitch, configs[0]);
 
         safeApply(motor, cfg);
     }
+
 
     // ============================================================
     // APPLY CONFIG TO THE CORRECT SLOT (0, 1, OR 2)

@@ -34,7 +34,9 @@ public record MotorConfig(
         boolean reverseLimitEnable,
         boolean reverseLimitAutosetEnable,
         double reverseLimitAutosetValue,
-        ReverseLimitTypeValue reverseLimitType
+        ReverseLimitTypeValue reverseLimitType,
+
+        boolean brakeMode   // NEW FIELD
 ) {
 
     public static enum ControlMode { DUTY_CYCLE, VELOCITY, POSITION, MOTION_MAGIC }
@@ -73,6 +75,8 @@ public record MotorConfig(
         private boolean reverseLimitAutosetEnable = false;
         private double reverseLimitAutosetValue = 0.0;
         private ReverseLimitTypeValue reverseLimitType = ReverseLimitTypeValue.NormallyOpen;
+
+        private boolean brakeMode = false; // DEFAULT = COAST
 
         // ============================
         // Builder Methods
@@ -124,6 +128,18 @@ public record MotorConfig(
             this.reverseLimitType = type;
             return this;
         }
+        
+        /** Sets the motor to brake mode. */
+        public Builder withBrake() {
+            this.brakeMode = true;
+            return this;
+        }
+
+        /** Sets the motor to coast mode. */
+        public Builder withCoast() {
+            this.brakeMode = false;
+            return this;
+        }
 
         // ============================
         // Build
@@ -146,7 +162,9 @@ public record MotorConfig(
                 reverseLimitEnable,
                 reverseLimitAutosetEnable,
                 reverseLimitAutosetValue,
-                reverseLimitType
+                reverseLimitType,
+
+                brakeMode // NEW FIELD
             );
         }
     }
