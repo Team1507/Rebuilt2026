@@ -201,7 +201,7 @@ public class Constants {
         // General shooter limits
         public static final class kRPM {
             public static final double MAX  = 4000.0;
-            public static final double LOB  = 3400.0;
+            public static final double LOB  = 1000.0;
             public static final double IDLE = 500.0;
             public static final double SAFE = 2800.0;
         }

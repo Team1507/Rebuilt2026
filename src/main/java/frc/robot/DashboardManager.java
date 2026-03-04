@@ -101,7 +101,7 @@ public class DashboardManager {
         nt.getDoubleTopic("Shooter/YEL/Distance To Target").publish();
 
     private final DoublePublisher pubYELShooterCurrentRPM =
-        nt.getDoubleTopic("Shooter/BLU/Current RPM").publish();
+        nt.getDoubleTopic("Shooter/YEL/Current RPM").publish();
 
     // Swerve
 

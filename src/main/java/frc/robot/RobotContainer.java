@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 
 // Commands
@@ -167,7 +168,9 @@ public class RobotContainer {
     private final Supplier<Pose2d> poseSupplier = localizationManager::getFusedPose;
 
     private final ShooterModel shooterModelConfig =
-        ModelLoader.load("model.json", poseSupplier);
+        ModelLoader.load(
+            Filesystem.getDeployDirectory().toPath().resolve("model.json").toString(), 
+            poseSupplier);
 
     // subsystems (note: NO ShotTrainer arg)
     // ----------------------------

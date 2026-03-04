@@ -18,6 +18,6 @@ public class SimpleInterpolationModel implements ShooterModel {
         double distance = telemetry.distanceToTarget;
 
         // Simple linear fallback curve
-        return 3000 + (distance * 200);
+        return 2400 + (distance * 200);
     }
 }
