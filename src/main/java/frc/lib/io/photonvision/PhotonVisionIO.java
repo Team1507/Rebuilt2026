@@ -8,7 +8,7 @@
 
 package frc.lib.io.photonvision;
 
-import java.util.function.Supplier;
+import frc.robot.localization.vision.PhotonPoseEstimator;
 
 /**
  * IO abstraction for PhotonVision.
@@ -22,6 +22,7 @@ public interface PhotonVisionIO {
      * Update all PhotonVision inputs.
      *
      * @param inputs The PhotonVisionInputs object to populate.
+     * @param seeded Whether the pose estimator has been seeded.
      */
     void updateInputs(PhotonVisionInputs inputs, boolean seeded);
 
@@ -30,4 +31,7 @@ public interface PhotonVisionIO {
 
     /** Returns the human-readable camera names. */
     String[] getCameraNames();
+
+    /** Returns the PhotonPoseEstimator for a given camera index. */
+    PhotonPoseEstimator getEstimator(int index);
 }

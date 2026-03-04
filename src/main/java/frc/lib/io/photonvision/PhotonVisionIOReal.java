@@ -8,26 +8,23 @@
 
 package frc.lib.io.photonvision;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.EstimatedRobotPose;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
+
 import frc.lib.hardware.PhotonVisionHardware;
-import frc.robot.Constants.kVision;
+import frc.robot.localization.vision.PhotonPoseEstimator;
+import frc.lib.math.FieldInfo;
 
 /**
  * Real PhotonVision implementation with explicit camera names.
  *
- * This class wraps PhotonCamera + PhotonPoseEstimator and produces
- * raw pose estimates, timestamps, and stddevs for PVManager.
+ * This class wraps PhotonCamera + custom PhotonPoseEstimator and produces
+ * raw observations for PVManager + PVPerCameraProcessor.
  */
 public class PhotonVisionIOReal implements PhotonVisionIO {
 
@@ -38,7 +35,7 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
     private final Supplier<Rotation2d> headingSupplier;
 
     /**
-     * Creates a PhotonVision IO layer
+     * Creates a PhotonVision IO layer.
      */
     public PhotonVisionIOReal(Supplier<Rotation2d> headingSupplier) {
         this.headingSupplier = headingSupplier;
@@ -52,13 +49,12 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
         for (int i = 0; i < count; i++) {
             var cfg = PhotonVisionHardware.CAMERAS[i];
 
-            // Explicit camera name (BLU/YEL)
             cameraNames[i] = cfg.name;
-
             cameras[i] = new PhotonCamera(cfg.name);
+
+            // 340-style custom estimator: (AprilTag layout, robotToCamera)
             estimators[i] = new PhotonPoseEstimator(
-                kVision.APRILTAG_LAYOUT,
-                PhotonPoseEstimator.PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
+                FieldInfo.aprilTags(),
                 cfg.robotToCamera
             );
         }
@@ -69,9 +65,14 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
         return cameras.length;
     }
 
-    /** Allows PVManager to use human-readable names like "Photon-BLU" */
+    @Override
     public String[] getCameraNames() {
         return cameraNames;
+    }
+
+    @Override
+    public PhotonPoseEstimator getEstimator(int index) {
+        return estimators[index];
     }
 
     @Override
@@ -80,20 +81,9 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
         double now = Timer.getFPGATimestamp();
         Rotation2d heading = headingSupplier.get();
 
-        // Feed heading for trig-solve
+        // Feed heading data into each estimator
         for (int i = 0; i < cameras.length; i++) {
             estimators[i].addHeadingData(now, heading);
-
-            // Switch strategy based on seeding
-            if (!seeded) {
-                estimators[i].setPrimaryStrategy(
-                    PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY
-                );
-            } else {
-                estimators[i].setPrimaryStrategy(
-                    PhotonPoseEstimator.PoseStrategy.PNP_DISTANCE_TRIG_SOLVE
-                );
-            }
         }
 
         // Ensure array is sized correctly
@@ -106,11 +96,10 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
         }
 
         inputs.anyCameraConnected = false;
-        inputs.totalTags = 0;
+        inputs.totalTags = 0; // will be updated by processors if needed
 
         for (int i = 0; i < cameras.length; i++) {
             PhotonCamera cam = cameras[i];
-            PhotonPoseEstimator estimator = estimators[i];
             PhotonVisionInputs.CameraInputs out = inputs.cameras[i];
 
             out.connected = cam.isConnected();
@@ -119,64 +108,19 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
             var results = cam.getAllUnreadResults();
             if (results.isEmpty()) {
                 out.hasTarget = false;
-                out.pose2d = Optional.empty();
-                out.pose3d = Optional.empty();
+                out.rawResult = null;
                 continue;
             }
 
             PhotonPipelineResult result = results.get(results.size() - 1);
+            out.rawResult = result;
             out.hasTarget = result.hasTargets();
+            out.timestamp = now; // or result.getTimestampSeconds() if you prefer
 
             if (out.hasTarget) {
                 out.yaw = Rotation2d.fromDegrees(result.getBestTarget().getYaw());
                 out.pitch = Rotation2d.fromDegrees(result.getBestTarget().getPitch());
             }
-
-            Optional<EstimatedRobotPose> estimate;
-
-            if (!seeded) {
-                // Use full PnP for absolute pose
-                estimate = estimator.update(result);
-            } else {
-                // Use trig-solve for fast XY
-                estimate = estimator.estimatePnpDistanceTrigSolvePose(result);
-            }
-
-            if (estimate.isEmpty()) {
-                out.pose2d = Optional.empty();
-                out.pose3d = Optional.empty();
-                continue;
-            }
-
-            EstimatedRobotPose est = estimate.get();
-            Pose3d pose3d = est.estimatedPose;
-
-            out.pose3d = Optional.of(pose3d);
-            out.pose2d = Optional.of(pose3d.toPose2d());
-            out.timestamp = est.timestampSeconds;
-
-            out.tagCount = est.targetsUsed.size();
-            inputs.totalTags += out.tagCount;
-
-            out.avgDistance = est.targetsUsed.stream()
-                .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
-                .average().orElse(0.0);
-
-            out.ambiguity = est.targetsUsed.stream()
-                .mapToDouble(t -> t.poseAmbiguity)
-                .average().orElse(0.0);
-
-            // Compute stddevs
-            double xyStd = kVision.constrainedPnpXyStdBase * out.avgDistance;
-            double angStd = kVision.constrainedPnpAngStdBase * out.avgDistance;
-
-            if (out.tagCount > 1) {
-                double discount = Math.sqrt(out.tagCount);
-                xyStd /= discount;
-                angStd /= discount;
-            }
-
-            out.stdDevs = VecBuilder.fill(xyStd, xyStd, angStd);
         }
     }
 }
