@@ -276,7 +276,8 @@ public class DashboardManager {
 
         SmartDashboard.putData("Run Yellow Shooter PID Tuner",
             new CmdShooterPIDTuner(subsystems.YELshooter(), kShooter.kRPM.MAX));
-            
+        
+        pubLocalizationResetSeed.set(false);
     }
 
     /* ---------------- Periodic update ---------------- */
