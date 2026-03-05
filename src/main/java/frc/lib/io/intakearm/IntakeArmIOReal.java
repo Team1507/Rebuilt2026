@@ -93,18 +93,48 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
             .withFeedForward(ffVolts)
         );
     }
+
     @Override
-     public void runPower(double power) {
+    public void runPower(double power) {
+        // -----------------------------
+        // BLU MOTOR SAFETY CHECKS
+        // -----------------------------
+
+        // Read the BLU motor's reverse limit switch (true = switch is pressed)
         boolean bluAtRev = bluMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
-        boolean yelAtRev = yelMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
-        double safePower = power;
-        if((bluAtRev || yelAtRev) && power < 0.0) {
-            safePower = 0.0;
+
+        // Start with the requested power
+        double safeBLUPower = power;
+
+        // If the BLU motor is at the reverse limit AND the command is trying to move further negative,
+        // block that movement to prevent mechanical damage.
+        if (bluAtRev && power < 0.0) {
+            safeBLUPower = 0.0;
         }
 
-        bluMotor.set(safePower);
-        yelMotor.set(safePower);
+        // -----------------------------
+        // YEL MOTOR SAFETY CHECKS
+        // -----------------------------
+
+        // Read the YEL motor's reverse limit switch (true = switch is pressed)
+        boolean yelAtRev = yelMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
+
+        // Start with the requested power
+        double safeYELPower = power;
+
+        // If the YEL motor is at the reverse limit AND the command is trying to move further negative,
+        // block that movement to prevent mechanical damage.
+        if (yelAtRev && power < 0.0) {
+            safeYELPower = 0.0;
+        }
+
+        // Apply the safe power to the BLU motor
+        bluMotor.set(safeBLUPower);
+
+        // Apply the safe power to the YEL motor
+        yelMotor.set(safeYELPower);
     }
+
 
     @Override
     public void stop() {
