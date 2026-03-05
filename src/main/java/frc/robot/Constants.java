@@ -140,6 +140,7 @@ public class Constants {
             MotorConfig.builder(ControlMode.POSITION)
                 .pid(0.11, 0.0, 0.02)
                 .voltageLimits(8.0, -8.0)
+                .withBrake()
                 .build();
     }
 
@@ -164,7 +165,7 @@ public class Constants {
             public static final double MAX_ANGLE_DEGREES = 125.0;
             public static final double MIN_ANGLE_DEGREES = 0.0;
             public static final double DEPLOYED_ANGLE_DEGREES = 135.0;
-            public static final double RETRACTED_ANGLE_DEGREES = 100.0;
+            public static final double RETRACTED_ANGLE_DEGREES = 82.0;
 
             public static final double MANUAL_POSITIVE_POWER = 0.2;
             public static final double MANUAL_NEGATIVE_POWER = -0.2;
@@ -177,6 +178,7 @@ public class Constants {
                     .reverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .voltageLimits(4, -4)
+                    .withBrake()
                     .build();
 
 

@@ -112,7 +112,7 @@ public class PVManager extends SubsystemBase {
             }
 
             // 3. Distance sanity check (allow up to 6–7m)
-            if (cam.avgDistance > 7.0) {  // was too strict before
+            if (cam.avgDistance > 2.0) {  // was too strict before
                 reject = true;
             }
 

@@ -57,4 +57,9 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     public double getDutyCycle() {
         return inputs.dutyCycle;
     }
+
+    public double increaseRollerSpeed(double rollerSpeed) {
+        io.increaseSpeed(rollerSpeed);
+        return rollerSpeed;
+    }
 }

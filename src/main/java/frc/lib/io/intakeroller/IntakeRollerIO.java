@@ -20,8 +20,12 @@ public interface IntakeRollerIO {
     void runDuty(double duty);
 
     /** Run the roller in open-loop power mode. */
-    void runPower(double power);
+    void runPower(double rollerSpeed);
 
     /** Stop the roller. */
     void stop();
+
+    void increaseSpeed(double rollerSpeed);
+
+    void resetSpeed(double rollerSpeed);
 }
