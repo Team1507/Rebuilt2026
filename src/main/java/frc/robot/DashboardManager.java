@@ -163,6 +163,76 @@ public class DashboardManager {
         nt.getBooleanTopic("Localization/QuestNav/Is Tracking").publish();
     private final BooleanPublisher pubhasGoodVision =
         nt.getBooleanTopic("Localization/PhotonVision/Has Good Vision").publish();
+
+    /* ---------------- PhotonVision Debug Publishers ---------------- */
+
+    private final BooleanPublisher pubPVGood =
+        nt.getBooleanTopic("PhotonVision/Fused/HasGoodVision").publish();
+
+    private final BooleanPublisher pubPVSeeded =
+        nt.getBooleanTopic("PhotonVision/Fused/Seeded").publish();
+
+    private final DoublePublisher pubPVFusedX =
+        nt.getDoubleTopic("PhotonVision/Fused/Pose/X").publish();
+
+    private final DoublePublisher pubPVFusedY =
+        nt.getDoubleTopic("PhotonVision/Fused/Pose/Y").publish();
+
+    private final DoublePublisher pubPVFusedHeading =
+        nt.getDoubleTopic("PhotonVision/Fused/Pose/HeadingDeg").publish();
+
+    private final DoublePublisher pubPVFusedXyStd =
+        nt.getDoubleTopic("PhotonVision/Fused/StdDev/XY").publish();
+
+    private final DoublePublisher pubPVFusedAngStd =
+        nt.getDoubleTopic("PhotonVision/Fused/StdDev/Ang").publish();
+
+    private final BooleanPublisher pubPVConnectedBLU =
+        nt.getBooleanTopic("PhotonVision/BLU/Connected").publish();
+    private final BooleanPublisher pubPVHasTargetBLU =
+        nt.getBooleanTopic("PhotonVision/BLU/HasTarget").publish();
+    private final DoublePublisher pubPVTagCountBLU =
+        nt.getDoubleTopic("PhotonVision/BLU/TagCount").publish();
+    private final DoublePublisher pubPVAvgDistBLU =
+        nt.getDoubleTopic("PhotonVision/BLU/AvgDistance").publish();
+    private final DoublePublisher pubPVAmbiguityBLU =
+        nt.getDoubleTopic("PhotonVision/BLU/Ambiguity").publish();
+    private final BooleanPublisher pubPVAcceptedBLU =
+        nt.getBooleanTopic("PhotonVision/BLU/Accepted").publish();
+    private final DoublePublisher pubPVXyStdBLU =
+        nt.getDoubleTopic("PhotonVision/BLU/StdDev/XY").publish();
+    private final DoublePublisher pubPVAngStdBLU =
+        nt.getDoubleTopic("PhotonVision/BLU/StdDev/Ang").publish();
+    private final BooleanPublisher pubPVStrategyBLUMulti =
+        nt.getBooleanTopic("PhotonVision/BLU/Strategy/MultiTag").publish();
+    private final BooleanPublisher pubPVStrategyBLUTrig =
+        nt.getBooleanTopic("PhotonVision/BLU/Strategy/Trig").publish();
+    private final BooleanPublisher pubPVStrategyBLUAmb =
+        nt.getBooleanTopic("PhotonVision/BLU/Strategy/Ambiguity").publish();
+
+    private final BooleanPublisher pubPVConnectedYEL =
+        nt.getBooleanTopic("PhotonVision/YEL/Connected").publish();
+    private final BooleanPublisher pubPVHasTargetYEL =
+        nt.getBooleanTopic("PhotonVision/YEL/HasTarget").publish();
+    private final DoublePublisher pubPVTagCountYEL =
+        nt.getDoubleTopic("PhotonVision/YEL/TagCount").publish();
+    private final DoublePublisher pubPVAvgDistYEL =
+        nt.getDoubleTopic("PhotonVision/YEL/AvgDistance").publish();
+    private final DoublePublisher pubPVAmbiguityYEL =
+        nt.getDoubleTopic("PhotonVision/YEL/Ambiguity").publish();
+    private final BooleanPublisher pubPVAcceptedYEL =
+        nt.getBooleanTopic("PhotonVision/YEL/Accepted").publish();
+    private final DoublePublisher pubPVXyStdYEL =
+        nt.getDoubleTopic("PhotonVision/YEL/StdDev/XY").publish();
+    private final DoublePublisher pubPVAngStdYEL =
+        nt.getDoubleTopic("PhotonVision/YEL/StdDev/Ang").publish();
+    private final BooleanPublisher pubPVStrategyYELMulti =
+        nt.getBooleanTopic("PhotonVision/YEL/Strategy/MultiTag").publish();
+    private final BooleanPublisher pubPVStrategyYELTrig =
+        nt.getBooleanTopic("PhotonVision/YEL/Strategy/Trig").publish();
+    private final BooleanPublisher pubPVStrategyYELAmb =
+        nt.getBooleanTopic("PhotonVision/YEL/Strategy/Ambiguity").publish();
+
         
     /* ---------------- Rising/Falling edge tracking ---------------- */
 
@@ -206,7 +276,8 @@ public class DashboardManager {
 
         SmartDashboard.putData("Run Yellow Shooter PID Tuner",
             new CmdShooterPIDTuner(subsystems.YELshooter(), kShooter.kRPM.MAX));
-            
+        
+        pubLocalizationResetSeed.set(false);
     }
 
     /* ---------------- Periodic update ---------------- */
@@ -291,6 +362,8 @@ public class DashboardManager {
         pubYELShooterRPM.set(manualYELShooterRPM);
         pubShooterIdleRPM.set(shooterIdleRPM);
 
+        /* -------- Localization -------- */
+
         pubLocalizationSeeded.set(localization.localizationManager().isStartupSeeded());
 
         boolean resetSeed =
@@ -305,6 +378,56 @@ public class DashboardManager {
         pubQuestIsTracking.set(localization.questNav().isTracking());
 
         pubhasGoodVision.set(localization.pvManager().hasGoodVision());
+
+        /* -------- PhotonVision Debug -------- */
+
+        var pvDebug = localization.pvManager().getDebugInfo();
+
+        // Fused pose
+        pubPVGood.set(pvDebug.fusedValid);
+        pubPVSeeded.set(pvDebug.seeded);
+
+        pubPVFusedX.set(pvDebug.fusedPose.getX());
+        pubPVFusedY.set(pvDebug.fusedPose.getY());
+        pubPVFusedHeading.set(pvDebug.fusedPose.getRotation().getDegrees());
+
+        pubPVFusedXyStd.set(pvDebug.fusedXyStd);
+        pubPVFusedAngStd.set(pvDebug.fusedAngStd);
+
+        // Per-camera debug
+        if (pvDebug.cameras.length >= 1) {
+            var blu = pvDebug.cameras[0];
+
+            pubPVConnectedBLU.set(blu.connected);
+            pubPVHasTargetBLU.set(blu.hasTarget);
+            pubPVTagCountBLU.set(blu.tagCount);
+            pubPVAvgDistBLU.set(blu.avgDistance);
+            pubPVAmbiguityBLU.set(blu.ambiguity);
+            pubPVAcceptedBLU.set(blu.accepted);
+            pubPVXyStdBLU.set(blu.xyStd);
+            pubPVAngStdBLU.set(blu.angStd);
+
+            pubPVStrategyBLUMulti.set(blu.strategyUsed.equals("MULTITAG"));
+            pubPVStrategyBLUTrig.set(blu.strategyUsed.equals("TRIG"));
+            pubPVStrategyBLUAmb.set(blu.strategyUsed.equals("AMBIGUITY"));
+        }
+
+        if (pvDebug.cameras.length >= 2) {
+            var yel = pvDebug.cameras[1];
+
+            pubPVConnectedYEL.set(yel.connected);
+            pubPVHasTargetYEL.set(yel.hasTarget);
+            pubPVTagCountYEL.set(yel.tagCount);
+            pubPVAvgDistYEL.set(yel.avgDistance);
+            pubPVAmbiguityYEL.set(yel.ambiguity);
+            pubPVAcceptedYEL.set(yel.accepted);
+            pubPVXyStdYEL.set(yel.xyStd);
+            pubPVAngStdYEL.set(yel.angStd);
+
+            pubPVStrategyYELMulti.set(yel.strategyUsed.equals("MULTITAG"));
+            pubPVStrategyYELTrig.set(yel.strategyUsed.equals("TRIG"));
+            pubPVStrategyYELAmb.set(yel.strategyUsed.equals("AMBIGUITY"));
+        }
 
         /* -------- Read RUN button states -------- */
 

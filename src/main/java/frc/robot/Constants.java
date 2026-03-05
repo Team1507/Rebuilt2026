@@ -369,8 +369,8 @@ public class Constants {
             public static final String NAME = "Bluecam";
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
-                    new Translation3d(-0.225, 0.18, 0.675),
-                    new Rotation3d(0, Math.toRadians(15), 0.0)
+                    new Translation3d(-0.07, 0.26, 0.675),
+                    new Rotation3d(0, Math.toRadians(10), 0.0)
                 );
         }
 
@@ -380,7 +380,7 @@ public class Constants {
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
                     new Translation3d(-0.25, -0.25, 0.21),
-                    new Rotation3d(0, Math.toRadians(15), Math.toRadians(235))
+                    new Rotation3d(0, Math.toRadians(10), Math.toRadians(234))
                 );
         }
     }
@@ -390,7 +390,7 @@ public class Constants {
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kQuest {
 
-        public static final Matrix<N3, N1> STD_DEVS = VecBuilder.fill(0.02, 0.02, Double.POSITIVE_INFINITY);
+        public static final Matrix<N3, N1> STD_DEVS = VecBuilder.fill(0.02, 0.02, 0.05);
 
         public static final double ACCEPTABLE_DISTANCE_TOLERANCE = 0.1;
         

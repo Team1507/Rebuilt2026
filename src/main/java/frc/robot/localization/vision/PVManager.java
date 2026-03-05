@@ -12,16 +12,12 @@ import java.util.Optional;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.wpilibj.DriverStation;
 
 import frc.lib.io.photonvision.PhotonVisionIO;
 import frc.lib.io.photonvision.PhotonVisionInputs;
-
-// Logging
 import frc.lib.logging.Telemetry;
-
-// Constants
-import frc.robot.Constants.kVision;
+import frc.lib.math.geometry.VisionMeasurement;
 
 public class PVManager extends SubsystemBase {
 
@@ -30,6 +26,7 @@ public class PVManager extends SubsystemBase {
     private final Telemetry telemetry;
 
     private final String[] cameraNames;
+    private final PVPerCameraProcessor[] processors;
 
     private boolean seeded = false;
 
@@ -38,16 +35,21 @@ public class PVManager extends SubsystemBase {
     private double fusedTimestamp = 0.0;
     private double fusedXyStd = 0.0;
     private double fusedAngStd = 0.0;
+    private double fusedAvgDistance = 999.0;   // NEW: distance gate for LocalizationManager
 
     // 20 Hz throttle
     private double lastProcessTime = 0.0;
     private static final double PROCESS_PERIOD = 0.10;
 
+    private PVPerCameraProcessor.TagMode tagMode = PVPerCameraProcessor.TagMode.HUB;
+
+    // Debug info
+    private final PVDebugInfo debugInfo = new PVDebugInfo();
+
     public PVManager(PhotonVisionIO io, Telemetry telemetry) {
         this.io = io;
         this.telemetry = telemetry;
 
-        // Allocate camera input slots
         inputs.cameras = new PhotonVisionInputs.CameraInputs[io.getCameraCount()];
         for (int i = 0; i < inputs.cameras.length; i++) {
             inputs.cameras[i] = new PhotonVisionInputs.CameraInputs();
@@ -55,7 +57,20 @@ public class PVManager extends SubsystemBase {
 
         this.cameraNames = io.getCameraNames();
 
-        // Register each camera as a vision pose source
+        processors = new PVPerCameraProcessor[io.getCameraCount()];
+        debugInfo.cameras = new PVDebugInfo.CameraDebug[io.getCameraCount()];
+
+        for (int i = 0; i < processors.length; i++) {
+            processors[i] = new PVPerCameraProcessor(
+                cameraNames[i],
+                io.getEstimator(i)
+            );
+            processors[i].setTagMode(tagMode);
+
+            debugInfo.cameras[i] = new PVDebugInfo.CameraDebug();
+            debugInfo.cameras[i].name = cameraNames[i];
+        }
+
         for (String name : cameraNames) {
             telemetry.registerVisionPoseSource(name);
         }
@@ -68,7 +83,6 @@ public class PVManager extends SubsystemBase {
         if (now - lastProcessTime < PROCESS_PERIOD) return;
         lastProcessTime = now;
 
-        // Update raw inputs (fast)
         io.updateInputs(inputs, seeded);
 
         // Reset fused output
@@ -76,90 +90,106 @@ public class PVManager extends SubsystemBase {
         fusedTimestamp = 0.0;
         fusedXyStd = 0.0;
         fusedAngStd = 0.0;
+        fusedAvgDistance = 999.0;
 
         double bestScore = Double.NEGATIVE_INFINITY;
-        Pose2d bestPose = null;
-        double bestTimestamp = 0.0;
-        double bestXyStd = 0.0;
-        double bestAngStd = 0.0;
+        PVPerCameraProcessor.VisionResult bestResult = null;
+
+        boolean enabled = DriverStation.isEnabled();
+
+        // Update debug tagMode
+        debugInfo.tagMode = tagMode.toString();
+        debugInfo.seeded = seeded;
 
         // Process each camera
         for (int i = 0; i < inputs.cameras.length; i++) {
             var cam = inputs.cameras[i];
+            var dbg = debugInfo.cameras[i];
 
-            if (!cam.pose3d.isPresent()) continue;
+            dbg.connected = cam.connected;
+            dbg.hasTarget = cam.hasTarget;
+            dbg.timestamp = cam.timestamp;
 
-            Pose3d pose3d = cam.pose3d.get();
-            Pose2d pose2d = cam.pose2d.get();
-
-            // Reject bad observations (robust version)
-            boolean reject = false;
-
-            // 1. Z-height sanity check (camera height + noise)
-            if (Math.abs(pose3d.getZ()) > 1.0) {  // was too strict before
-                reject = true;
+            if (cam.rawResult != null && cam.rawResult.hasTargets()) {
+                dbg.fiducialId = cam.rawResult.getBestTarget().fiducialId;
+            } else {
+                dbg.fiducialId = -1;
             }
 
-            // 2. Field bounds (allow slight negative due to transforms)
-            double x = pose3d.getX();
-            double y = pose3d.getY();
-            double fieldLen = kVision.APRILTAG_LAYOUT.getFieldLength();
-            double fieldWid = kVision.APRILTAG_LAYOUT.getFieldWidth();
-
-            if (x < -1.0 || x > fieldLen + 1.0 ||
-                y < -1.0 || y > fieldWid + 1.0) {
-                reject = true;
+            // Debug path
+            var debugOpt = processors[i].processDebug(cam.rawResult, enabled);
+            if (debugOpt.isPresent()) {
+                var d = debugOpt.get();
+                dbg.strategyUsed = d.strategyUsed;
+                dbg.accepted = d.accepted;
+                dbg.rejectionReason = d.rejectionReason;
+                dbg.tagCount = d.tagCount;
+                dbg.avgDistance = d.avgDistance;
+                dbg.ambiguity = d.ambiguity;
+                dbg.xyStd = d.xyStd;
+                dbg.angStd = d.angStd;
+            } else {
+                dbg.strategyUsed = "NONE";
+                dbg.accepted = false;
+                dbg.rejectionReason = "NO_RESULT";
+                dbg.tagCount = 0;
+                dbg.avgDistance = 0.0;
+                dbg.ambiguity = 0.0;
+                dbg.xyStd = 0.0;
+                dbg.angStd = 0.0;
             }
 
-            // 3. Distance sanity check (allow up to 6–7m)
-            if (cam.avgDistance > 2.0) {  // was too strict before
-                reject = true;
-            }
+            if (!dbg.accepted) continue;
 
-            // 4. Ambiguity check (only reject VERY ambiguous single-tag solves)
-            if (cam.tagCount == 1 && cam.ambiguity > 0.35) {  // relaxed from your version
-                reject = true;
-            }
+            // Final measurement
+            var resultOpt = processors[i].process(cam.rawResult, enabled);
+            if (resultOpt.isEmpty()) continue;
 
-            // 5. Require at least 1 tag (should never happen, but safe)
-            if (cam.tagCount < 1) {
-                reject = true;
-            }
+            var res = resultOpt.get();
+            VisionMeasurement m = res.measurement;
 
-            if (reject) continue;
-
-            // Compute score for fusion
+            // Score
             double score =
-                cam.tagCount * 200.0 -
-                cam.avgDistance * 20.0 -
-                cam.ambiguity * 80.0;
+                res.tagCount * 200.0 -
+                res.avgDistance * 20.0 -
+                res.ambiguity * 80.0;
 
             if (score > bestScore) {
                 bestScore = score;
-                bestPose = pose2d;
-                bestTimestamp = cam.timestamp;
-
-                if (cam.stdDevs != null) {
-                    bestXyStd = cam.stdDevs.get(0, 0);
-                    bestAngStd = cam.stdDevs.get(2, 0);
-                } else {
-                    bestXyStd = 0.5;   // reasonable default
-                    bestAngStd = 0.5;
-                }
-
+                bestResult = res;
             }
         }
 
         // Save fused result
-        if (bestPose != null) {
-            fusedPose = Optional.of(bestPose);
-            fusedTimestamp = bestTimestamp;
-            fusedXyStd = bestXyStd;
-            fusedAngStd = bestAngStd;
+        if (bestResult != null) {
+            VisionMeasurement m = bestResult.measurement;
 
-            // Log only the fused pose (fast)
-            telemetry.logVisionPose("PhotonVision-Fused", bestPose);
+            fusedPose = Optional.of(m.pose());
+            fusedTimestamp = m.timestamp();
+            fusedAvgDistance = bestResult.avgDistance;   // NEW: store avgDistance
+
+            if (m.stdDevs() != null) {
+                fusedXyStd = m.stdDevs().get(0, 0);
+                fusedAngStd = m.stdDevs().get(2, 0);
+            } else {
+                fusedXyStd = 0.5;
+                fusedAngStd = 0.5;
+            }
+
+            telemetry.logVisionPose("PhotonVision-Fused", m.pose());
         }
+
+        // Update debug fused info
+        debugInfo.fusedValid = fusedPose.isPresent();
+        debugInfo.fusedPose = fusedPose.orElse(new Pose2d());
+        debugInfo.fusedTimestamp = fusedTimestamp;
+        debugInfo.fusedXyStd = fusedXyStd;
+        debugInfo.fusedAngStd = fusedAngStd;
+    }
+
+    public void setTagMode(PVPerCameraProcessor.TagMode newMode) {
+        this.tagMode = newMode;
+        for (var p : processors) p.setTagMode(newMode);
     }
 
     public void setSeeded(boolean seeded) {
@@ -182,7 +212,16 @@ public class PVManager extends SubsystemBase {
         return fusedAngStd;
     }
 
+    // NEW: used by LocalizationManager to gate PV usage
+    public double getFusedAvgDistance() {
+        return fusedAvgDistance;
+    }
+
     public boolean hasGoodVision() {
         return fusedPose.isPresent();
+    }
+
+    public PVDebugInfo getDebugInfo() {
+        return debugInfo;
     }
 }
