@@ -8,25 +8,12 @@
 
 package frc.robot;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.*;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Timer;
-
-import frc.robot.commands.AgitatorCommands;
-import frc.robot.commands.ClimberCommands;
-import frc.robot.commands.FeederCommands;
-import frc.robot.commands.HopperCommands;
-import frc.robot.commands.IntakeArmCommands;
-import frc.robot.commands.IntakeRollerCommands;
-import frc.robot.commands.ShooterCommands;
-import frc.robot.commands.tuning.CmdShooterPIDTuner;
-
+import frc.robot.commands.*;
 import frc.robot.framework.*;
-import frc.robot.Constants.kShooter;
 
 public class DashboardManager {
 
@@ -34,216 +21,120 @@ public class DashboardManager {
     private final LocalizationRecord localization;
     private final SendableChooser<?> autoChooser;
 
-    // Manual values
-    private double manualAgitatorDuty;
-    private double manualClimberPosition;
-    private double manualBLUFeederRPM;
-    private double manualYELFeederRPM;
-    private double manualHopperAngle;
-    private double manualIntakeArmAngle;
-    private double manualIntakeRollerDuty;
-    private double manualBLUShooterRPM;
-    private double manualYELShooterRPM;
-    private double shooterIdleRPM;
-
-    // NT table
+    /* ---------------- NT Root ---------------- */
     private final NetworkTable nt =
         NetworkTableInstance.getDefault().getTable("SmartDashboard");
 
-    /* ---------------- Publishers for inputs ---------------- */
+    /* ---------------- Throttle ---------------- */
+    private double lastUpdate = 0.0;
+    private static final double PERIOD = 0.20;   // 5 Hz
 
-    // Agitator
+    /* ---------------- Manual Subscribers ---------------- */
+    private final DoubleSubscriber subAgitatorDuty =
+        nt.getDoubleTopic("Manual Mode/Agitator/Target DC").subscribe(0.0);
+    private final DoubleSubscriber subClimberPos =
+        nt.getDoubleTopic("Manual Mode/Climber/Target Position").subscribe(0.0);
+    private final DoubleSubscriber subBLUFeederRPM =
+        nt.getDoubleTopic("Manual Mode/Feeder/BLU/Target RPM").subscribe(0.0);
+    private final DoubleSubscriber subYELFeederRPM =
+        nt.getDoubleTopic("Manual Mode/Feeder/YEL/Target RPM").subscribe(0.0);
+    private final DoubleSubscriber subHopperAngle =
+        nt.getDoubleTopic("Manual Mode/Hopper/Target Angle").subscribe(0.0);
+    private final DoubleSubscriber subIntakeArmAngle =
+        nt.getDoubleTopic("Manual Mode/Intake/Arm/Target Angle").subscribe(0.0);
+    private final DoubleSubscriber subIntakeRollerDuty =
+        nt.getDoubleTopic("Manual Mode/Intake/Roller/Target DC").subscribe(0.0);
+    private final DoubleSubscriber subBLUShooterRPM =
+        nt.getDoubleTopic("Manual Mode/Shooter/BLU/Target RPM").subscribe(0.0);
+    private final DoubleSubscriber subYELShooterRPM =
+        nt.getDoubleTopic("Manual Mode/Shooter/YEL/Target RPM").subscribe(0.0);
+    private final DoubleSubscriber subShooterIdleRPM =
+        nt.getDoubleTopic("Shooter/Shooter Idle RPM").subscribe(0.0);
 
-    // Climber
+    /* ---------------- RUN Button Subscribers ---------------- */
+    private final BooleanSubscriber subAgitatorRun =
+        nt.getBooleanTopic("Manual Mode/Agitator/Run").subscribe(false);
+    private final BooleanSubscriber subClimberRun =
+        nt.getBooleanTopic("Manual Mode/Climber/Run").subscribe(false);
+    private final BooleanSubscriber subBLUFeederRun =
+        nt.getBooleanTopic("Manual Mode/Feeder/BLU/Run").subscribe(false);
+    private final BooleanSubscriber subYELFeederRun =
+        nt.getBooleanTopic("Manual Mode/Feeder/YEL/Run").subscribe(false);
+    private final BooleanSubscriber subHopperRun =
+        nt.getBooleanTopic("Manual Mode/Hopper/Run").subscribe(false);
+    private final BooleanSubscriber subIntakeArmRun =
+        nt.getBooleanTopic("Manual Mode/Intake/Arm/Run").subscribe(false);
+    private final BooleanSubscriber subIntakeRollerRun =
+        nt.getBooleanTopic("Manual Mode/Intake/Roller/Run").subscribe(false);
+    private final BooleanSubscriber subBLUShooterRun =
+        nt.getBooleanTopic("Manual Mode/Shooter/BLU/Run").subscribe(false);
+    private final BooleanSubscriber subYELShooterRun =
+        nt.getBooleanTopic("Manual Mode/Shooter/YEL/Run").subscribe(false);
 
-    private final DoublePublisher pubClimberCurrentPos =
+    /* ---------------- Publishers ---------------- */
+    private final DoublePublisher pubClimberPos =
         nt.getDoubleTopic("Climber/CurrentPosition").publish();
 
-    // Feeder
-
-    // Hopper
-
-    private final DoublePublisher pubHopperCurrentPos =
+    private final DoublePublisher pubHopperPos =
         nt.getDoubleTopic("Hopper/CurrentPosition").publish();
-    private final BooleanPublisher pubHopperIsExtended =
+    private final BooleanPublisher pubHopperExtended =
         nt.getBooleanTopic("Hopper/IsExtended").publish();
-
-    // Intake Arm
 
     private final DoublePublisher pubIntakeBLUPos =
         nt.getDoubleTopic("Intake/Arm/BLU/Current Position").publish();
     private final DoublePublisher pubIntakeYELPos =
         nt.getDoubleTopic("Intake/Arm/YEL/Current Position").publish();
-
-    private final BooleanPublisher pubIntakeBLURevLimit =
+    private final BooleanPublisher pubIntakeBLURev =
         nt.getBooleanTopic("Intake/Arm/BLU/ReverseLimit").publish();
-
-    private final BooleanPublisher pubIntakeYELRevLimit =
+    private final BooleanPublisher pubIntakeYELRev =
         nt.getBooleanTopic("Intake/Arm/YEL/ReverseLimit").publish();
-
-    // Intake Roller
-
-    // Shooter
 
     private final BooleanPublisher pubBLUShooterSensor =
         nt.getBooleanTopic("Shooter/BLU/Sensor").publish();
-
-    private final DoublePublisher pubBLUShooterDistanceToTarget =
+    private final DoublePublisher pubBLUShooterDist =
         nt.getDoubleTopic("Shooter/BLU/Distance To Target").publish();
-
-    private final DoublePublisher pubBLUShooterCurrentRPM =
+    private final DoublePublisher pubBLUShooterRPM =
         nt.getDoubleTopic("Shooter/BLU/Current RPM").publish();
 
     private final BooleanPublisher pubYELShooterSensor =
         nt.getBooleanTopic("Shooter/YEL/Sensor").publish();
-
-    private final DoublePublisher pubYELShooterDistanceToTarget =
+    private final DoublePublisher pubYELShooterDist =
         nt.getDoubleTopic("Shooter/YEL/Distance To Target").publish();
-
-    private final DoublePublisher pubYELShooterCurrentRPM =
+    private final DoublePublisher pubYELShooterRPM =
         nt.getDoubleTopic("Shooter/YEL/Current RPM").publish();
 
-    // Swerve
-
-    /* ---------------- Publishers for manual values ---------------- */
-
-    private final DoublePublisher pubAgitatorDuty =
-        nt.getDoubleTopic("Manual Mode/Agitator/Target DC").publish();
-    private final DoublePublisher pubClimberPos =
-        nt.getDoubleTopic("Manual Mode/Climber/Target Position").publish();
-    private final DoublePublisher pubBLUFeederRPM =
-        nt.getDoubleTopic("Manual Mode/Feeder/BLU/Target RPM").publish();
-    private final DoublePublisher pubYELFeederRPM =
-        nt.getDoubleTopic("Manual Mode/Feeder/YEL/Target RPM").publish();
-    private final DoublePublisher pubHopperAngle =
-        nt.getDoubleTopic("Manual Mode/Hopper/Target Angle").publish();
-    private final DoublePublisher pubIntakeArmAngle =
-        nt.getDoubleTopic("Manual Mode/Intake/Arm/Target Angle").publish();
-    private final DoublePublisher pubIntakeRollerDuty =
-        nt.getDoubleTopic("Manual Mode/Intake/Roller/Target DC").publish();
-    private final DoublePublisher pubBLUShooterRPM =
-        nt.getDoubleTopic("Manual Mode/Shooter/BLU/Target RPM").publish();
-    private final DoublePublisher pubYELShooterRPM =
-        nt.getDoubleTopic("Manual Mode/Shooter/YEL/Target RPM").publish();
-    private final DoublePublisher pubShooterIdleRPM =
-        nt.getDoubleTopic("Shooter/Shooter Idle RPM").publish();
-
-    /* ---------------- Publishers for manual RUN buttons ---------------- */
-
-    private final BooleanPublisher pubAgitatorRun =
-        nt.getBooleanTopic("Manual Mode/Agitator/Run").publish();
-    private final BooleanPublisher pubClimberRun =
-        nt.getBooleanTopic("Manual Mode/Climber/Run").publish();
-    private final BooleanPublisher pubBLUFeederRun =
-        nt.getBooleanTopic("Manual Mode/Feeder/BLU/Run").publish();
-    private final BooleanPublisher pubYELFeederRun =
-        nt.getBooleanTopic("Manual Mode/Feeder/YEL/Run").publish();
-    private final BooleanPublisher pubHopperRun =
-        nt.getBooleanTopic("Manual Mode/Hopper/Run").publish();
-    private final BooleanPublisher pubIntakeArmRun =
-        nt.getBooleanTopic("Manual Mode/Intake/Arm/Run").publish();
-    private final BooleanPublisher pubIntakeRollerRun =
-        nt.getBooleanTopic("Manual Mode/Intake/Roller/Run").publish();
-    private final BooleanPublisher pubBLUShooterRun =
-        nt.getBooleanTopic("Manual Mode/Shooter/BLU/Run").publish();
-    private final BooleanPublisher pubYELShooterRun =
-        nt.getBooleanTopic("Manual Mode/Shooter/YEL/Run").publish();
-
-    /* ---------------- Localization publishers ---------------- */
-
-    private final BooleanPublisher pubLocalizationSeeded =
+    /* ---------------- Localization ---------------- */
+    private final BooleanPublisher pubSeeded =
         nt.getBooleanTopic("Localization/PoseSeeded").publish();
-
-    private final BooleanPublisher pubLocalizationResetSeed =
-        nt.getBooleanTopic("Localization/ResetPoseSeed").publish();
-
+    private final BooleanSubscriber subResetSeed =
+        nt.getBooleanTopic("Localization/ResetPoseSeed").subscribe(false);
     private final DoublePublisher pubQuestBattery =
         nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
-    private final BooleanPublisher pubQuestIsTracking =
+    private final BooleanPublisher pubQuestTracking =
         nt.getBooleanTopic("Localization/QuestNav/Is Tracking").publish();
-    private final BooleanPublisher pubhasGoodVision =
+    private final BooleanPublisher pubHasGoodVision =
         nt.getBooleanTopic("Localization/PhotonVision/Has Good Vision").publish();
 
-    /* ---------------- PhotonVision Debug Publishers ---------------- */
-
+    /* ---------------- PV Debug ---------------- */
     private final BooleanPublisher pubPVGood =
         nt.getBooleanTopic("PhotonVision/Fused/HasGoodVision").publish();
-
     private final BooleanPublisher pubPVSeeded =
         nt.getBooleanTopic("PhotonVision/Fused/Seeded").publish();
-
-    private final DoublePublisher pubPVFusedX =
+    private final DoublePublisher pubPVX =
         nt.getDoubleTopic("PhotonVision/Fused/Pose/X").publish();
-
-    private final DoublePublisher pubPVFusedY =
+    private final DoublePublisher pubPVY =
         nt.getDoubleTopic("PhotonVision/Fused/Pose/Y").publish();
-
-    private final DoublePublisher pubPVFusedHeading =
+    private final DoublePublisher pubPVHeading =
         nt.getDoubleTopic("PhotonVision/Fused/Pose/HeadingDeg").publish();
-
-    private final DoublePublisher pubPVFusedXyStd =
+    private final DoublePublisher pubPVXYStd =
         nt.getDoubleTopic("PhotonVision/Fused/StdDev/XY").publish();
-
-    private final DoublePublisher pubPVFusedAngStd =
+    private final DoublePublisher pubPVAngStd =
         nt.getDoubleTopic("PhotonVision/Fused/StdDev/Ang").publish();
 
-    private final BooleanPublisher pubPVConnectedBLU =
-        nt.getBooleanTopic("PhotonVision/BLU/Connected").publish();
-    private final BooleanPublisher pubPVHasTargetBLU =
-        nt.getBooleanTopic("PhotonVision/BLU/HasTarget").publish();
-    private final DoublePublisher pubPVTagCountBLU =
-        nt.getDoubleTopic("PhotonVision/BLU/TagCount").publish();
-    private final DoublePublisher pubPVAvgDistBLU =
-        nt.getDoubleTopic("PhotonVision/BLU/AvgDistance").publish();
-    private final DoublePublisher pubPVAmbiguityBLU =
-        nt.getDoubleTopic("PhotonVision/BLU/Ambiguity").publish();
-    private final BooleanPublisher pubPVAcceptedBLU =
-        nt.getBooleanTopic("PhotonVision/BLU/Accepted").publish();
-    private final DoublePublisher pubPVXyStdBLU =
-        nt.getDoubleTopic("PhotonVision/BLU/StdDev/XY").publish();
-    private final DoublePublisher pubPVAngStdBLU =
-        nt.getDoubleTopic("PhotonVision/BLU/StdDev/Ang").publish();
-    private final BooleanPublisher pubPVStrategyBLUMulti =
-        nt.getBooleanTopic("PhotonVision/BLU/Strategy/MultiTag").publish();
-    private final BooleanPublisher pubPVStrategyBLUTrig =
-        nt.getBooleanTopic("PhotonVision/BLU/Strategy/Trig").publish();
-    private final BooleanPublisher pubPVStrategyBLUAmb =
-        nt.getBooleanTopic("PhotonVision/BLU/Strategy/Ambiguity").publish();
-
-    private final BooleanPublisher pubPVConnectedYEL =
-        nt.getBooleanTopic("PhotonVision/YEL/Connected").publish();
-    private final BooleanPublisher pubPVHasTargetYEL =
-        nt.getBooleanTopic("PhotonVision/YEL/HasTarget").publish();
-    private final DoublePublisher pubPVTagCountYEL =
-        nt.getDoubleTopic("PhotonVision/YEL/TagCount").publish();
-    private final DoublePublisher pubPVAvgDistYEL =
-        nt.getDoubleTopic("PhotonVision/YEL/AvgDistance").publish();
-    private final DoublePublisher pubPVAmbiguityYEL =
-        nt.getDoubleTopic("PhotonVision/YEL/Ambiguity").publish();
-    private final BooleanPublisher pubPVAcceptedYEL =
-        nt.getBooleanTopic("PhotonVision/YEL/Accepted").publish();
-    private final DoublePublisher pubPVXyStdYEL =
-        nt.getDoubleTopic("PhotonVision/YEL/StdDev/XY").publish();
-    private final DoublePublisher pubPVAngStdYEL =
-        nt.getDoubleTopic("PhotonVision/YEL/StdDev/Ang").publish();
-    private final BooleanPublisher pubPVStrategyYELMulti =
-        nt.getBooleanTopic("PhotonVision/YEL/Strategy/MultiTag").publish();
-    private final BooleanPublisher pubPVStrategyYELTrig =
-        nt.getBooleanTopic("PhotonVision/YEL/Strategy/Trig").publish();
-    private final BooleanPublisher pubPVStrategyYELAmb =
-        nt.getBooleanTopic("PhotonVision/YEL/Strategy/Ambiguity").publish();
-
-        
-    /* ---------------- Rising/Falling edge tracking ---------------- */
-
-    private boolean prevAgitatorRun, prevClimberRun, prevBLUFeederRun, prevYELFeederRun;
-    private boolean prevHopperRun, prevIntakeArmRun, prevIntakeRollerRun;
-    private boolean prevBLUShooterRun, prevYELShooterRun;
-
-    /* ---------------- Throttle ---------------- */
-
-    private double lastUpdateTime = 0.0;
-    private static final double DASHBOARD_PERIOD = 0.05; // 20 Hz
+    /* ---------------- Rising-edge tracking ---------------- */
+    private boolean prevAgitator, prevClimber, prevBLUFeeder, prevYELFeeder;
+    private boolean prevHopper, prevIntakeArm, prevIntakeRoller;
+    private boolean prevBLUShooter, prevYELShooter;
 
     public DashboardManager(
         SubsystemsRecord subsystems,
@@ -253,266 +144,123 @@ public class DashboardManager {
         this.subsystems = subsystems;
         this.localization = localization;
         this.autoChooser = autoChooser;
-
-        // Initialize RUN buttons so Elastic sees them immediately
-        pubAgitatorRun.set(false);
-        pubClimberRun.set(false);
-        pubBLUFeederRun.set(false);
-        pubYELFeederRun.set(false);
-        pubHopperRun.set(false);
-        pubIntakeArmRun.set(false);
-        pubIntakeRollerRun.set(false);
-        pubBLUShooterRun.set(false);
-        pubYELShooterRun.set(false);
     }
-
-    /* ---------------- SmartDashboard init ---------------- */
 
     public void initDashboard() {
         SmartDashboard.putData("Auto Mode", autoChooser);
-
-        SmartDashboard.putData("Run Blue Shooter PID Tuner",
-            new CmdShooterPIDTuner(subsystems.BLUshooter(), kShooter.kRPM.MAX));
-
-        SmartDashboard.putData("Run Yellow Shooter PID Tuner",
-            new CmdShooterPIDTuner(subsystems.YELshooter(), kShooter.kRPM.MAX));
-        
-        pubLocalizationResetSeed.set(false);
     }
-
-    /* ---------------- Periodic update ---------------- */
 
     public void updateInputs() {
 
         double now = Timer.getFPGATimestamp();
-        if (now - lastUpdateTime < DASHBOARD_PERIOD) return;
-        lastUpdateTime = now;
+        if (now - lastUpdate < PERIOD) return;
+        lastUpdate = now;
 
-        /* -------- Set Publisher Inputs -------- */
+        /* ---------------- Subsystem Inputs ---------------- */
+        var climber = subsystems.climber().getInputs();
+        pubClimberPos.set(climber.position);
 
-        // Agitator
+        var hopper = subsystems.hopper().getInputs();
+        pubHopperPos.set(hopper.position);
+        pubHopperExtended.set(hopper.hopperRetracted);
 
-        // Climber
+        var intake = subsystems.intakeArm().getInputs();
+        pubIntakeBLUPos.set(intake.bluPositionDeg);
+        pubIntakeYELPos.set(intake.yelPositionDeg);
+        pubIntakeBLURev.set(intake.bluReverseLimit);
+        pubIntakeYELRev.set(intake.yelReverseLimit);
 
-        var climberInputs = subsystems.climber().getInputs();
+        var bluShooter = subsystems.BLUshooter().getInputs();
+        pubBLUShooterRPM.set(subsystems.BLUshooter().getShooterRPM());
+        pubBLUShooterSensor.set(bluShooter.ballFired);
+        pubBLUShooterDist.set(bluShooter.distanceToTarget);
 
-        pubClimberCurrentPos.set(climberInputs.position);
+        var yelShooter = subsystems.YELshooter().getInputs();
+        pubYELShooterRPM.set(subsystems.YELshooter().getShooterRPM());
+        pubYELShooterSensor.set(yelShooter.ballFired);
+        pubYELShooterDist.set(yelShooter.distanceToTarget);
 
-        // Feeder
+        /* ---------------- Localization ---------------- */
+        pubSeeded.set(localization.localizationManager().isStartupSeeded());
 
-        // Hopper
-
-        var hopperInputs = subsystems.hopper().getInputs();
-
-        pubHopperCurrentPos.set(hopperInputs.position);
-        pubHopperIsExtended.set(hopperInputs.hopperRetracted);
-
-        // Intake Arm
-
-        var intakeInputs = subsystems.intakeArm().getInputs();
-
-        pubIntakeBLUPos.set(intakeInputs.bluPositionDeg);
-        pubIntakeYELPos.set(intakeInputs.yelPositionDeg);
-
-        pubIntakeBLURevLimit.set(intakeInputs.bluReverseLimit);
-
-        pubIntakeYELRevLimit.set(intakeInputs.yelReverseLimit);
-
-        // Intake Roller
-
-        // Shooter
-
-        var bluShooterInputs = subsystems.BLUshooter().getInputs();
-
-        pubBLUShooterCurrentRPM.set(subsystems.BLUshooter().getShooterRPM());
-        pubBLUShooterSensor.set(bluShooterInputs.ballFired);
-        pubBLUShooterDistanceToTarget.set(bluShooterInputs.distanceToTarget);
-
-        var yelShooterInputs = subsystems.YELshooter().getInputs();
-
-        pubYELShooterCurrentRPM.set(subsystems.YELshooter().getShooterRPM());
-        pubYELShooterSensor.set(yelShooterInputs.ballFired);
-        pubYELShooterDistanceToTarget.set(yelShooterInputs.distanceToTarget);
-
-        // Swerve
-
-        /* -------- Read manual values -------- */
-
-        manualAgitatorDuty      = nt.getEntry("Manual Mode/Agitator/Target DC").getDouble(manualAgitatorDuty);
-        manualClimberPosition   = nt.getEntry("Manual Mode/Climber/Target Position").getDouble(manualClimberPosition);
-        manualBLUFeederRPM      = nt.getEntry("Manual Mode/Feeder/BLU/Target RPM").getDouble(manualBLUFeederRPM);
-        manualYELFeederRPM      = nt.getEntry("Manual Mode/Feeder/YEL/Target RPM").getDouble(manualYELFeederRPM);
-        manualHopperAngle       = nt.getEntry("Manual Mode/Hopper/Target Angle").getDouble(manualHopperAngle);
-        manualIntakeArmAngle    = nt.getEntry("Manual Mode/Intake/Arm/Target Angle").getDouble(manualIntakeArmAngle);
-        manualIntakeRollerDuty  = nt.getEntry("Manual Mode/Intake/Roller/Target DC").getDouble(manualIntakeRollerDuty);
-        manualBLUShooterRPM     = nt.getEntry("Manual Mode/Shooter/BLU/Target RPM").getDouble(manualBLUShooterRPM);
-        manualYELShooterRPM     = nt.getEntry("Manual Mode/Shooter/YEL/Target RPM").getDouble(manualYELShooterRPM);
-        shooterIdleRPM          = nt.getEntry("Shooter/Shooter Idle RPM").getDouble(shooterIdleRPM);
-
-        /* -------- Publish values back to Elastic -------- */
-
-        pubAgitatorDuty.set(manualAgitatorDuty);
-        pubClimberPos.set(manualClimberPosition);
-        pubBLUFeederRPM.set(manualBLUFeederRPM);
-        pubYELFeederRPM.set(manualYELFeederRPM);
-        pubHopperAngle.set(manualHopperAngle);
-        pubIntakeArmAngle.set(manualIntakeArmAngle);
-        pubIntakeRollerDuty.set(manualIntakeRollerDuty);
-        pubBLUShooterRPM.set(manualBLUShooterRPM);
-        pubYELShooterRPM.set(manualYELShooterRPM);
-        pubShooterIdleRPM.set(shooterIdleRPM);
-
-        /* -------- Localization -------- */
-
-        pubLocalizationSeeded.set(localization.localizationManager().isStartupSeeded());
-
-        boolean resetSeed =
-            nt.getEntry("Localization/ResetPoseSeed").getBoolean(false);
-
-        if (resetSeed) {
+        if (subResetSeed.get()) {
             localization.localizationManager().resetVisionSeed();
-            nt.getEntry("Localization/ResetPoseSeed").setBoolean(false);
+            nt.getBooleanTopic("Localization/ResetPoseSeed").publish().set(false);
         }
 
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
-        pubQuestIsTracking.set(localization.questNav().isTracking());
+        pubQuestTracking.set(localization.questNav().isTracking());
+        pubHasGoodVision.set(localization.pvManager().hasGoodVision());
 
-        pubhasGoodVision.set(localization.pvManager().hasGoodVision());
+        /* ---------------- PhotonVision Debug ---------------- */
+        var pv = localization.pvManager().getDebugInfo();
 
-        /* -------- PhotonVision Debug -------- */
+        pubPVGood.set(pv.fusedValid);
+        pubPVSeeded.set(pv.seeded);
 
-        var pvDebug = localization.pvManager().getDebugInfo();
-
-        // Fused pose
-        pubPVGood.set(pvDebug.fusedValid);
-        pubPVSeeded.set(pvDebug.seeded);
-
-        pubPVFusedX.set(pvDebug.fusedPose.getX());
-        pubPVFusedY.set(pvDebug.fusedPose.getY());
-        pubPVFusedHeading.set(pvDebug.fusedPose.getRotation().getDegrees());
-
-        pubPVFusedXyStd.set(pvDebug.fusedXyStd);
-        pubPVFusedAngStd.set(pvDebug.fusedAngStd);
-
-        // Per-camera debug
-        if (pvDebug.cameras.length >= 1) {
-            var blu = pvDebug.cameras[0];
-
-            pubPVConnectedBLU.set(blu.connected);
-            pubPVHasTargetBLU.set(blu.hasTarget);
-            pubPVTagCountBLU.set(blu.tagCount);
-            pubPVAvgDistBLU.set(blu.avgDistance);
-            pubPVAmbiguityBLU.set(blu.ambiguity);
-            pubPVAcceptedBLU.set(blu.accepted);
-            pubPVXyStdBLU.set(blu.xyStd);
-            pubPVAngStdBLU.set(blu.angStd);
-
-            pubPVStrategyBLUMulti.set(blu.strategyUsed.equals("MULTITAG"));
-            pubPVStrategyBLUTrig.set(blu.strategyUsed.equals("TRIG"));
-            pubPVStrategyBLUAmb.set(blu.strategyUsed.equals("AMBIGUITY"));
+        if (pv.fusedValid) {
+            pubPVX.set(pv.fusedPose.getX());
+            pubPVY.set(pv.fusedPose.getY());
+            pubPVHeading.set(pv.fusedPose.getRotation().getDegrees());
+            pubPVXYStd.set(pv.fusedXyStd);
+            pubPVAngStd.set(pv.fusedAngStd);
         }
 
-        if (pvDebug.cameras.length >= 2) {
-            var yel = pvDebug.cameras[1];
+        /* ---------------- Manual RUN Buttons ---------------- */
+        boolean agitator = subAgitatorRun.get();
+        boolean climberRun = subClimberRun.get();
+        boolean bluFeeder = subBLUFeederRun.get();
+        boolean yelFeeder = subYELFeederRun.get();
+        boolean hopperRun = subHopperRun.get();
+        boolean intakeArm = subIntakeArmRun.get();
+        boolean intakeRoller = subIntakeRollerRun.get();
+        boolean bluShooterRun = subBLUShooterRun.get();
+        boolean yelShooterRun = subYELShooterRun.get();
 
-            pubPVConnectedYEL.set(yel.connected);
-            pubPVHasTargetYEL.set(yel.hasTarget);
-            pubPVTagCountYEL.set(yel.tagCount);
-            pubPVAvgDistYEL.set(yel.avgDistance);
-            pubPVAmbiguityYEL.set(yel.ambiguity);
-            pubPVAcceptedYEL.set(yel.accepted);
-            pubPVXyStdYEL.set(yel.xyStd);
-            pubPVAngStdYEL.set(yel.angStd);
+        /* Rising edges */
+        if (agitator && !prevAgitator)
+            AgitatorCommands.manual(subsystems.agitator(), () -> subAgitatorDuty.get()).schedule();
+        if (climberRun && !prevClimber)
+            ClimberCommands.manual(subsystems.climber(), () -> subClimberPos.get()).schedule();
+        if (bluFeeder && !prevBLUFeeder)
+            FeederCommands.manual(subsystems.BLUfeeder(), () -> subBLUFeederRPM.get()).schedule();
+        if (yelFeeder && !prevYELFeeder)
+            FeederCommands.manual(subsystems.YELfeeder(), () -> subYELFeederRPM.get()).schedule();
+        if (hopperRun && !prevHopper)
+            HopperCommands.manualPosition(subsystems.hopper(), () -> subHopperAngle.get()).schedule();
+        if (intakeArm && !prevIntakeArm)
+            IntakeArmCommands.manualAngle(subsystems.intakeArm(), () -> subIntakeArmAngle.get()).schedule();
+        if (intakeRoller && !prevIntakeRoller)
+            IntakeRollerCommands.manual(subsystems.intakeRoller(), () -> subIntakeRollerDuty.get()).schedule();
+        if (bluShooterRun && !prevBLUShooter)
+            ShooterCommands.manual(subsystems.BLUshooter(), () -> subBLUShooterRPM.get()).schedule();
+        if (yelShooterRun && !prevYELShooter)
+            ShooterCommands.manual(subsystems.YELshooter(), () -> subYELShooterRPM.get()).schedule();
 
-            pubPVStrategyYELMulti.set(yel.strategyUsed.equals("MULTITAG"));
-            pubPVStrategyYELTrig.set(yel.strategyUsed.equals("TRIG"));
-            pubPVStrategyYELAmb.set(yel.strategyUsed.equals("AMBIGUITY"));
-        }
+        /* Falling edges */
+        if (!agitator && prevAgitator) subsystems.agitator().getCurrentCommand().cancel();
+        if (!climberRun && prevClimber) subsystems.climber().getCurrentCommand().cancel();
+        if (!bluFeeder && prevBLUFeeder) subsystems.BLUfeeder().getCurrentCommand().cancel();
+        if (!yelFeeder && prevYELFeeder) subsystems.YELfeeder().getCurrentCommand().cancel();
+        if (!hopperRun && prevHopper) subsystems.hopper().getCurrentCommand().cancel();
+        if (!intakeArm && prevIntakeArm) subsystems.intakeArm().getCurrentCommand().cancel();
+        if (!intakeRoller && prevIntakeRoller) subsystems.intakeRoller().getCurrentCommand().cancel();
+        if (!bluShooterRun && prevBLUShooter) subsystems.BLUshooter().getCurrentCommand().cancel();
+        if (!yelShooterRun && prevYELShooter) subsystems.YELshooter().getCurrentCommand().cancel();
 
-        /* -------- Read RUN button states -------- */
-
-        boolean agitatorRun     = nt.getEntry("Manual Mode/Agitator/Run").getBoolean(false);
-        boolean climberRun      = nt.getEntry("Manual Mode/Climber/Run").getBoolean(false);
-        boolean bluFeederRun    = nt.getEntry("Manual Mode/Feeder/BLU/Run").getBoolean(false);
-        boolean yelFeederRun    = nt.getEntry("Manual Mode/Feeder/YEL/Run").getBoolean(false);
-        boolean hopperRun       = nt.getEntry("Manual Mode/Hopper/Run").getBoolean(false);
-        boolean intakeArmRun    = nt.getEntry("Manual Mode/Intake/Arm/Run").getBoolean(false);
-        boolean intakeRollerRun = nt.getEntry("Manual Mode/Intake/Roller/Run").getBoolean(false);
-        boolean bluShooterRun   = nt.getEntry("Manual Mode/Shooter/BLU/Run").getBoolean(false);
-        boolean yelShooterRun   = nt.getEntry("Manual Mode/Shooter/YEL/Run").getBoolean(false);
-
-        /* -------- Rising-edge: schedule commands -------- */
-
-        if (agitatorRun && !prevAgitatorRun)
-            AgitatorCommands.manual(subsystems.agitator(), () -> manualAgitatorDuty).schedule();
-
-        if (climberRun && !prevClimberRun)
-            ClimberCommands.manual(subsystems.climber(), () -> manualClimberPosition).schedule();
-
-        if (bluFeederRun && !prevBLUFeederRun)
-            FeederCommands.manual(subsystems.BLUfeeder(), () -> manualBLUFeederRPM).schedule();
-
-        if (yelFeederRun && !prevYELFeederRun)
-            FeederCommands.manual(subsystems.YELfeeder(), () -> manualYELFeederRPM).schedule();
-
-        if (hopperRun && !prevHopperRun)
-            HopperCommands.manualPosition(subsystems.hopper(), () -> manualHopperAngle).schedule();
-
-        if (intakeArmRun && !prevIntakeArmRun)
-            IntakeArmCommands.manualAngle(subsystems.intakeArm(), () -> manualIntakeArmAngle).schedule();
-
-        if (intakeRollerRun && !prevIntakeRollerRun)
-            IntakeRollerCommands.manual(subsystems.intakeRoller(), () -> manualIntakeRollerDuty).schedule();
-
-        if (bluShooterRun && !prevBLUShooterRun)
-            ShooterCommands.manual(subsystems.BLUshooter(), () -> manualBLUShooterRPM).schedule();
-
-        if (yelShooterRun && !prevYELShooterRun)
-            ShooterCommands.manual(subsystems.YELshooter(), () -> manualYELShooterRPM).schedule();
-
-        /* -------- Falling-edge: cancel commands -------- */
-
-        if (!agitatorRun && prevAgitatorRun)
-            subsystems.agitator().getCurrentCommand().cancel();
-
-        if (!climberRun && prevClimberRun)
-            subsystems.climber().getCurrentCommand().cancel();
-
-        if (!bluFeederRun && prevBLUFeederRun)
-            subsystems.BLUfeeder().getCurrentCommand().cancel();
-
-        if (!yelFeederRun && prevYELFeederRun)
-            subsystems.YELfeeder().getCurrentCommand().cancel();
-
-        if (!hopperRun && prevHopperRun)
-            subsystems.hopper().getCurrentCommand().cancel();
-
-        if (!intakeArmRun && prevIntakeArmRun)
-            subsystems.intakeArm().getCurrentCommand().cancel();
-
-        if (!intakeRollerRun && prevIntakeRollerRun)
-            subsystems.intakeRoller().getCurrentCommand().cancel();
-
-        if (!bluShooterRun && prevBLUShooterRun)
-            subsystems.BLUshooter().getCurrentCommand().cancel();
-
-        if (!yelShooterRun && prevYELShooterRun)
-            subsystems.YELshooter().getCurrentCommand().cancel();
-
-        /* -------- Update previous states -------- */
-
-        prevAgitatorRun = agitatorRun;
-        prevClimberRun = climberRun;
-        prevBLUFeederRun = bluFeederRun;
-        prevYELFeederRun = yelFeederRun;
-        prevHopperRun = hopperRun;
-        prevIntakeArmRun = intakeArmRun;
-        prevIntakeRollerRun = intakeRollerRun;
-        prevBLUShooterRun = bluShooterRun;
-        prevYELShooterRun = yelShooterRun;
+        /* Update previous */
+        prevAgitator = agitator;
+        prevClimber = climberRun;
+        prevBLUFeeder = bluFeeder;
+        prevYELFeeder = yelFeeder;
+        prevHopper = hopperRun;
+        prevIntakeArm = intakeArm;
+        prevIntakeRoller = intakeRoller;
+        prevBLUShooter = bluShooterRun;
+        prevYELShooter = yelShooterRun;
     }
 
     public double getShooterIdleRPM() {
-        return shooterIdleRPM;
+        return subShooterIdleRPM.get();
     }
 }
