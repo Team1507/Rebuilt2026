@@ -116,25 +116,27 @@ public class PVManager extends SubsystemBase {
                 dbg.fiducialId = -1;
             }
 
-            // 2. Field bounds (allow slight negative due to transforms)
-            double x = pose3d.getX();
-            double y = pose3d.getY();
-            double fieldLen = kVision.APRILTAG_LAYOUT.getFieldLength();
-            double fieldWid = kVision.APRILTAG_LAYOUT.getFieldWidth();
-
-            if (x < -1.0 || x > fieldLen + 1.0 ||
-                y < -1.0 || y > fieldWid + 1.0) {
-                reject = true;
-            }
-
-            // 3. Distance sanity check (allow up to 6–7m)
-            if (cam.avgDistance > 7.0) {  // was too strict before
-                reject = true;
-            }
-
-            // 4. Ambiguity check (only reject VERY ambiguous single-tag solves)
-            if (cam.tagCount == 1 && cam.ambiguity > 0.35) {  // relaxed from your version
-                reject = true;
+            // Debug path
+            var debugOpt = processors[i].processDebug(cam.rawResult, enabled);
+            if (debugOpt.isPresent()) {
+                var d = debugOpt.get();
+                dbg.strategyUsed = d.strategyUsed;
+                dbg.accepted = d.accepted;
+                dbg.rejectionReason = d.rejectionReason;
+                dbg.tagCount = d.tagCount;
+                dbg.avgDistance = d.avgDistance;
+                dbg.ambiguity = d.ambiguity;
+                dbg.xyStd = d.xyStd;
+                dbg.angStd = d.angStd;
+            } else {
+                dbg.strategyUsed = "NONE";
+                dbg.accepted = false;
+                dbg.rejectionReason = "NO_RESULT";
+                dbg.tagCount = 0;
+                dbg.avgDistance = 0.0;
+                dbg.ambiguity = 0.0;
+                dbg.xyStd = 0.0;
+                dbg.angStd = 0.0;
             }
 
             if (!dbg.accepted) continue;
