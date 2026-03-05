@@ -154,6 +154,9 @@ public class DashboardManager {
     private final BooleanPublisher pubLocalizationSeeded =
         nt.getBooleanTopic("Localization/PoseSeeded").publish();
 
+    private final BooleanPublisher pubLocalizationResetSeed =
+        nt.getBooleanTopic("Localization/ResetPoseSeed").publish();
+
     private final DoublePublisher pubQuestBattery =
         nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
     private final BooleanPublisher pubQuestIsTracking =
@@ -363,11 +366,11 @@ public class DashboardManager {
         pubLocalizationSeeded.set(localization.localizationManager().isStartupSeeded());
 
         boolean resetSeed =
-            nt.getEntry("ResetPoseSeed").getBoolean(false);
+            nt.getEntry("Localization/ResetPoseSeed").getBoolean(false);
 
         if (resetSeed) {
             localization.localizationManager().resetVisionSeed();
-            nt.getEntry("ResetPoseSeed").setBoolean(false);
+            nt.getEntry("Localization/ResetPoseSeed").setBoolean(false);
         }
 
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));

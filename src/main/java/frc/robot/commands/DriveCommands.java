@@ -38,7 +38,7 @@ public final class DriveCommands {
         Supplier<Double> xSupplier,
         Supplier<Double> ySupplier
     ) {
-        PIDController headingController = new PIDController(6.0, 0.0, 0.1);
+        PIDController headingController = new PIDController(2.4, 0.0, 0.03);
         headingController.enableContinuousInput(-Math.PI, Math.PI);
 
         return new CommandBuilder(swerve)

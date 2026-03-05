@@ -78,4 +78,5 @@ public final class IntakeArmCommands {
             .onInitialize(arm::stop)
             .isFinished(true);
     }
+    
 }

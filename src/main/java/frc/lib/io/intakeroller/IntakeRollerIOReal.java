@@ -41,12 +41,20 @@ public class IntakeRollerIOReal extends Subsystems1507 implements IntakeRollerIO
     }
 
     @Override
-    public void runPower(double power) {
-        motor.set(power);
+    public void runPower(double rollerSpeed) {
+        motor.set(rollerSpeed);
     }
 
     @Override
     public void stop() {
         motor.set(0);
+    }
+
+    public void increaseSpeed(double rollerSpeed) {
+        rollerSpeed += 0.1;
+    }
+
+    public void resetSpeed(double rollerSpeed) {
+        rollerSpeed = 0.3;
     }
 }
