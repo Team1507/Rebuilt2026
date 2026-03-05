@@ -32,5 +32,6 @@ public class HopperInputs {
     public boolean hopperRetracted = false;
 
     public boolean hopperExtended = false;
+    public boolean reverseLimit = false;
     
 }

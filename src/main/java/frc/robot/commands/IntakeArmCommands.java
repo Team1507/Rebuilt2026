@@ -26,7 +26,7 @@ public final class IntakeArmCommands {
             .named("IntakeArmUp")
             .onExecute(() ->{ 
                 if(isSafe.get()){
-                    arm.setPosition(RETRACTED_ANGLE_DEGREES);
+                    arm.setAngle(RETRACTED_ANGLE_DEGREES);
                 }
             })
             .isFinished(() ->arm.isAtPosition(RETRACTED_ANGLE_DEGREES, 2)) 
@@ -39,7 +39,7 @@ public final class IntakeArmCommands {
             .named("IntakeArmDown")
             .onExecute(() ->{ 
                 if(isSafe.get()){
-                    arm.setPosition(DEPLOYED_ANGLE_DEGREES);
+                    arm.setAngle(DEPLOYED_ANGLE_DEGREES);
                 }
             })
             .isFinished(() ->(arm.isAtPosition(DEPLOYED_ANGLE_DEGREES, 2)))
@@ -50,7 +50,7 @@ public final class IntakeArmCommands {
     public static Command moveTo(IntakeArmSubsystem arm, double degrees) {
         return new CommandBuilder(arm)
             .named("IntakeArmMoveTo(" + degrees + ")")
-            .onExecute(() -> arm.setPosition(degrees))
+            .onExecute(() -> arm.setAngle(degrees))
             .isFinished(() -> arm.isAtPosition(degrees, 5.0))
             .onEnd(arm::stop);
     }
@@ -59,7 +59,7 @@ public final class IntakeArmCommands {
     public static Command manualAngle(IntakeArmSubsystem arm, Supplier<Double> angleSupplier) {
         return new CommandBuilder(arm)
             .named("IntakeArmManual")
-            .onExecute(() -> arm.setPosition(angleSupplier.get()))
+            .onExecute(() -> arm.setAngle(angleSupplier.get()))
             .onEnd(arm::stop);
     }
 

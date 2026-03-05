@@ -128,7 +128,8 @@ public class Constants {
         public static final double RETRACTED_POS = 0.0; 
         public static final double EXTENDED_POS = 12.0;
         public static final double SAFE_EXTENDED = 7.5;
-        
+        public static final double MAX_POS = 12.1;
+
         public static final double MANUAL_POSITIVE_POWER = -0.2;
         public static final double MANUAL_NEGATIVE_POWER = 0.2;
 
@@ -162,7 +163,7 @@ public class Constants {
 
         public static final class kArm {
 
-            public static final double MAX_ANGLE_DEGREES = 125.0;
+            public static final double MAX_ANGLE_DEGREES = 138.0;
             public static final double MIN_ANGLE_DEGREES = 0.0;
             public static final double DEPLOYED_ANGLE_DEGREES = 135.0;
             public static final double RETRACTED_ANGLE_DEGREES = 82.0;

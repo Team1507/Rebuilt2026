@@ -40,7 +40,7 @@ public class IntakeArmIOSim implements IntakeArmIO {
     }
 
     @Override
-    public void setPositionDeg(double degrees) {
+    public void setAngle(double degrees) {
         powerMode = false;
 
         // Instantly move to the target

@@ -30,8 +30,9 @@ public class IntakeArmSubsystem extends SubsystemBase {
         io.updateInputs(inputs);
     }
 
-    public void setPosition(double degrees) {
-        io.setPositionDeg(degrees);
+    public void setAngle(double degrees) {
+        double safeDeg = Math.min(degrees, kIntake.kArm.MAX_ANGLE_DEGREES);
+        io.setAngle(safeDeg);
     }
 
     public IntakeArmInputs getInputs() {
@@ -59,10 +60,15 @@ public class IntakeArmSubsystem extends SubsystemBase {
                Math.abs(inputs.yelPositionDeg - targetDeg) < toleranceDeg;
     }
     public void runPower(double power) {
-        if(power > 0.5) {
+        double safePower = power;
+
+        if((inputs.bluPositionDeg > kIntake.kArm.MAX_ANGLE_DEGREES)|| (inputs.yelPositionDeg > kIntake.kArm.MAX_ANGLE_DEGREES) && power > 0) {
+            safePower = 0;
+        }
+        if(safePower > 0.5) {
             io.runPower(kIntake.kArm.MANUAL_POSITIVE_POWER);
         }
-        else if(power< -0.5){
+        else if(safePower< -0.5){
             io.runPower(kIntake.kArm.MANUAL_NEGATIVE_POWER);
         }
         else {

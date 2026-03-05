@@ -53,7 +53,7 @@ import frc.robot.generated.ctre.CommandSwerveDrivetrain;
 import frc.robot.generated.ctre.TunerConstants;
 import frc.lib.hardware.ShooterHardware;
 import frc.lib.hardware.FeederHardware;
-
+import frc.lib.hardware.HopperHardware;
 // Shooter ML Model
 import frc.lib.shooterML.data.*;
 import frc.lib.shooterML.model.*;
@@ -245,7 +245,7 @@ public class RobotContainer {
     // ----------------------------
     public final HopperSubsystem hopperSubsystem =
         new HopperSubsystem(
-            new HopperIOReal(kHopper.CONFIG));
+            new HopperIOReal(HopperHardware.HOPPER_ID, kHopper.CONFIG, HopperHardware.HOPPER_DIO));
   
     // Intake Arm
     // ----------------------------

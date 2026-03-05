@@ -43,7 +43,7 @@ public class HopperIOSim implements HopperIO {
     }
 
     @Override
-    public void setPositionDeg(double degrees) {
+    public void setPosition(double degrees) {
         // In real code, "degrees" is actually inches.
         powerMode = false;
 

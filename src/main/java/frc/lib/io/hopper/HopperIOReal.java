@@ -23,17 +23,17 @@ import edu.wpi.first.wpilibj.DigitalInput;
  */
 public class HopperIOReal extends Subsystems1507 implements HopperIO {
 
-    private final DigitalInput magSensor = new DigitalInput(0);
     private final TalonFXS motor;
     private final GearRatio ratio;
+    private final DigitalInput halSensor;
 
     private final PositionDutyCycle positionRequest =
         new PositionDutyCycle(0).withSlot(0);
 
-    public HopperIOReal(MotorConfig config) {
-        this.motor = new TalonFXS(HopperHardware.HOPPER_ID);
+    public HopperIOReal(int canID, MotorConfig config, int sensorDIO) {
+        this.motor = new TalonFXS(canID);
         this.ratio = HopperHardware.RATIO; // <-- use hopper ratio, not climber ratio
-
+        this.halSensor = new DigitalInput(sensorDIO);
         configureFXSMotor(motor, config);
     }
 
@@ -47,28 +47,41 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
 
         inputs.currentA = motor.getStatorCurrent().getValueAsDouble();
         inputs.temperatureC = motor.getDeviceTemp().getValueAsDouble();
+        inputs.reverseLimit = !halSensor.get();
+        if(inputs.reverseLimit){
+            motor.setPosition(0);
+        }
 
         // Hopper is extended if real-world inches exceed safe threshold
         inputs.hopperExtended = inputs.position > kHopper.SAFE_EXTENDED;
     }
 
     @Override
-    public void setPositionDeg(double degrees) {
+    public void setPosition(double position) {
         // Hopper is linear, not rotational — convert inches instead
-        double targetInches = degrees; // if commands still use degrees, rename later
-        double sensorUnits = ratio.realToSensor(targetInches);
+        double safePosition = position; // if commands still use degrees, rename later
+        if(!halSensor.get() && position < 0) {
+            safePosition = 0.0;
+        }
+        double sensorUnits = ratio.realToSensor(safePosition);
 
+        
         motor.setControl(positionRequest.withPosition(sensorUnits));
     }
 
     @Override
     public boolean getMagSensor() {
-        return !magSensor.get();
+        return !halSensor.get();
     }
 
     @Override
     public void runPower(double power) {
-        motor.set(power);
+        boolean atRev = !halSensor.get();
+        double safePower =power;
+        if(atRev && power < 0) {
+            safePower = 0;
+        }
+        motor.set(safePower);
     }
 
     @Override

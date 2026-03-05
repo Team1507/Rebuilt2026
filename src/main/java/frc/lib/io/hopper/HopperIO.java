@@ -17,7 +17,7 @@ public interface HopperIO {
     void updateInputs(HopperInputs inputs);
 
     /** Set the hopper to a target position in degrees. */
-    void setPositionDeg(double degrees);
+    void setPosition(double position);
 
     boolean getMagSensor();
 

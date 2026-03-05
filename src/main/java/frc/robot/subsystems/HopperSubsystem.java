@@ -31,8 +31,9 @@ public class HopperSubsystem extends SubsystemBase {
         io.updateInputs(inputs);
     }
 
-    public void setPosition(double degrees) {
-        io.setPositionDeg(degrees);
+    public void setPosition(double position) {
+        double safePos = Math.min(position, kHopper.MAX_POS);
+        io.setPosition(safePos);
     }
 
     public HopperInputs getInputs() {
@@ -49,10 +50,15 @@ public class HopperSubsystem extends SubsystemBase {
 
     public void runPower(double power)
     {
-        if(power > 0.5) {
+        double safePower = power;
+
+        if((inputs.position > kHopper.MAX_POS) && power < 0) {
+            safePower = 0;
+        }
+        if(safePower > 0.5) {
             io.runPower(kHopper.MANUAL_POSITIVE_POWER);
         }
-        else if(power< -0.5){
+        else if(safePower< -0.5){
             io.runPower(kHopper.MANUAL_NEGATIVE_POWER);
         }
         else {

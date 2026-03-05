@@ -72,7 +72,13 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
     }
 
     @Override
-    public void setPositionDeg(double degrees) {
+    public void setAngle(double degrees) {
+        boolean bluAtRev = bluMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
+        boolean yelAtRev = yelMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
+
+        if((bluAtRev || yelAtRev) && degrees < 0.0) {
+            degrees = 0.0;
+        }
         double motorRot = ratio.realToSensor(degrees);
         
         double ffVolts = computeGravityFF(degrees);
@@ -89,8 +95,15 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
     }
     @Override
      public void runPower(double power) {
-        bluMotor.set(power);
-        yelMotor.set(power);
+        boolean bluAtRev = bluMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
+        boolean yelAtRev = yelMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
+        double safePower = power;
+        if((bluAtRev || yelAtRev) && power < 0.0) {
+            safePower = 0.0;
+        }
+
+        bluMotor.set(safePower);
+        yelMotor.set(safePower);
     }
 
     @Override
