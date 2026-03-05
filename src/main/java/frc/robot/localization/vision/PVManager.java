@@ -35,6 +35,7 @@ public class PVManager extends SubsystemBase {
     private double fusedTimestamp = 0.0;
     private double fusedXyStd = 0.0;
     private double fusedAngStd = 0.0;
+    private double fusedAvgDistance = 999.0;   // NEW: distance gate for LocalizationManager
 
     // 20 Hz throttle
     private double lastProcessTime = 0.0;
@@ -89,6 +90,7 @@ public class PVManager extends SubsystemBase {
         fusedTimestamp = 0.0;
         fusedXyStd = 0.0;
         fusedAngStd = 0.0;
+        fusedAvgDistance = 999.0;
 
         double bestScore = Double.NEGATIVE_INFINITY;
         PVPerCameraProcessor.VisionResult bestResult = null;
@@ -114,7 +116,7 @@ public class PVManager extends SubsystemBase {
                 dbg.fiducialId = -1;
             }
 
-            // Run processor debug path
+            // Debug path
             var debugOpt = processors[i].processDebug(cam.rawResult, enabled);
             if (debugOpt.isPresent()) {
                 var d = debugOpt.get();
@@ -137,10 +139,9 @@ public class PVManager extends SubsystemBase {
                 dbg.angStd = 0.0;
             }
 
-            // If processor did not accept this frame, skip scoring
             if (!dbg.accepted) continue;
 
-            // Get final measurement
+            // Final measurement
             var resultOpt = processors[i].process(cam.rawResult, enabled);
             if (resultOpt.isEmpty()) continue;
 
@@ -165,6 +166,7 @@ public class PVManager extends SubsystemBase {
 
             fusedPose = Optional.of(m.pose());
             fusedTimestamp = m.timestamp();
+            fusedAvgDistance = bestResult.avgDistance;   // NEW: store avgDistance
 
             if (m.stdDevs() != null) {
                 fusedXyStd = m.stdDevs().get(0, 0);
@@ -208,6 +210,11 @@ public class PVManager extends SubsystemBase {
 
     public double getFusedAngStd() {
         return fusedAngStd;
+    }
+
+    // NEW: used by LocalizationManager to gate PV usage
+    public double getFusedAvgDistance() {
+        return fusedAvgDistance;
     }
 
     public boolean hasGoodVision() {

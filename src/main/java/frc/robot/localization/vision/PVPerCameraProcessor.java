@@ -75,7 +75,7 @@ public final class PVPerCameraProcessor {
     private double ambXy = 0.2;
     private double ambAng = 0.4;
 
-    private double zTolerance = 1.0;
+    private double zTolerance = 0.6;
 
     private TagMode tagMode = TagMode.HUB;
 
