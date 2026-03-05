@@ -42,6 +42,9 @@ public class PVManager extends SubsystemBase {
 
     private PVPerCameraProcessor.TagMode tagMode = PVPerCameraProcessor.TagMode.HUB;
 
+    // Debug info
+    private final PVDebugInfo debugInfo = new PVDebugInfo();
+
     public PVManager(PhotonVisionIO io, Telemetry telemetry) {
         this.io = io;
         this.telemetry = telemetry;
@@ -54,12 +57,17 @@ public class PVManager extends SubsystemBase {
         this.cameraNames = io.getCameraNames();
 
         processors = new PVPerCameraProcessor[io.getCameraCount()];
+        debugInfo.cameras = new PVDebugInfo.CameraDebug[io.getCameraCount()];
+
         for (int i = 0; i < processors.length; i++) {
             processors[i] = new PVPerCameraProcessor(
                 cameraNames[i],
                 io.getEstimator(i)
             );
             processors[i].setTagMode(tagMode);
+
+            debugInfo.cameras[i] = new PVDebugInfo.CameraDebug();
+            debugInfo.cameras[i].name = cameraNames[i];
         }
 
         for (String name : cameraNames) {
@@ -76,6 +84,7 @@ public class PVManager extends SubsystemBase {
 
         io.updateInputs(inputs, seeded);
 
+        // Reset fused output
         fusedPose = Optional.empty();
         fusedTimestamp = 0.0;
         fusedXyStd = 0.0;
@@ -86,17 +95,59 @@ public class PVManager extends SubsystemBase {
 
         boolean enabled = DriverStation.isEnabled();
 
+        // Update debug tagMode
+        debugInfo.tagMode = tagMode.toString();
+        debugInfo.seeded = seeded;
+
+        // Process each camera
         for (int i = 0; i < inputs.cameras.length; i++) {
             var cam = inputs.cameras[i];
+            var dbg = debugInfo.cameras[i];
 
-            if (!cam.hasTarget || cam.rawResult == null) continue;
+            dbg.connected = cam.connected;
+            dbg.hasTarget = cam.hasTarget;
+            dbg.timestamp = cam.timestamp;
 
+            if (cam.rawResult != null && cam.rawResult.hasTargets()) {
+                dbg.fiducialId = cam.rawResult.getBestTarget().fiducialId;
+            } else {
+                dbg.fiducialId = -1;
+            }
+
+            // Run processor debug path
+            var debugOpt = processors[i].processDebug(cam.rawResult, enabled);
+            if (debugOpt.isPresent()) {
+                var d = debugOpt.get();
+                dbg.strategyUsed = d.strategyUsed;
+                dbg.accepted = d.accepted;
+                dbg.rejectionReason = d.rejectionReason;
+                dbg.tagCount = d.tagCount;
+                dbg.avgDistance = d.avgDistance;
+                dbg.ambiguity = d.ambiguity;
+                dbg.xyStd = d.xyStd;
+                dbg.angStd = d.angStd;
+            } else {
+                dbg.strategyUsed = "NONE";
+                dbg.accepted = false;
+                dbg.rejectionReason = "NO_RESULT";
+                dbg.tagCount = 0;
+                dbg.avgDistance = 0.0;
+                dbg.ambiguity = 0.0;
+                dbg.xyStd = 0.0;
+                dbg.angStd = 0.0;
+            }
+
+            // If processor did not accept this frame, skip scoring
+            if (!dbg.accepted) continue;
+
+            // Get final measurement
             var resultOpt = processors[i].process(cam.rawResult, enabled);
             if (resultOpt.isEmpty()) continue;
 
             var res = resultOpt.get();
             VisionMeasurement m = res.measurement;
 
+            // Score
             double score =
                 res.tagCount * 200.0 -
                 res.avgDistance * 20.0 -
@@ -108,6 +159,7 @@ public class PVManager extends SubsystemBase {
             }
         }
 
+        // Save fused result
         if (bestResult != null) {
             VisionMeasurement m = bestResult.measurement;
 
@@ -124,6 +176,13 @@ public class PVManager extends SubsystemBase {
 
             telemetry.logVisionPose("PhotonVision-Fused", m.pose());
         }
+
+        // Update debug fused info
+        debugInfo.fusedValid = fusedPose.isPresent();
+        debugInfo.fusedPose = fusedPose.orElse(new Pose2d());
+        debugInfo.fusedTimestamp = fusedTimestamp;
+        debugInfo.fusedXyStd = fusedXyStd;
+        debugInfo.fusedAngStd = fusedAngStd;
     }
 
     public void setTagMode(PVPerCameraProcessor.TagMode newMode) {
@@ -153,5 +212,9 @@ public class PVManager extends SubsystemBase {
 
     public boolean hasGoodVision() {
         return fusedPose.isPresent();
+    }
+
+    public PVDebugInfo getDebugInfo() {
+        return debugInfo;
     }
 }

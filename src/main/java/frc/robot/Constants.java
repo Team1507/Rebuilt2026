@@ -367,7 +367,7 @@ public class Constants {
             public static final String NAME = "Bluecam";
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
-                    new Translation3d(-0.225, 0.18, 0.675),
+                    new Translation3d(-0.07, 0.26, 0.675),
                     new Rotation3d(0, Math.toRadians(15), 0.0)
                 );
         }

@@ -28,6 +28,21 @@ public final class PVPerCameraProcessor {
         TOWER
     }
 
+    /** Debug packet for PVManager → PVDebugInfo */
+    public static final class ProcessorDebug {
+        public String strategyUsed = "NONE";
+        public boolean accepted = false;
+        public String rejectionReason = "";
+
+        public int tagCount = 0;
+        public double avgDistance = 0.0;
+        public double ambiguity = 0.0;
+
+        public double xyStd = 0.0;
+        public double angStd = 0.0;
+    }
+
+    /** Final usable measurement for PVManager fusion */
     public static final class VisionResult {
         public final VisionMeasurement measurement;
         public final int tagCount;
@@ -50,6 +65,7 @@ public final class PVPerCameraProcessor {
     private final PhotonPoseEstimator estimator;
     private final String name;
 
+    // Strategy weights (match 340 defaults)
     private double multiTagXy = 0.1;
     private double multiTagAng = 0.25;
 
@@ -59,7 +75,7 @@ public final class PVPerCameraProcessor {
     private double ambXy = 0.2;
     private double ambAng = 0.4;
 
-    private double zTolerance = 0.5;
+    private double zTolerance = 1.0;
 
     private TagMode tagMode = TagMode.HUB;
 
@@ -72,8 +88,110 @@ public final class PVPerCameraProcessor {
         this.tagMode = mode;
     }
 
+    // ----------------------------------------------------------------------
+    // DEBUG PATH (no VisionMeasurement, only debug info)
+    // ----------------------------------------------------------------------
+    public Optional<ProcessorDebug> processDebug(PhotonPipelineResult result, boolean enabled) {
+        ProcessorDebug dbg = new ProcessorDebug();
+
+        if (result == null || !result.hasTargets()) {
+            dbg.rejectionReason = "NO_TARGETS";
+            return Optional.of(dbg);
+        }
+
+        Optional<EstimatedRobotPose> estimate = Optional.empty();
+        double xyWeight = 1e5;
+        double angWeight = 1e5;
+
+        // -------------------------
+        // Stage 1: MultiTag
+        // -------------------------
+        var multi = result.getMultiTagResult();
+        if (multi.isPresent()
+            && !multi.get().fiducialIDsUsed.isEmpty()
+            && useTag(multi.get().fiducialIDsUsed.get(0))) {
+
+            estimate = estimator.estimateCoprocMultiTagPose(result);
+            if (estimate.isPresent()) {
+                dbg.strategyUsed = "MULTITAG";
+                xyWeight = multiTagXy;
+                angWeight = multiTagAng;
+            }
+        }
+
+        // -------------------------
+        // Stage 2: Trig-solve
+        // -------------------------
+        if (estimate.isEmpty() && enabled) {
+            int id = result.getBestTarget().fiducialId;
+            if (useTag(id)) {
+                var trig = estimator.estimatePnpDistanceTrigSolvePose(result);
+                if (trig.isPresent()) {
+                    estimate = trig;
+                    dbg.strategyUsed = "TRIG";
+                    xyWeight = trigXy;
+                    angWeight = trigAng;
+                }
+            }
+        }
+
+        // -------------------------
+        // Stage 3: Lowest ambiguity
+        // -------------------------
+        if (estimate.isEmpty() && !enabled) {
+            var amb = estimator.estimateLowestAmbiguityPose(result);
+            if (amb.isPresent()) {
+                boolean invalid = false;
+                for (var t : amb.get().targetsUsed) {
+                    if (!useTag(t.fiducialId)) invalid = true;
+                }
+                if (!invalid) {
+                    estimate = amb;
+                    dbg.strategyUsed = "AMBIGUITY";
+                    xyWeight = ambXy;
+                    angWeight = ambAng;
+                }
+            }
+        }
+
+        if (estimate.isEmpty()) {
+            dbg.rejectionReason = "NO_STRATEGY_SUCCEEDED";
+            return Optional.of(dbg);
+        }
+
+        EstimatedRobotPose est = estimate.get();
+        Pose3d pose3d = est.estimatedPose;
+
+        // Z-height rejection
+        if (Math.abs(pose3d.getZ()) > zTolerance) {
+            dbg.rejectionReason = "Z_OUT_OF_RANGE";
+            return Optional.of(dbg);
+        }
+
+        // Compute metrics
+        dbg.tagCount = est.targetsUsed.size();
+        dbg.avgDistance = est.targetsUsed.stream()
+            .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
+            .average().orElse(0.0);
+
+        dbg.ambiguity = est.targetsUsed.stream()
+            .mapToDouble(t -> t.poseAmbiguity)
+            .average().orElse(0.0);
+
+        dbg.xyStd = xyWeight * dbg.avgDistance * dbg.avgDistance;
+        dbg.angStd = angWeight * dbg.avgDistance * dbg.avgDistance;
+
+        dbg.accepted = true;
+        dbg.rejectionReason = "";
+
+        return Optional.of(dbg);
+    }
+
+    // ----------------------------------------------------------------------
+    // MEASUREMENT PATH (used by PVManager for fusion)
+    // ----------------------------------------------------------------------
     public Optional<VisionResult> process(PhotonPipelineResult result, boolean enabled) {
-        if (!result.hasTargets()) return Optional.empty();
+        if (result == null || !result.hasTargets()) return Optional.empty();
 
         Optional<EstimatedRobotPose> estimate = Optional.empty();
         double xyWeight = 1e5;
@@ -150,6 +268,9 @@ public final class PVPerCameraProcessor {
         return Optional.of(new VisionResult(meas, tagCount, avgDistance, ambiguity));
     }
 
+    // ----------------------------------------------------------------------
+    // Tag filtering
+    // ----------------------------------------------------------------------
     private boolean useTag(int id) {
         boolean invalidAlliance = DriverStation.getAlliance().isEmpty();
 
