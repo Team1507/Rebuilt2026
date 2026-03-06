@@ -418,12 +418,11 @@ public final class DriveCommands {
         SwerveSubsystem swerve,
         Pose2d targetPose,
         double velocity,          // m/s
-        boolean stopAtEnd,
-        double timeoutSeconds
+        boolean stopAtEnd
     ) {
 
         return new CommandBuilder(swerve)
-            .named("DriveToPoint_CPPStyle")
+            .named("DriveToPoint")
             .onExecute(() -> {
 
                 Pose2d current = swerve.getPose();
@@ -480,6 +479,99 @@ public final class DriveCommands {
                                     .getDistance(targetPose.getTranslation());
 
                 boolean closeEnough = dist < 0.05; // 5 cm
+                return closeEnough;
+            })
+            .onEnd(() -> {
+                if (stopAtEnd) {
+                    swerve.stop();
+                }
+            });
+    }
+
+    public static Command driveForwardMeters(
+        SwerveSubsystem swerve,
+        double distanceMeters,
+        double velocity,          // m/s
+        boolean stopAtEnd
+    ) {
+
+        return new CommandBuilder(swerve)
+            .named("DriveForwardMeters")
+            .onInitialize(() -> {
+
+                // Get current pose
+                Pose2d current = swerve.getPose();
+                Rotation2d heading = current.getRotation();
+
+                // Compute target pose X meters forward
+                double dx = distanceMeters * heading.getCos();
+                double dy = distanceMeters * heading.getSin();
+
+                Pose2d target = new Pose2d(
+                    current.getX() + dx,
+                    current.getY() + dy,
+                    heading // keep same heading
+                );
+
+                // Store target pose inside the command
+                swerve.setTemporaryTargetPose(target);
+            })
+            .onExecute(() -> {
+
+                Pose2d current = swerve.getPose();
+                Pose2d target = swerve.getTemporaryTargetPose();
+                Rotation2d currentHeading = current.getRotation();
+
+                // -----------------------------------------
+                // 1. Compute translation vector
+                // -----------------------------------------
+                double dx = target.getX() - current.getX();
+                double dy = target.getY() - current.getY();
+                double distance = Math.hypot(dx, dy);
+
+                double ux = 0.0;
+                double uy = 0.0;
+
+                if (distance > 0.05) {
+                    ux = dx / distance;
+                    uy = dy / distance;
+                }
+
+                // -----------------------------------------
+                // 2. Heading correction
+                // -----------------------------------------
+                double headingError = target.getRotation().minus(currentHeading).getRadians();
+                headingError = MathUtil.angleModulus(headingError);
+
+                double ROT_kP = 5.0;
+                double omega = headingError * ROT_kP;
+
+                // -----------------------------------------
+                // 3. Build chassis speeds
+                // -----------------------------------------
+                double vx = velocity * ux;
+                double vy = velocity * uy;
+
+                ChassisSpeeds robotRelative =
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                        vx,
+                        vy,
+                        omega,
+                        currentHeading
+                    );
+
+                swerve.driveRobotRelative(robotRelative);
+            })
+            .isFinished(() -> {
+
+                Pose2d current = swerve.getPose();
+                Pose2d target = swerve.getTemporaryTargetPose();
+
+                double dist = current.getTranslation()
+                                    .getDistance(target.getTranslation());
+
+                boolean closeEnough = dist < 0.05;
+
                 return closeEnough;
             })
             .onEnd(() -> {

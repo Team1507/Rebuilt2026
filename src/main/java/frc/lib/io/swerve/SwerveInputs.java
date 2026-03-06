@@ -22,6 +22,7 @@ public class SwerveInputs {
 
     /** Current estimated robot pose */
     public Pose2d pose = new Pose2d();
+    public Pose2d tempPose = new Pose2d();
 
     /** Current robot-relative chassis speeds */
     public ChassisSpeeds speeds = new ChassisSpeeds();

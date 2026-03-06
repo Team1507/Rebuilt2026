@@ -99,6 +99,14 @@ public class SwerveSubsystem extends SubsystemBase {
         io.resetPose(pose);
     }
 
+    public void setTemporaryTargetPose(Pose2d tempPose) {
+        inputs.tempPose = tempPose;
+    }
+
+    public Pose2d getTemporaryTargetPose() {
+        return inputs.tempPose;
+    }
+
     /** Adds a vision measurement (delegates to IO). */
     public void addVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
         io.addVisionMeasurement(pose, timestamp, stdDevs);
