@@ -418,14 +418,14 @@ public class RobotContainer {
 
         bottomDriver.leftTrigger(0.5)
             .whileTrue(
-                IntakeCoordinator.deployAndRun(
+                IntakeSequences.deployAndRun(
                     hopperSubsystem,
                     intakeArmSubsystem,
                     intakeRollerSubsystem
                 )
             )
             .onFalse(
-                IntakeCoordinator.stow(
+                IntakeSequences.stow(
                     intakeArmSubsystem,
                     intakeRollerSubsystem
                 )
@@ -447,11 +447,11 @@ public class RobotContainer {
                     shooterBLUsystem::getTargetPose,
                     () -> -bottomDriver.getLeftY() * kSwerve.MAX_SPEED,
                     () -> -bottomDriver.getLeftX() * kSwerve.MAX_SPEED)
-                .alongWith(ShooterCoordinator.shootModelBased(coordinatorRecord, kAgitator.AGITATE_TO_SHOOTER_DUTY)));
+                .alongWith(ShooterControllers.shootModelBased(coordinatorRecord, kAgitator.AGITATE_TO_SHOOTER_DUTY)));
 
         // Shoot lob
         bottomDriver.rightBumper()
-            .whileTrue(ShooterCoordinator.shootFixedRPM(coordinatorRecord, kShooter.kRPM.LOB, kAgitator.AGITATE_TO_SHOOTER_DUTY));
+            .whileTrue(ShooterControllers.shootFixedRPM(coordinatorRecord, kShooter.kRPM.LOB, kAgitator.AGITATE_TO_SHOOTER_DUTY));
         
         // ----------------------------
         // Climber

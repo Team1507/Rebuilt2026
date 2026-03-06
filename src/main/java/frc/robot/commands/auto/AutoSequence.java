@@ -220,7 +220,7 @@ public class AutoSequence {
      */
     public AutoSequence intakeDeploy() {
         steps.add(
-            IntakeCoordinator.deployAndRun(
+            IntakeSequences.deployAndRun(
                 record.hopper(),
                 record.intakeArm(),
                 record.intakeRoller()
@@ -234,7 +234,7 @@ public class AutoSequence {
      */
     public AutoSequence intakeRetract() {
         steps.add(
-            IntakeCoordinator.stow(
+            IntakeSequences.stow(
                 record.intakeArm(),
                 record.intakeRoller()
             )
@@ -248,7 +248,7 @@ public class AutoSequence {
      * steps.add(new ScoreCommand(shooterSubsystem));
      */
     public AutoSequence shoot() {
-        steps.add(ShooterCoordinator.shootModelBased(
+        steps.add(ShooterControllers.shootModelBased(
             coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY
         ));
         return this;
@@ -265,7 +265,7 @@ public class AutoSequence {
     public AutoSequence shootUntil(double endTime) {
         steps.add(
             Commands.race(
-                ShooterCoordinator.shootModelBased(
+                ShooterControllers.shootModelBased(
                     coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY
                 ),
                 Commands.waitUntil(() -> autoTimer.get() >= endTime)

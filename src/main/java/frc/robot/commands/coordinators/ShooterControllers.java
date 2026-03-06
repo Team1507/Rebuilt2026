@@ -22,9 +22,9 @@ import static frc.robot.Constants.kShooter.TARGET_TOLERANCE;
  * Subsystem-specific commands (ShooterCommands, FeederCommands, AgitatorCommands)
  * remain simple and atomic.
  */
-public final class ShooterCoordinator {
+public final class ShooterControllers {
 
-    private ShooterCoordinator() {}
+    private ShooterControllers() {}
 
     private static boolean ready(ShooterSubsystem shooter) {
         return shooter.getShooterRPM() >= shooter.getTargetRPM() - TARGET_TOLERANCE;

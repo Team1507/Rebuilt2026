@@ -21,9 +21,9 @@ import frc.robot.commands.atomic.HopperCommands;
 import frc.robot.commands.atomic.IntakeArmCommands;
 import frc.robot.commands.atomic.IntakeRollerCommands;
 
-public final class IntakeCoordinator {
+public final class IntakeSequences {
 
-    private IntakeCoordinator() {}
+    private IntakeSequences() {}
 
     public static Command deployAndRun(
         HopperSubsystem hopper,
