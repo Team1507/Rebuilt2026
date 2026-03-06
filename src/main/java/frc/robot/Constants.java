@@ -48,7 +48,7 @@ public class Constants {
         public static final MotorConfig CONFIG =
             MotorConfig.builder()
                 .inverted(true)
-                .voltageLimits(8, -8)
+                .voltageLimits(3.5, -3.5)
                 .build();
 
 
@@ -209,7 +209,8 @@ public class Constants {
             public static final double SAFE = 2800.0;
         }
 
-        public static final double TARGET_TOLERANCE = 2.0;
+        public static final double TARGET_TOLERANCE = 20.0;
+        
 
         // ------------------------------------------------------------
         // Motor tuning (PID + FF + voltage limits)
@@ -263,14 +264,14 @@ public class Constants {
 
         public static final class kScale {
             public static final double CREEP    = 0.3;
-            public static final double NORMAL   = 0.65;
+            public static final double NORMAL   = 0.8;
         }
         
         public static final double MAX_SPEED =
             0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
 
         public static final double MAX_ANGULAR_RATE =
-            RotationsPerSecond.of(0.75).in(RadiansPerSecond);
+            RotationsPerSecond.of(0.82100).in(RadiansPerSecond);
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗

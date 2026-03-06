@@ -231,6 +231,10 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
 
     public boolean getSensor() {return inputs.ballFired;}
 
+
+     public boolean atVelocity() {
+        return Math.abs(getClosedLoopError()) <= 100.0;
+     }
     // ------------------------------------------------------------
     // Periodic
     // ------------------------------------------------------------

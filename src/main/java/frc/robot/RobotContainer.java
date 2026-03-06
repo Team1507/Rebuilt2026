@@ -57,7 +57,7 @@ import frc.lib.hardware.HopperHardware;
 // Shooter ML Model
 import frc.lib.shooterML.data.*;
 import frc.lib.shooterML.model.*;
-
+import frc.lib.util.CommandBuilder;
 // Utilities
 import frc.lib.logging.Telemetry;
 
@@ -415,13 +415,45 @@ public class RobotContainer {
         // ----------------------------
 
         // shoot ML
-        bottomDriver.rightTrigger()
-            .whileTrue(ShooterCoordinator.shootModelBased(
-                shooterBLUsystem,
-                shooterYELsystem,
-                feederBLUsystem,
-                feederYELsystem
-                
+          bottomDriver.rightTrigger()
+            .whileTrue(
+                DriveCommands.maintainHeadingToTarget(
+                    swerve,
+                    shooterBLUsystem::getTargetPose,
+                    () -> -bottomDriver.getLeftY() * kSwerve.MAX_SPEED,
+                    () -> -bottomDriver.getLeftX() * kSwerve.MAX_SPEED
+                )
+                .alongWith(
+                    new CommandBuilder(
+                        shooterBLUsystem, shooterYELsystem,
+                        feederBLUsystem, feederYELsystem
+                    )
+                    
+                    .onExecute(() -> {
+                        shooterBLUsystem.updateShooterFromModel();
+                        shooterYELsystem.updateShooterFromModel();
+
+                        if (shooterBLUsystem.atVelocity() && shooterYELsystem.atVelocity()) {
+                            feederBLUsystem.runRPM(kFeeder.FEED_RPM);
+                            feederYELsystem.runRPM(kFeeder.FEED_RPM);
+                        }
+                    })
+                    .onEnd(interrupted -> {
+                        shooterBLUsystem.stop();
+                        shooterYELsystem.stop();
+                        feederBLUsystem.stop();
+                        feederYELsystem.stop();
+                        agitatorSubsystem.stop();
+                    })
+                )
+                .alongWith(
+                    new CommandBuilder(
+                        agitatorSubsystem
+                )
+                .onExecute(() -> {
+                    
+                } 
+                )
             ));
 
         // Shoot lob
