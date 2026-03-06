@@ -44,7 +44,11 @@ public class HopperSubsystem extends SubsystemBase {
         return inputs.position;
     }
 
-    public boolean isHopperExtended(){
+    public boolean isHopperSafeForIntake() {
+        return inputs.position > kHopper.SAFE_EXTENDED;
+    }
+
+    public boolean isHopperFullyExtended(){
         return inputs.hopperExtended;
     }
 

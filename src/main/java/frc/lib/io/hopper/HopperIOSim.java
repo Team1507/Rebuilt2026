@@ -18,59 +18,57 @@ import frc.robot.Constants.kHopper;
  */
 public class HopperIOSim implements HopperIO {
 
+    private static final double LOOP_PERIOD_SEC = 0.02; // 20 ms
+    private static final double MAX_SPEED_IN_PER_SEC = 8.0; // tune this
+
     private final GearRatio ratio = HopperHardware.RATIO;
 
-    // Internal simulated state
-    private double motorRot = 0.0;   // sensor units
+    // Simulated state
     private double positionInches = 0.0;
-
-    // Optional power mode
-    private double appliedPower = 0.0;
-    private boolean powerMode = false;
+    private double targetInches = 0.0;
 
     @Override
     public void updateInputs(HopperInputs inputs) {
-        // Publish current state
-        inputs.motorRot = motorRot;
-        inputs.position = positionInches;
+        // Move toward target at fixed speed
+        double error = targetInches - positionInches;
+        double maxStep = MAX_SPEED_IN_PER_SEC * LOOP_PERIOD_SEC;
 
-        // Fake values
+        if (Math.abs(error) <= maxStep) {
+            positionInches = targetInches;
+        } else {
+            positionInches += Math.copySign(maxStep, error);
+        }
+
+        // Publish state
+        inputs.position = positionInches;
+        inputs.motorRot = ratio.realToSensor(positionInches);
+
         inputs.currentA = 0.0;
         inputs.temperatureC = 25.0;
 
-        // Hopper is extended if above threshold
-        inputs.hopperExtended = positionInches > kHopper.SAFE_EXTENDED;
+        inputs.hopperExtended = inputs.position >= kHopper.EXTENDED_POS;
     }
 
     @Override
-    public void setPosition(double degrees) {
-        // In real code, "degrees" is actually inches.
-        powerMode = false;
-
-        double targetInches = degrees;
-        motorRot = ratio.realToSensor(targetInches);
-        positionInches = targetInches;
+    public void setPosition(double position) {
+        // In real code this is inches, not degrees
+        targetInches = position;
     }
 
     @Override
     public boolean getMagSensor() {
-        // Always false in SIM unless you want to simulate homing
-        return false;
+        return false; // no homing in sim
     }
 
     @Override
     public void runPower(double power) {
-        powerMode = true;
-        appliedPower = power;
-
-        // Optional: nudge position slightly for realism
-        positionInches += appliedPower * 0.05;
-        motorRot = ratio.realToSensor(positionInches);
+        // Optional: simulate manual power mode
+        double speed = power * MAX_SPEED_IN_PER_SEC;
+        targetInches = positionInches + speed * LOOP_PERIOD_SEC;
     }
 
     @Override
     public void hopperStop() {
-        powerMode = false;
-        appliedPower = 0.0;
+        targetInches = positionInches;
     }
 }

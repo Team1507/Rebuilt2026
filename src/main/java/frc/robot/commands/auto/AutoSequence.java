@@ -20,14 +20,17 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.commands.atomic.DriveCommands;
-import frc.robot.commands.atomic.HopperCommands;
-import frc.robot.commands.atomic.IntakeArmCommands;
-import frc.robot.commands.atomic.IntakeRollerCommands;
-import frc.robot.commands.coordinators.ShooterCoordinator;
-import frc.robot.commands.tuning.MoveLog;
+
+// Framework
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
+
+// Commands
+import frc.robot.commands.tuning.MoveLog;
+import frc.robot.commands.atomic.*;
+import frc.robot.commands.coordinators.*;
+
+// Constants
 import frc.robot.Constants.kAgitator;
 
 /**
@@ -213,19 +216,29 @@ public class AutoSequence {
     }
 
     /**
-     * This should add a Command that runs the intake to collect a game piece.
-     * Example:
-     * steps.add(new IntakeCommand(intakeSubsystem));
+     * This adds a Command that runs the intake to collect a game piece.
      */
     public AutoSequence intakeDeploy() {
-        steps.add(IntakeArmCommands.down(record.intakeArm(), () -> record.hopper().isHopperExtended()));
-        steps.add(IntakeRollerCommands.intake(record.intakeRoller()));
+        steps.add(
+            IntakeCoordinator.deployAndRun(
+                record.hopper(),
+                record.intakeArm(),
+                record.intakeRoller()
+            )
+        );
         return this;
     }
 
+    /**
+     * This adds a Command that retracts the intake arm.
+     */
     public AutoSequence intakeRetract() {
-        steps.add(IntakeArmCommands.up(record.intakeArm(), () -> record.hopper().isHopperExtended()));
-        steps.add(IntakeRollerCommands.stop(record.intakeRoller()));
+        steps.add(
+            IntakeCoordinator.stow(
+                record.intakeArm(),
+                record.intakeRoller()
+            )
+        );
         return this;
     }
 

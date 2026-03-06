@@ -247,7 +247,14 @@ public class RobotContainer {
     // ----------------------------
     public final HopperSubsystem hopperSubsystem =
         new HopperSubsystem(
-            new HopperIOReal(HopperHardware.HOPPER_ID, kHopper.CONFIG, HopperHardware.RATIO, HopperHardware.HOPPER_DIO));
+            RobotBase.isReal()
+                ? new HopperIOReal(
+                    HopperHardware.HOPPER_ID,
+                    kHopper.CONFIG,
+                    HopperHardware.RATIO,
+                    HopperHardware.HOPPER_DIO)
+                : new HopperIOSim()
+        );
   
     // Intake Arm
     // ----------------------------
@@ -411,14 +418,17 @@ public class RobotContainer {
 
         bottomDriver.leftTrigger(0.5)
             .whileTrue(
-                HopperCommands.extend(hopperSubsystem)
-                    .alongWith(IntakeRollerCommands.intake(intakeRollerSubsystem))
-                    .alongWith(IntakeArmCommands.down(intakeArmSubsystem, () -> hopperSubsystem.isHopperExtended()))
+                IntakeCoordinator.deployAndRun(
+                    hopperSubsystem,
+                    intakeArmSubsystem,
+                    intakeRollerSubsystem
+                )
             )
             .onFalse(
-                IntakeArmCommands.up(intakeArmSubsystem, () -> hopperSubsystem.isHopperExtended())
-                    .alongWith(IntakeRollerCommands.stop(intakeRollerSubsystem))
-                
+                IntakeCoordinator.stow(
+                    intakeArmSubsystem,
+                    intakeRollerSubsystem
+                )
             );
 
         bottomDriver.b()
@@ -441,7 +451,7 @@ public class RobotContainer {
 
         // Shoot lob
         bottomDriver.rightBumper()
-            .whileTrue(ShooterCoordinator.shootFixedRPM(coordinatorRecord, kShooter.kRPM.LOB));
+            .whileTrue(ShooterCoordinator.shootFixedRPM(coordinatorRecord, kShooter.kRPM.LOB, kAgitator.AGITATE_TO_SHOOTER_DUTY));
         
         // ----------------------------
         // Climber

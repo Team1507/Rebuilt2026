@@ -32,6 +32,7 @@ public final class HopperCommands {
         return new CommandBuilder(hopper)
             .named("HopperExtend")
             .onExecute(() -> hopper.setPosition(kHopper.EXTENDED_POS))
+            .isFinished(hopper::isHopperFullyExtended)
             .onEnd(hopper::stop);
     }
 

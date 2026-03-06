@@ -269,7 +269,7 @@ public final class Nodes {
         public static final Pose2d BACK_LEFT =
                 new Pose2d(2.0, 6.0, Rotation2d.fromDegrees(270.0));
         public static final Pose2d BACK_RIGHT =
-                new Pose2d(2.0, 3.0, Rotation2d.fromDegrees(270.0));
+                new Pose2d(2.0, 3.0, Rotation2d.fromDegrees(30.0));
         
     }
 }

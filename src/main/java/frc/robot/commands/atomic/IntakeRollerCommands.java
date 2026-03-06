@@ -8,13 +8,14 @@
 
 package frc.robot.commands.atomic;
 
-import edu.wpi.first.wpilibj.DutyCycle;
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.core.util.CommandBuilder;
-import frc.robot.Constants.kIntake;
-import frc.robot.subsystems.IntakeRollerSubsystem;
-
 import java.util.function.Supplier;
+
+import edu.wpi.first.wpilibj2.command.Command;
+
+import frc.lib.core.util.CommandBuilder;
+import frc.robot.subsystems.IntakeRollerSubsystem;
+import frc.robot.Constants.kIntake;
+
 
 /**
  * Factory class for all Intake Roller commands.
@@ -24,9 +25,7 @@ import java.util.function.Supplier;
  */
 public final class IntakeRollerCommands {
 
-    private IntakeRollerCommands() {
-        double rollerSpeed = 0.3;
-    }
+    private IntakeRollerCommands() {}
 
     /** Run roller forward to intake game pieces. */
     public static Command intake(IntakeRollerSubsystem roller) {
@@ -71,11 +70,4 @@ public final class IntakeRollerCommands {
             .onInitialize(()->roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_LOW))
             .isFinished(true);
     }
-    // public static Command increaseRollerSpeed(IntakeRollerSubsystem roller) {
-    //     return new CommandBuilder(roller) 
-    //         .named("IntakeRollerIncreaseDuty")
-    //         .onInitialize(()->roller.increaseRollerSpeed())
-    //         .isFinished(true);
-    // }
-    
 }

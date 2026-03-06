@@ -21,27 +21,19 @@ public final class IntakeArmCommands {
     private IntakeArmCommands() {}
 
     /** Move arm to the RETRACTED angle. */
-    public static Command up(IntakeArmSubsystem arm, Supplier<Boolean> isSafe) {   
+    public static Command up(IntakeArmSubsystem arm) {   
         return new CommandBuilder(arm)
             .named("IntakeArmUp")
-            .onExecute(() ->{ 
-                if(isSafe.get()){
-                    arm.setAngle(RETRACTED_ANGLE_DEGREES);
-                }
-            })
+            .onExecute(() -> arm.setAngle(RETRACTED_ANGLE_DEGREES))
             .isFinished(() ->arm.isAtPosition(RETRACTED_ANGLE_DEGREES, 2)) 
             .onEnd(arm::stop);
     }
     /** Move arm to the DEPLOYED angle. */
-    public static Command down(IntakeArmSubsystem arm, Supplier<Boolean> isSafe) {
+    public static Command down(IntakeArmSubsystem arm) {
         
         return new CommandBuilder(arm)
             .named("IntakeArmDown")
-            .onExecute(() ->{ 
-                if(isSafe.get()){
-                    arm.setAngle(DEPLOYED_ANGLE_DEGREES);
-                }
-            })
+            .onExecute(() -> arm.setAngle(DEPLOYED_ANGLE_DEGREES))
             .isFinished(() ->(arm.isAtPosition(DEPLOYED_ANGLE_DEGREES, 2)))
             .onEnd(arm::stop);
     }

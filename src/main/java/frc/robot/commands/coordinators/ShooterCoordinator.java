@@ -9,9 +9,9 @@
 package frc.robot.commands.coordinators;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.lib.core.util.CommandBuilder;
 import frc.robot.framework.CoordinatorRecord;
+import frc.robot.subsystems.ShooterSubsystem;
 
 import static frc.robot.Constants.kShooter.TARGET_TOLERANCE;
 
@@ -26,42 +26,56 @@ public final class ShooterCoordinator {
 
     private ShooterCoordinator() {}
 
-    private static boolean shooterReady = false;
-
     private static boolean ready(ShooterSubsystem shooter) {
         return shooter.getShooterRPM() >= shooter.getTargetRPM() - TARGET_TOLERANCE;
     }
 
-    private static boolean ready(ShooterSubsystem shooter, double targetRPM) {
-        return shooter.getShooterRPM() >= targetRPM - TARGET_TOLERANCE;
+    private static boolean bothShootersReady(
+        ShooterSubsystem blu,
+        ShooterSubsystem yel
+    ) {
+        return ready(blu) && ready(yel);
     }
 
     // -------------------------------------------------------------------------
     // MODEL-BASED SHOOTING (competition)
     // -------------------------------------------------------------------------
     public static Command shootModelBased(
-        CoordinatorRecord record, double agitatorDuty
+        CoordinatorRecord record,
+        double agitatorDuty
     ) {
         return new CommandBuilder(
-            record.BLUshooter(), record.YELshooter(), 
+            record.BLUshooter(), record.YELshooter(),
             record.BLUfeeder(), record.YELfeeder(),
             record.agitator()
         )
         .named("ShootModelBased")
-        .onInitialize(() -> { shooterReady = false; })
-        .onExecute(() -> {
+        .onExecute(new Runnable() {
+            private boolean feedingEnabled = false;
 
-            record.BLUshooter().updateShooterFromModel();
-            record.YELshooter().updateShooterFromModel();
+            @Override
+            public void run() {
+                // 1. Update shooter targets from model
+                record.BLUshooter().updateShooterFromModel();
+                record.YELshooter().updateShooterFromModel();
 
-            if (ready(record.BLUshooter()) && ready(record.YELshooter())) {
-                shooterReady = true;
-                record.BLUfeeder().runRPM(record.BLUshooter().getShooterRPM() * 0.75);
-                record.YELfeeder().runRPM(record.YELshooter().getShooterRPM() * 0.75);
-            }
+                // 2. Feeders spin continuously at a stable RPM
+                double bluFeederRPM = record.BLUshooter().getTargetRPM() * 0.75;
+                double yelFeederRPM = record.YELshooter().getTargetRPM() * 0.75;
 
-            if(shooterReady) {
-                record.agitator().run(agitatorDuty);
+                record.BLUfeeder().runRPM(bluFeederRPM);
+                record.YELfeeder().runRPM(yelFeederRPM);
+
+                // 3. Latch feeding once shooters are ready
+                if (!feedingEnabled &&
+                    bothShootersReady(record.BLUshooter(), record.YELshooter())) {
+                    feedingEnabled = true;
+                }
+
+                // 4. Agitator runs once feeding is enabled
+                if (feedingEnabled) {
+                    record.agitator().run(agitatorDuty);
+                }
             }
         })
         .onEnd(interrupted -> {
@@ -69,7 +83,7 @@ public final class ShooterCoordinator {
             record.YELfeeder().stop();
             record.BLUshooter().stop();
             record.YELshooter().stop();
-            shooterReady = false;
+            record.agitator().stop();
         });
     }
 
@@ -78,28 +92,46 @@ public final class ShooterCoordinator {
     // -------------------------------------------------------------------------
     public static Command shootFixedRPM(
         CoordinatorRecord record,
-        double shooterRPM
+        double shooterRPM,
+        double agitatorDuty
     ) {
         return new CommandBuilder(
-            record.BLUshooter(), record.YELshooter(), 
-            record.BLUfeeder(), record.YELfeeder()
+            record.BLUshooter(), record.YELshooter(),
+            record.BLUfeeder(), record.YELfeeder(),
+            record.agitator()
         )
         .named("ShootFixedRPM")
         .onInitialize(() -> {
             record.BLUshooter().setTargetRPM(shooterRPM);
             record.YELshooter().setTargetRPM(shooterRPM);
         })
-        .onExecute(() -> {
-            if (ready(record.BLUshooter(), shooterRPM) && ready(record.YELshooter(), shooterRPM)) {
-                record.BLUfeeder().runRPM(shooterRPM * 0.75);
-                record.YELfeeder().runRPM(shooterRPM * 0.75);
+        .onExecute(new Runnable() {
+            private boolean feedingEnabled = false;
+
+            @Override
+            public void run() {
+                // Feeders always spin once command starts
+                record.BLUfeeder().runRPM(
+                    record.BLUshooter().getTargetRPM() * 0.75
+                );
+                record.YELfeeder().runRPM(
+                    record.YELshooter().getTargetRPM() * 0.75
+                );
+
+                // Latch feeding once both shooters are ready
+                if (!feedingEnabled && bothShootersReady(record.BLUshooter(), record.YELshooter())) {
+                    feedingEnabled = true;
+                    record.agitator().run(agitatorDuty);
+                }
             }
         })
         .onEnd(interrupted -> {
-            record.BLUfeeder().stop();
-            record.YELfeeder().stop();
-            record.BLUshooter().stop();
-            record.YELshooter().stop();
+            // Stop Blue side
+            record.BLUshooter().stop(); record.BLUfeeder().stop();
+            // Stop Yellow Side
+            record.YELshooter().stop(); record.YELfeeder().stop();
+            // Stop Agitator
+            record.agitator().stop();
         });
     }
 }
