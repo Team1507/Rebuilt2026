@@ -1,7 +1,7 @@
 package frc.lib.io.intakearm;
 
+import frc.lib.core.math.GearRatio;
 import frc.lib.hardware.IntakeArmHardware;
-import frc.lib.math.GearRatio;
 
 /**
  * Simplistic simulation of IntakeArmIO.

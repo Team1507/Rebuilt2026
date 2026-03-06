@@ -8,8 +8,8 @@
 
 package frc.lib.io.hopper;
 
+import frc.lib.core.math.GearRatio;
 import frc.lib.hardware.HopperHardware;
-import frc.lib.math.GearRatio;
 import frc.robot.Constants.kHopper;
 
 /**

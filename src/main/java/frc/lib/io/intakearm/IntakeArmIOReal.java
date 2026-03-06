@@ -12,9 +12,8 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 
-import frc.lib.hardware.IntakeArmHardware;
-import frc.lib.math.GearRatio;
-import frc.lib.util.MotorConfig;
+import frc.lib.core.math.GearRatio;
+import frc.lib.core.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
 
 /**
@@ -26,13 +25,15 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
     private final TalonFXS bluMotor;
     private final TalonFXS yelMotor;
 
-    private final GearRatio ratio = IntakeArmHardware.RATIO;
+    private final GearRatio ratio;
 
-    public IntakeArmIOReal(MotorConfig bluConfig, MotorConfig yelConfig) {
+    public IntakeArmIOReal(int bluCanID, MotorConfig bluConfig, int yelCanID, MotorConfig yelConfig, GearRatio ratio) {
         this.bluConfig = bluConfig;
-        this.bluMotor = new TalonFXS(IntakeArmHardware.BLU_ID);
+        this.bluMotor = new TalonFXS(bluCanID);
 
-        this.yelMotor = new TalonFXS(IntakeArmHardware.YEL_ID);
+        this.yelMotor = new TalonFXS(yelCanID);
+
+        this.ratio = ratio;
 
         configureFXSMotor(bluMotor, bluConfig);
         configureFXSMotor(yelMotor, yelConfig);

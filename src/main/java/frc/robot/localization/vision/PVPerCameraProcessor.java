@@ -17,8 +17,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-import frc.lib.math.geometry.VisionMeasurement;
-import frc.lib.util.Alliance;
+import frc.lib.core.math.geometry.VisionMeasurement;
+import frc.lib.core.util.Alliance;
 
 public final class PVPerCameraProcessor {
 

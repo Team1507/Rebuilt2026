@@ -15,10 +15,9 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
-
+import frc.lib.core.math.FieldInfo;
 import frc.lib.hardware.PhotonVisionHardware;
 import frc.robot.localization.vision.PhotonPoseEstimator;
-import frc.lib.math.FieldInfo;
 
 /**
  * Real PhotonVision implementation with explicit camera names.

@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
-import frc.lib.util.MotorConfig;
+import frc.lib.core.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
 
 /**

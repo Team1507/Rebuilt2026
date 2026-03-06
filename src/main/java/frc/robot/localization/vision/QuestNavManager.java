@@ -16,8 +16,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import frc.lib.logging.Telemetry;
+import frc.lib.core.logging.Telemetry;
 import frc.robot.Constants.kQuest;
 import frc.robot.generated.questnav.PoseFrame;
 import frc.robot.generated.questnav.QuestNav;

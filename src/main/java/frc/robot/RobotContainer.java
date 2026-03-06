@@ -23,8 +23,9 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 
 // Commands
-import frc.robot.commands.*;
+import frc.robot.commands.atomic.*;
 import frc.robot.commands.auto.routines.*;
+import frc.robot.commands.coordinators.*;
 
 // Subsystems
 import frc.robot.subsystems.*;
@@ -37,29 +38,25 @@ import frc.robot.localization.vision.PVManager;
 import frc.robot.localization.vision.QuestNavManager;
 
 // IO Layer (Hardware Abstractions)
-import frc.lib.io.agitator.AgitatorIOReal;
-import frc.lib.io.climber.ClimberIOReal;
-import frc.lib.io.feeder.FeederIOReal;
-import frc.lib.io.hopper.HopperIOReal;
+import frc.lib.io.agitator.*;
+import frc.lib.io.climber.*;
+import frc.lib.io.feeder.*;
+import frc.lib.io.hopper.*;
 import frc.lib.io.intakearm.*;
 import frc.lib.io.intakeroller.*;
-import frc.lib.io.photonvision.PhotonVisionIO;
-import frc.lib.io.photonvision.PhotonVisionIOReal;
+import frc.lib.io.photonvision.*;
 import frc.lib.io.shooter.*;
 import frc.lib.io.swerve.*;
 
 // Hardware Config / Vendor Libraries
 import frc.robot.generated.ctre.CommandSwerveDrivetrain;
 import frc.robot.generated.ctre.TunerConstants;
-import frc.lib.hardware.ShooterHardware;
-import frc.lib.hardware.FeederHardware;
-import frc.lib.hardware.HopperHardware;
-// Shooter ML Model
-import frc.lib.shooterML.data.*;
-import frc.lib.shooterML.model.*;
-import frc.lib.util.CommandBuilder;
-// Utilities
-import frc.lib.logging.Telemetry;
+import frc.lib.hardware.*;
+
+// Core
+import frc.lib.core.logging.Telemetry;
+import frc.lib.core.shooterML.data.*;
+import frc.lib.core.shooterML.model.*;
 
 // Framework
 import frc.robot.framework.*;
@@ -222,13 +219,18 @@ public class RobotContainer {
     // ----------------------------
     private final AgitatorSubsystem agitatorSubsystem =
         new AgitatorSubsystem(
-            new AgitatorIOReal(kAgitator.CONFIG));
+            new AgitatorIOReal(AgitatorHardware.AGITATOR_ID, kAgitator.CONFIG));
 
     // Climber
     // ----------------------------
     public final ClimberSubsystem climberSubsystem =
         new ClimberSubsystem(
-            new ClimberIOReal(kClimber.CONFIG_SLOT0, kClimber.CONFIG_SLOT1));
+            new ClimberIOReal(
+                ClimberHardware.CLIMBER_MOTOR_ID,
+                kClimber.CONFIG_SLOT0, kClimber.CONFIG_SLOT1,
+                ClimberHardware.RATIO,
+                ClimberHardware.SERVO_PORT,
+                ClimberHardware.LIMIT_SWITCH_PORT));
 
     // Feeder
     // ----------------------------
@@ -245,14 +247,17 @@ public class RobotContainer {
     // ----------------------------
     public final HopperSubsystem hopperSubsystem =
         new HopperSubsystem(
-            new HopperIOReal(HopperHardware.HOPPER_ID, kHopper.CONFIG, HopperHardware.HOPPER_DIO));
+            new HopperIOReal(HopperHardware.HOPPER_ID, kHopper.CONFIG, HopperHardware.RATIO, HopperHardware.HOPPER_DIO));
   
     // Intake Arm
     // ----------------------------
     public final IntakeArmSubsystem intakeArmSubsystem =
         new IntakeArmSubsystem(
             RobotBase.isReal()
-                ? new IntakeArmIOReal(kIntake.kArm.BLU_CONFIG, kIntake.kArm.YEL_CONFIG)
+                ? new IntakeArmIOReal(
+                    IntakeArmHardware.BLU_ID, kIntake.kArm.BLU_CONFIG, 
+                    IntakeArmHardware.YEL_ID, kIntake.kArm.YEL_CONFIG,
+                    IntakeArmHardware.RATIO)
                 : new IntakeArmIOSim()
         );
 
@@ -261,7 +266,7 @@ public class RobotContainer {
     public final IntakeRollerSubsystem intakeRollerSubsystem =
         new IntakeRollerSubsystem(
             RobotBase.isReal()
-                ? new IntakeRollerIOReal(kIntake.ROLLER_CONFIG)
+                ? new IntakeRollerIOReal(IntakeRollerHardware.ROLLER_ID, kIntake.ROLLER_CONFIG)
                 : new IntakeRollerIOSim()
         );
 
@@ -280,6 +285,16 @@ public class RobotContainer {
             intakeRollerSubsystem,
             shooterBLUsystem,
             shooterYELsystem
+        );
+
+    // ==========================================================
+    // CoordinatorRecord
+    // ==========================================================
+    private final CoordinatorRecord coordinatorRecord =
+        new CoordinatorRecord(
+            shooterYELsystem, shooterBLUsystem, 
+            feederYELsystem, feederBLUsystem, 
+            agitatorSubsystem
         );
 
     // ==========================================================
@@ -422,23 +437,11 @@ public class RobotContainer {
                     shooterBLUsystem::getTargetPose,
                     () -> -bottomDriver.getLeftY() * kSwerve.MAX_SPEED,
                     () -> -bottomDriver.getLeftX() * kSwerve.MAX_SPEED)
-                .alongWith(
-                    ShooterCoordinator.shootModelBased(
-                        shooterBLUsystem, shooterYELsystem,
-                        feederBLUsystem, feederYELsystem,
-                        agitatorSubsystem))
-            );
+                .alongWith(ShooterCoordinator.shootModelBased(coordinatorRecord, kAgitator.AGITATE_TO_SHOOTER_DUTY)));
 
         // Shoot lob
         bottomDriver.rightBumper()
-            .whileTrue(ShooterCoordinator.shootFixedRPM(
-                shooterBLUsystem,
-                shooterYELsystem,
-                feederBLUsystem,
-                feederYELsystem,
-                
-                kShooter.kRPM.LOB
-            ));
+            .whileTrue(ShooterCoordinator.shootFixedRPM(coordinatorRecord, kShooter.kRPM.LOB));
         
         // ----------------------------
         // Climber
@@ -473,15 +476,15 @@ public class RobotContainer {
 
         autoChooser.addOption(
             "Auto Blue Subway Right",
-            AutoBlueSubwayRight.build(subsystemsRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+            AutoBlueSubwayRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Shoot Until",
-            AutoShootUntil.build(subsystemsRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            AutoShootUntil.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Move Log",
-            AutoMoveLog.build(subsystemsRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+            AutoMoveLog.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {

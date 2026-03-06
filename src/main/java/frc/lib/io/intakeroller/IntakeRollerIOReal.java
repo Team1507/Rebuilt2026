@@ -11,8 +11,7 @@ package frc.lib.io.intakeroller;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import frc.lib.hardware.IntakeRollerHardware;
-import frc.lib.util.MotorConfig;
+import frc.lib.core.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
 
 /**
@@ -23,8 +22,8 @@ public class IntakeRollerIOReal extends Subsystems1507 implements IntakeRollerIO
     private final TalonFX motor;
     private final DutyCycleOut dutyRequest = new DutyCycleOut(0);
 
-    public IntakeRollerIOReal(MotorConfig config) {
-        this.motor = new TalonFX(IntakeRollerHardware.ROLLER_ID);
+    public IntakeRollerIOReal(int canID, MotorConfig config) {
+        this.motor = new TalonFX(canID);
         configureFXMotor(motor, config);
     }
 

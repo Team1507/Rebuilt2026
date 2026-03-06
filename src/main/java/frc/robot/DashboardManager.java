@@ -12,7 +12,7 @@ import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.*;
+import frc.robot.commands.atomic.*;
 import frc.robot.framework.*;
 
 public class DashboardManager {

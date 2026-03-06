@@ -19,9 +19,9 @@ import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.util.MotorConfig;
-import frc.lib.util.MotorConfig.ControlMode;
-import frc.lib.util.MotorConfig.GravityType;
+import frc.lib.core.util.MotorConfig;
+import frc.lib.core.util.MotorConfig.ControlMode;
+import frc.lib.core.util.MotorConfig.GravityType;
 
 public abstract class Subsystems1507 extends SubsystemBase {
 

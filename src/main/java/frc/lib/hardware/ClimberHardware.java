@@ -9,7 +9,7 @@
 package frc.lib.hardware;
 
 import edu.wpi.first.math.geometry.Transform2d;
-import frc.lib.math.GearRatio;
+import frc.lib.core.math.GearRatio;
 
 /**
  * Hardware definition for the climber.

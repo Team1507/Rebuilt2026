@@ -11,9 +11,9 @@ package frc.lib.io.feeder;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import frc.lib.core.math.GearRatio;
+import frc.lib.core.util.MotorConfig;
 import frc.lib.hardware.FeederHardware;
-import frc.lib.math.GearRatio;
-import frc.lib.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
 
 /**
@@ -29,6 +29,7 @@ public class FeederIOReal extends Subsystems1507 implements FeederIO {
 
     public FeederIOReal(int canID, MotorConfig config) {
         this.motor = new TalonFX(canID);
+        
         configureFXMotor(motor, config);
     }
 

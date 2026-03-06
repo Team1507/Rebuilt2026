@@ -8,9 +8,9 @@
 
 package frc.lib.io.shooter;
 
-import frc.lib.math.FlywheelModel;
-import frc.lib.math.GearRatio;
-import frc.lib.util.MotorConfig;
+import frc.lib.core.math.FlywheelModel;
+import frc.lib.core.math.GearRatio;
+import frc.lib.core.util.MotorConfig;
 import frc.robot.Constants.kShooter;
 
 /**

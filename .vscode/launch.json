@@ -5,30 +5,44 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "java",
-      "name": "SimpleModelTrainer",
-      "request": "launch",
-      "mainClass": "frc.lib.shooterML.training.SimpleModelTrainer",
-      "projectName": "Rebuilt2026"
+        "type": "java",
+        "name": "ModelTrainer",
+        "request": "launch",
+        "mainClass": "frc.lib.core.shooterML.training.ModelTrainer",
+        "projectName": "Rebuilt2026"
     },
     {
-      "type": "java",
-      "name": "ModelTrainer",
-      "request": "launch",
-      "mainClass": "frc.lib.shooterML.training.ModelTrainer",
-      "projectName": "Rebuilt2026"
+        "type": "java",
+        "name": "SimpleModelTrainer",
+        "request": "launch",
+        "mainClass": "frc.lib.core.shooterML.training.SimpleModelTrainer",
+        "projectName": "Rebuilt2026"
     },
     {
-      "type": "wpilib",
-      "name": "WPILib Desktop Debug",
-      "request": "launch",
-      "desktop": true
+        "type": "java",
+        "name": "SimpleModelTrainer",
+        "request": "launch",
+        "mainClass": "frc.lib.shooterML.training.SimpleModelTrainer",
+        "projectName": "Rebuilt2026"
     },
     {
-      "type": "wpilib",
-      "name": "WPILib roboRIO Debug",
-      "request": "launch",
-      "desktop": false
+        "type": "java",
+        "name": "ModelTrainer",
+        "request": "launch",
+        "mainClass": "frc.lib.shooterML.training.ModelTrainer",
+        "projectName": "Rebuilt2026"
+    },
+    {
+        "type": "wpilib",
+        "name": "WPILib Desktop Debug",
+        "request": "launch",
+        "desktop": true
+    },
+    {
+        "type": "wpilib",
+        "name": "WPILib roboRIO Debug",
+        "request": "launch",
+        "desktop": false
     }
-  ]
+]
 }

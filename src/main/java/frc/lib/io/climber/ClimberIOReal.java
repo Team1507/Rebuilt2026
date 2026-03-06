@@ -12,10 +12,9 @@ import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Servo;
-
+import frc.lib.core.math.GearRatio;
+import frc.lib.core.util.MotorConfig;
 import frc.lib.hardware.ClimberHardware;
-import frc.lib.math.GearRatio;
-import frc.lib.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
 
 /**
@@ -31,11 +30,11 @@ public class ClimberIOReal extends Subsystems1507 implements ClimberIO {
     private final PositionDutyCycle positionRequest =
         new PositionDutyCycle(0).withSlot(0);
 
-    public ClimberIOReal(MotorConfig configSlot0, MotorConfig configSlot1) {
-        this.motor = new TalonFX(ClimberHardware.CLIMBER_MOTOR_ID);
-        this.servo = new Servo(ClimberHardware.SERVO_PORT);
-        this.limitSwitch = new DigitalInput(ClimberHardware.LIMIT_SWITCH_PORT);
-        this.ratio = ClimberHardware.RATIO;
+    public ClimberIOReal(int canID, MotorConfig configSlot0, MotorConfig configSlot1, GearRatio ratio, int servoDIO, int limitSwitchID) {
+        this.motor = new TalonFX(canID);
+        this.servo = new Servo(servoDIO);
+        this.limitSwitch = new DigitalInput(limitSwitchID);
+        this.ratio = ratio;
 
         configureFXMotor(motor, configSlot0, configSlot1);
     }

@@ -20,10 +20,10 @@ import edu.wpi.first.math.numbers.N3;
 
 import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
 
-import frc.lib.math.FlywheelModel;
-import frc.lib.util.MotorConfig;
-import frc.lib.util.MotorConfig.ControlMode;
-import frc.lib.util.MotorConfig.GravityType;
+import frc.lib.core.math.FlywheelModel;
+import frc.lib.core.util.MotorConfig;
+import frc.lib.core.util.MotorConfig.ControlMode;
+import frc.lib.core.util.MotorConfig.GravityType;
 import frc.robot.generated.ctre.TunerConstants;
 
 /**

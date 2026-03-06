@@ -14,18 +14,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
-
+import frc.lib.core.logging.Telemetry;
+import frc.lib.core.math.GearRatio;
+import frc.lib.core.shooterML.ShooterTelemetryProvider;
+import frc.lib.core.shooterML.data.ShotRecord;
+import frc.lib.core.shooterML.data.ShotTrainer;
+import frc.lib.core.shooterML.model.ShooterModel;
 import frc.lib.io.shooter.ShooterIO;
 import frc.lib.io.shooter.ShooterIOSim;
 import frc.lib.io.shooter.ShooterInputs;
-
-import frc.lib.logging.Telemetry;
-import frc.lib.math.GearRatio;
-import frc.lib.shooterML.ShooterTelemetryProvider;
-import frc.lib.shooterML.data.ShotRecord;
-import frc.lib.shooterML.data.ShotTrainer;
-
-import frc.lib.shooterML.model.ShooterModel;
 import frc.robot.framework.base.Subsystems1507;
 
 /**

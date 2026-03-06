@@ -8,7 +8,7 @@
 
 package frc.lib.hardware;
 
-import frc.lib.math.GearRatio;
+import frc.lib.core.math.GearRatio;
 
 /**
  * Hardware definition for the feeder motors.

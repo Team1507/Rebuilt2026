@@ -8,15 +8,15 @@
 
 package frc.lib.io.hopper;
 
+import edu.wpi.first.wpilibj.DigitalInput;
+
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFXS;
 
-import frc.lib.hardware.HopperHardware;
-import frc.lib.math.GearRatio;
-import frc.lib.util.MotorConfig;
+import frc.lib.core.math.GearRatio;
+import frc.lib.core.util.MotorConfig;
 import frc.robot.Constants.kHopper;
 import frc.robot.framework.base.Subsystems1507;
-import edu.wpi.first.wpilibj.DigitalInput;
 
 /**
  * Real hardware implementation of HopperIO using a TalonFXS.
@@ -30,10 +30,11 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
     private final PositionDutyCycle positionRequest =
         new PositionDutyCycle(0).withSlot(0);
 
-    public HopperIOReal(int canID, MotorConfig config, int sensorDIO) {
+    public HopperIOReal(int canID, MotorConfig config, GearRatio ratio, int sensorDIO) {
         this.motor = new TalonFXS(canID);
-        this.ratio = HopperHardware.RATIO; // <-- use hopper ratio, not climber ratio
+        this.ratio = ratio;
         this.halSensor = new DigitalInput(sensorDIO);
+
         configureFXSMotor(motor, config);
     }
 

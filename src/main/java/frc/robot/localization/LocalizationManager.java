@@ -15,11 +15,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import frc.lib.core.logging.Telemetry;
 import frc.robot.localization.vision.PVManager;
 import frc.robot.localization.vision.QuestNavManager;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.lib.logging.Telemetry;
 
 /**
  * LocalizationManager:

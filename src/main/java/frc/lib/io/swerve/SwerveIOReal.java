@@ -15,11 +15,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import frc.robot.Constants.kSwerve;
-import frc.robot.generated.ctre.CommandSwerveDrivetrain;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule;
+
+import frc.robot.Constants.kSwerve;
+import frc.robot.generated.ctre.CommandSwerveDrivetrain;
+
 
 /**
  * Real hardware implementation of SwerveIO using CTRE's

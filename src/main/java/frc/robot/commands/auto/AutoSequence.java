@@ -20,17 +20,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
-// Robot Commands
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ShooterCoordinator;
+import frc.robot.commands.atomic.DriveCommands;
+import frc.robot.commands.atomic.HopperCommands;
+import frc.robot.commands.atomic.IntakeArmCommands;
+import frc.robot.commands.atomic.IntakeRollerCommands;
+import frc.robot.commands.coordinators.ShooterCoordinator;
 import frc.robot.commands.tuning.MoveLog;
+import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
-import frc.robot.Constants.kIntake;
-import frc.robot.commands.AgitatorCommands;
-import frc.robot.commands.FeederCommands;
-import frc.robot.commands.HopperCommands;
-import frc.robot.commands.IntakeArmCommands;
-import frc.robot.commands.IntakeRollerCommands;
+import frc.robot.Constants.kAgitator;
 
 /**
  * AutoSequence
@@ -46,6 +44,7 @@ public class AutoSequence {
 
     // Required subsystem reference for movement commands
     private final SubsystemsRecord record;
+    private final CoordinatorRecord coordinator;
     private final double MaxSpeed;
     private final double MaxAngularRate;
 
@@ -65,8 +64,9 @@ public class AutoSequence {
      * autonomous routine. Individual steps may override these values using
      * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}.</p>
      */
-    public AutoSequence(SubsystemsRecord record, double MaxSpeed, double MaxAngularRate) {
+    public AutoSequence(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
         this.record = record;
+        this.coordinator = coordinator;
         this.MaxSpeed = MaxSpeed;
         this.MaxAngularRate = MaxAngularRate;
     }
@@ -236,11 +236,7 @@ public class AutoSequence {
      */
     public AutoSequence shoot() {
         steps.add(ShooterCoordinator.shootModelBased(
-            record.BLUshooter(),
-            record.YELshooter(),
-            record.BLUfeeder(),
-            record.YELfeeder(),
-            record.agitator()
+            coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY
         ));
         return this;
     }
@@ -257,11 +253,7 @@ public class AutoSequence {
         steps.add(
             Commands.race(
                 ShooterCoordinator.shootModelBased(
-                    record.BLUshooter(),
-                    record.YELshooter(),
-                    record.BLUfeeder(),
-                    record.YELfeeder(),
-                    record.agitator()
+                    coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY
                 ),
                 Commands.waitUntil(() -> autoTimer.get() >= endTime)
             )
@@ -367,7 +359,7 @@ public class AutoSequence {
         List<Command> commands = new ArrayList<>();
 
         for (AutoSequenceBuilder builder : builders) {
-            AutoSequence sub = new AutoSequence(record, MaxSpeed, MaxAngularRate);
+            AutoSequence sub = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
             builder.build(sub);
             commands.add(sub.build());
         }
@@ -397,7 +389,7 @@ public class AutoSequence {
         List<Command> commands = new ArrayList<>();
 
         for (AutoSequenceBuilder builder : builders) {
-            AutoSequence sub = new AutoSequence(record, MaxSpeed, MaxAngularRate);
+            AutoSequence sub = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
             builder.build(sub);
             commands.add(sub.build());
         }
@@ -426,12 +418,12 @@ public class AutoSequence {
      * ensuring its steps remain isolated from the parent sequence.</p>
      */
     public AutoSequence deadline(AutoSequenceBuilder deadlineBuilder, AutoSequenceBuilder... others) {
-        AutoSequence deadlineSeq = new AutoSequence(record, MaxSpeed, MaxAngularRate);
+        AutoSequence deadlineSeq = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
         deadlineBuilder.build(deadlineSeq);
 
         List<Command> otherCMD = new ArrayList<>();
         for (AutoSequenceBuilder builder : others) {
-            AutoSequence sub = new AutoSequence(record, MaxSpeed, MaxAngularRate);
+            AutoSequence sub = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
             builder.build(sub);
             otherCMD.add(sub.build());
         }
