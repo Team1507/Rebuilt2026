@@ -12,6 +12,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -411,6 +412,81 @@ public final class DriveCommands {
                 return (now - stallStartTime[0]) > kMoveToPose.STALL_TIMEOUT;
             })
             .onEnd(swerve::stop);
+    }
+
+    public static Command driveToPoint(
+        SwerveSubsystem swerve,
+        Pose2d targetPose,
+        double velocity,          // m/s
+        boolean stopAtEnd,
+        double timeoutSeconds
+    ) {
+
+        return new CommandBuilder(swerve)
+            .named("DriveToPoint_CPPStyle")
+            .onExecute(() -> {
+
+                Pose2d current = swerve.getPose();
+                Rotation2d currentHeading = current.getRotation();
+
+                // -----------------------------------------
+                // 1. Compute translation vector
+                // -----------------------------------------
+                double dx = targetPose.getX() - current.getX();
+                double dy = targetPose.getY() - current.getY();
+                double distance = Math.hypot(dx, dy);
+
+                double ux = 0.0;
+                double uy = 0.0;
+
+                if (distance > 0.05) {   // 5 cm threshold
+                    ux = dx / distance;
+                    uy = dy / distance;
+                }
+
+                // -----------------------------------------
+                // 2. Compute heading error (wrapped)
+                // -----------------------------------------
+                Rotation2d finalHeading = targetPose.getRotation();
+
+                double headingError = finalHeading.minus(currentHeading).getRadians();
+                headingError = MathUtil.angleModulus(headingError); // wrap to [-π, π]
+
+                // C++ used: ROT_kP = 5 rad/s per rad
+                double ROT_kP = 5.0;
+                double omega = headingError * ROT_kP;
+
+                // -----------------------------------------
+                // 3. Build chassis speeds
+                // -----------------------------------------
+                double vx = velocity * ux;
+                double vy = velocity * uy;
+
+                ChassisSpeeds robotRelative =
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                        vx,
+                        vy,
+                        omega,
+                        currentHeading
+                    );
+
+                swerve.driveRobotRelative(robotRelative);
+            })
+            .isFinished(() -> {
+
+                Pose2d current = swerve.getPose();
+
+                double dist = current.getTranslation()
+                                    .getDistance(targetPose.getTranslation());
+
+                boolean closeEnough = dist < 0.05; // 5 cm
+                return closeEnough;
+            })
+            .onEnd(() -> {
+                if (stopAtEnd) {
+                    swerve.stop();
+                }
+            });
     }
 
     public static Command lock(SwerveSubsystem swerve) {
