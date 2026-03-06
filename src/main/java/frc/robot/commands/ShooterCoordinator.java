@@ -12,8 +12,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.util.CommandBuilder;
 
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.AgitatorSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
-
+import frc.robot.Constants.kAgitator;
 import frc.robot.Constants.kFeeder;
 import static frc.robot.Constants.kShooter.TARGET_TOLERANCE;
 
@@ -28,6 +29,8 @@ public final class ShooterCoordinator {
 
     private ShooterCoordinator() {}
 
+    private static boolean shooterReady = false;
+
     private static boolean ready(ShooterSubsystem shooter) {
         return shooter.getShooterRPM() >= shooter.getTargetRPM() - TARGET_TOLERANCE;
     }
@@ -39,20 +42,26 @@ public final class ShooterCoordinator {
         ShooterSubsystem shooterBLU,
         ShooterSubsystem shooterYEL,
         FeederSubsystem feederBLU,
-        FeederSubsystem feederYEL
+        FeederSubsystem feederYEL,
+        AgitatorSubsystem agitator
     ) {
         return new CommandBuilder(
             shooterBLU, shooterYEL, feederBLU, feederYEL
         )
         .named("ShootModelBased")
+        .onInitialize(() -> { shooterReady = false; })
         .onExecute(() -> {
 
             shooterBLU.updateShooterFromModel();
             shooterYEL.updateShooterFromModel();
 
             if (ready(shooterBLU) && ready(shooterYEL)) {
+                shooterReady = true;
                 feederBLU.runRPM(kFeeder.FEED_RPM);
                 feederYEL.runRPM(kFeeder.FEED_RPM);
+            }
+            if(shooterReady) {
+                agitator.run(kAgitator.AGITATE_TO_SHOOTER_DUTY);
             }
         })
         .onEnd(interrupted -> {
@@ -60,6 +69,7 @@ public final class ShooterCoordinator {
             feederYEL.stop();
             shooterBLU.stop();
             shooterYEL.stop();
+            shooterReady = false;
         });
     }
 

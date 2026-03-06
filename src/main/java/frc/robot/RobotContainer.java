@@ -421,40 +421,13 @@ public class RobotContainer {
                     swerve,
                     shooterBLUsystem::getTargetPose,
                     () -> -bottomDriver.getLeftY() * kSwerve.MAX_SPEED,
-                    () -> -bottomDriver.getLeftX() * kSwerve.MAX_SPEED
-                )
+                    () -> -bottomDriver.getLeftX() * kSwerve.MAX_SPEED)
                 .alongWith(
-                    new CommandBuilder(
+                    ShooterCoordinator.shootModelBased(
                         shooterBLUsystem, shooterYELsystem,
-                        feederBLUsystem, feederYELsystem
-                    )
-                    
-                    .onExecute(() -> {
-                        shooterBLUsystem.updateShooterFromModel();
-                        shooterYELsystem.updateShooterFromModel();
-
-                        if (shooterBLUsystem.atVelocity() && shooterYELsystem.atVelocity()) {
-                            feederBLUsystem.runRPM(kFeeder.FEED_RPM);
-                            feederYELsystem.runRPM(kFeeder.FEED_RPM);
-                        }
-                    })
-                    .onEnd(interrupted -> {
-                        shooterBLUsystem.stop();
-                        shooterYELsystem.stop();
-                        feederBLUsystem.stop();
-                        feederYELsystem.stop();
-                        agitatorSubsystem.stop();
-                    })
-                )
-                .alongWith(
-                    new CommandBuilder(
-                        agitatorSubsystem
-                )
-                .onExecute(() -> {
-                    
-                } 
-                )
-            ));
+                        feederBLUsystem, feederYELsystem,
+                        agitatorSubsystem))
+            );
 
         // Shoot lob
         bottomDriver.rightBumper()

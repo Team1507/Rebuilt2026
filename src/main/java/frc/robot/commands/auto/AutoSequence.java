@@ -239,7 +239,8 @@ public class AutoSequence {
             record.BLUshooter(),
             record.YELshooter(),
             record.BLUfeeder(),
-            record.YELfeeder()
+            record.YELfeeder(),
+            record.agitator()
         ));
         return this;
     }
@@ -259,7 +260,8 @@ public class AutoSequence {
                     record.BLUshooter(),
                     record.YELshooter(),
                     record.BLUfeeder(),
-                    record.YELfeeder()
+                    record.YELfeeder(),
+                    record.agitator()
                 ),
                 Commands.waitUntil(() -> autoTimer.get() >= endTime)
             )
