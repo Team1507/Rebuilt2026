@@ -68,6 +68,8 @@ public class LocalizationManager extends SubsystemBase {
         if (now - lastProcessTime < PERIOD) return;
         lastProcessTime = now;
 
+        boolean enabled = DriverStation.isEnabled();
+
         // ============================
         // 1. Read all sources
         // ============================
@@ -82,10 +84,9 @@ public class LocalizationManager extends SubsystemBase {
 
         Pose2d odomPose = swerve.getPose();
 
-        boolean enabled = DriverStation.isEnabled();
-
         // ============================
-        // 2. Startup seeding (PV only)
+        // 2. Startup seeding
+        // PV must be stable AND QuestNav must be tracking
         // ============================
 
         if (!startupSeeded) {
@@ -98,7 +99,7 @@ public class LocalizationManager extends SubsystemBase {
             if (pvStable) pvStableCount++;
             else pvStableCount = 0;
 
-            if (pvStableCount >= 5) {
+            if (pvStableCount >= 5 && questGood) {
                 Pose2d seed = pvPoseOpt.get();
 
                 // Seed drivetrain
@@ -121,29 +122,21 @@ public class LocalizationManager extends SubsystemBase {
         Pose2d translationSource;
 
         if (!enabled) {
-            // Disabled → PV owns translation
+            // DISABLED → PhotonVision ONLY
             if (pvGood) {
                 translationSource = pvPoseOpt.get();
                 telemetry.logLocalizationTranslationSource("PhotonVision (Disabled)");
-            } else if (questGood) {
-                translationSource = questPose;
-                telemetry.logLocalizationTranslationSource("QuestNav (Disabled-Fallback)");
             } else {
                 translationSource = odomPose;
                 telemetry.logLocalizationTranslationSource("Odometry (Disabled-Fallback)");
             }
         }
         else {
-            // Enabled → QuestNav owns translation
+            // ENABLED → QuestNav ONLY
             if (questGood) {
                 translationSource = questPose;
                 telemetry.logLocalizationTranslationSource("QuestNav");
-            }
-            else if (pvClose) {
-                translationSource = pvPoseOpt.get();
-                telemetry.logLocalizationTranslationSource("PhotonVision (Close-Range Fallback)");
-            }
-            else {
+            } else {
                 translationSource = odomPose;
                 telemetry.logLocalizationTranslationSource("Odometry (Fallback)");
             }
@@ -156,20 +149,17 @@ public class LocalizationManager extends SubsystemBase {
         Rotation2d heading;
 
         if (!enabled) {
-            // Disabled → PV heading
+            // DISABLED → PhotonVision ONLY
             if (pvGood) {
                 heading = pvPoseOpt.get().getRotation();
                 telemetry.logLocalizationHeadingSource("PhotonVision (Disabled)");
-            } else if (questGood) {
-                heading = questPose.getRotation();
-                telemetry.logLocalizationHeadingSource("QuestNav (Disabled-Fallback)");
             } else {
                 heading = swerve.getHeading();
                 telemetry.logLocalizationHeadingSource("Gyro (Disabled-Fallback)");
             }
         }
         else {
-            // Enabled → QuestNav heading
+            // ENABLED → QuestNav ONLY
             if (questGood) {
                 heading = questPose.getRotation();
                 telemetry.logLocalizationHeadingSource("QuestNav");
@@ -196,32 +186,19 @@ public class LocalizationManager extends SubsystemBase {
         // ============================
 
         if (!enabled) {
-            // Disabled → PV fully controls pose
+            // DISABLED → PhotonVision ONLY reseeds
             if (pvGood) {
                 swerve.seedPoseFromVision(pvPoseOpt.get());
             }
             return;
         }
 
-        // Enabled → QuestNav always contributes
+        // ENABLED → QuestNav ONLY contributes
         if (questGood) {
             swerve.addVisionMeasurement(
                 questPose,
                 questTs,
                 frc.robot.Constants.kQuest.STD_DEVS
-            );
-        }
-
-        // PV only contributes when close and stable
-        if (pvClose) {
-            swerve.addVisionMeasurement(
-                pvPoseOpt.get(),
-                pv.getFusedTimestamp(),
-                VecBuilder.fill(
-                    pv.getFusedXyStd(),
-                    pv.getFusedXyStd(),
-                    pv.getFusedAngStd()
-                )
             );
         }
     }
@@ -246,7 +223,7 @@ public class LocalizationManager extends SubsystemBase {
     public void resetQuestPose(Pose2d pose) {
         quest.seedPose(new Pose3d(pose));
     }
-    
+
     public void resetHeadingToZero() {
         // 1. Get the current fused pose (this is what the robot "thinks" it is)
         Pose2d current = getFusedPose();

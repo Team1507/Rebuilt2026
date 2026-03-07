@@ -10,9 +10,9 @@ import edu.wpi.first.math.geometry.Pose2d;
  */
 public final class PVDebugInfo {
 
-    /** Per-camera debug information */
+    /** Debug information for the single Bluecam camera */
     public static final class CameraDebug {
-        public String name = "";
+        public String name = "Bluecam";
 
         // Raw camera state
         public boolean connected = false;
@@ -35,8 +35,8 @@ public final class PVDebugInfo {
         public double angStd = 0.0;
     }
 
-    /** Array of per-camera debug packets */
-    public CameraDebug[] cameras;
+    /** Single-camera debug packet (Bluecam only) */
+    public CameraDebug camera = new CameraDebug();
 
     /** Fused PV output */
     public boolean fusedValid = false;

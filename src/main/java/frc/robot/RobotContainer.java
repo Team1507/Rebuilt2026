@@ -322,8 +322,8 @@ public class RobotContainer {
     // ==========================================================
     // Dashboard manager
     // ==========================================================
-    // private final DashboardManager dashboardManager =
-    //     new DashboardManager(subsystemsRecord, localizationRecord, autoChooser);
+    private final DashboardManager dashboardManager =
+        new DashboardManager(subsystemsRecord, localizationRecord, autoChooser);
 
     private final DashboardManagerMatch dashboardManagerMatch =
         new DashboardManagerMatch(subsystemsRecord, localizationRecord, autoChooser);
@@ -341,7 +341,7 @@ public class RobotContainer {
         configureAutos();
 
         // Manager of all NT and Dashboard data
-        //dashboardManager.initDashboard();
+        dashboardManager.initDashboard();
         dashboardManagerMatch.initDashboard();
     }
 
@@ -525,10 +525,10 @@ public class RobotContainer {
     // ==========================================================
     // Dashboard access for Robot.java
     // ==========================================================
-    // public DashboardManager getDashboard() {
-    //     return dashboardManager;
-    // }
-    public DashboardManagerMatch getDashboard() {
+    public DashboardManager getDashboard() {
+        return dashboardManager;
+    }
+    public DashboardManagerMatch getDashboardMatch() {
         return dashboardManagerMatch;
     }
 }
