@@ -27,11 +27,10 @@ public class AutoBlueSubwayRight {
             .driveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY)
             .intakeDeploy()
             .driveTo(Nodes.Midfield.LEFT_RIGHT_SUBWAY)
+            .moveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY)
             .intakeRetract()
-            .moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.5)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .driveTo(Nodes.Start.START_SUBWAY_RIGHT)
-            .driveTo(Nodes.AllianceZoneBlue.BACK_RIGHT)
             .shoot()
             .build();
     }

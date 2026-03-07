@@ -25,7 +25,7 @@ public final class IntakeSequences {
 
     private IntakeSequences() {}
 
-    public static Command deployAndRun(
+    public static Command deployAndRun( 
         HopperSubsystem hopper,
         IntakeArmSubsystem arm,
         IntakeRollerSubsystem roller
