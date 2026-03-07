@@ -7,7 +7,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.framework.LocalizationRecord;
 import frc.robot.framework.SubsystemsRecord;
-
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -63,6 +64,18 @@ public class DashboardManagerMatch
         nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
     private final BooleanPublisher pubHasGoodVision =
         nt.getBooleanTopic("Localization/PhotonVision/Has Good Vision").publish();
+
+    private final DoublePublisher pubSetPoseX =
+        nt.getDoubleTopic("Set Pose/X").publish();
+
+    private final DoublePublisher pubSetPoseY =
+        nt.getDoubleTopic("Set Pose/Y").publish();
+
+    private final DoublePublisher pubSetPoseTheta =
+        nt.getDoubleTopic("Set Pose/Theta").publish();
+
+    private final BooleanPublisher pubSetRobotPose =
+        nt.getBooleanTopic("Set Pose/Reset Pose").publish();
 
     public DashboardManagerMatch(
         SubsystemsRecord subsystems,
@@ -120,7 +133,20 @@ public class DashboardManagerMatch
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
         pubHasGoodVision.set(localization.pvManager().hasGoodVision());
 
-        
+        double poseX = nt.getEntry("Set Pose/X").getDouble(0.0);
+        double poseY = nt.getEntry("Set Pose/Y").getDouble(0.0);
+        double poseTheta = nt.getEntry("Set Pose/Theta").getDouble(0.0);
 
+        boolean resetPose =
+            nt.getEntry("Set Pose/Reset Pose").getBoolean(false);
+
+        if (resetPose) {
+            localization.localizationManager().resetQuestPose(new Pose2d(
+                poseX,
+                poseY,
+                new Rotation2d(poseTheta)
+            ));
+            nt.getEntry("Set Pose/Reset Pose").setBoolean(false);
+        }
     }
 }

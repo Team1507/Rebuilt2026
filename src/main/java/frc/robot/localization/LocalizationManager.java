@@ -44,7 +44,7 @@ public class LocalizationManager extends SubsystemBase {
     private static final double PERIOD = 0.05;
 
     // Vision source enable flags
-    private boolean usePhotonVision = false;
+    private boolean usePhotonVision = true;
     private boolean useQuestNav = true;
 
     public void enablePhotonVision(boolean enable) {
@@ -254,6 +254,10 @@ public class LocalizationManager extends SubsystemBase {
     public void resetVisionSeed() {
         startupSeeded = false;
         pv.setSeeded(false);
+    }
+
+    public void resetQuestPose(Pose2d pose) {
+        quest.seedPose(new Pose3d(pose));
     }
 
     public void resetHeadingToZero() {
