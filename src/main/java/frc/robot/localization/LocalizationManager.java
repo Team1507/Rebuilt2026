@@ -242,4 +242,19 @@ public class LocalizationManager extends SubsystemBase {
         startupSeeded = false;
         pv.setSeeded(false);
     }
+
+    public void resetHeadingToZero() {
+        // 1. Get the current fused pose (this is what the robot "thinks" it is)
+        Pose2d current = getFusedPose();
+
+        // 2. Build a new pose with the same X/Y but heading = 0
+        Pose2d zeroed = new Pose2d(
+            current.getX(),
+            current.getY(),
+            new Rotation2d(0.0)
+        );
+
+        // 3. Reset the drivetrain pose estimator to this new pose
+        swerve.seedPoseFromVision(zeroed);
+    }
 }

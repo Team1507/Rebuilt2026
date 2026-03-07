@@ -46,4 +46,12 @@ public class AgitatorSubsystem extends SubsystemBase {
     public double getDutyCycle() {
         return inputs.dutyCycle;
     }
+
+    public void setFeeding() {
+        inputs.feedingEnabled = true;
+    }
+
+    public void resetFeeding() {
+        inputs.feedingEnabled = false;
+    }
 }

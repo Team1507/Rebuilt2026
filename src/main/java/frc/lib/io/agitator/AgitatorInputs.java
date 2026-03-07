@@ -20,4 +20,6 @@ public class AgitatorInputs {
 
     /** Motor current (amps). */
     public double currentA = 0.0;
+
+    public boolean feedingEnabled = false;
 }

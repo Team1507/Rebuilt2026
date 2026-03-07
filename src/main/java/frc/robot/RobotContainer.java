@@ -466,6 +466,12 @@ public class RobotContainer {
         topDriver.povUp().whileTrue(AgitatorCommands.toShooter(agitatorSubsystem));
         topDriver.povDown().whileTrue(AgitatorCommands.toIntake(agitatorSubsystem));
 
+        // ----------------------------
+        // Reset Gyro
+        // ----------------------------
+        bottomDriver.start().whileTrue(
+            Commands.run(() -> localizationManager.resetHeadingToZero())
+        );
     }
 
     // ==========================================================
