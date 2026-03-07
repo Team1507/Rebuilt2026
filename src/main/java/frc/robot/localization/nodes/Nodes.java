@@ -136,10 +136,10 @@ public final class Nodes {
         public static final Pose2d RIGHT =
                 new Pose2d(0.014, 1.082, Rotation2d.fromDegrees(0.0));
 
-        private static final Pose2d LEFT_APPROACH_POINT =
-                new Pose2d(0.60, 0.651, Rotation2d.fromDegrees(0.0));
-        private static final Pose2d RIGHT_APPROACH_POINT =
-                new Pose2d(0.60, 1.082, Rotation2d.fromDegrees(0.0));
+        public static final Pose2d LEFT_APPROACH_POINT =
+                new Pose2d(1.0, 0.651, Rotation2d.fromDegrees(0.0));
+        public static final Pose2d RIGHT_APPROACH_POINT =
+                new Pose2d(1.0, 0.75, Rotation2d.fromDegrees(180.0));
 
         public static final Pose2d APPROACH_LEFT =
                 approach(LEFT_APPROACH_POINT, LEFT);

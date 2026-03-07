@@ -501,6 +501,10 @@ public class RobotContainer {
             AutoahRaymond.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
             autoChooser.addOption(
+            "Auto Blue Human Player",
+            AutoHumanPlayerBlue.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+
+            autoChooser.addOption(
             "Auto Blue Depot",
             AutoBlueDepot.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
