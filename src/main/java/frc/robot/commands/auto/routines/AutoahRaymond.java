@@ -16,12 +16,14 @@ import frc.robot.Constants.kShooter;
 import frc.robot.commands.auto.AutoSequence;
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
+import frc.robot.localization.nodes.Nodes;
 
 public class AutoahRaymond{
   /** Creates a new AutoBlueCenterRaymond. */
    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
+            .resetPose(Nodes.Start.START_SUBWAY_RIGHT)
             .startTimer()
             .shootRPMUntil(4, kShooter.kRPM.BUMP_RAYMOND)
             .build();

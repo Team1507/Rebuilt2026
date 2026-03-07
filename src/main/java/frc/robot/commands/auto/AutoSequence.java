@@ -59,6 +59,7 @@ public class AutoSequence {
 
     private final Timer autoTimer = new Timer();
 
+
     /**
      * Creates a new AutoSequence builder.
      *
@@ -70,6 +71,7 @@ public class AutoSequence {
      * autonomous routine. Individual steps may override these values using
      * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}.</p>
      */
+
     public AutoSequence(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
         this.record = record;
         this.coordinator = coordinator;
