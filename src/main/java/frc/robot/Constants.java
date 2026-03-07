@@ -401,7 +401,7 @@ public class Constants {
         // Mount transform: robot origin -> QuestNav sensor
         public static final Transform3d ROBOT_TO_QUEST =
             new Transform3d(
-                -0.22, 0.27, 0.297 ,
+                -0.22, 0.33, 0.39 ,
                 new Rotation3d(0.0, 0.0, Math.toRadians(90.0))
             );
     }

@@ -15,9 +15,8 @@ import frc.robot.Constants.kVision;
  * Hardware definitions for PhotonVision cameras.
  *
  * This contains ONLY physical configuration:
- *  - camera names
- *  - robot-to-camera transforms
- *  - number of cameras
+ *  - camera name
+ *  - robot-to-camera transform
  *
  * No PhotonVision classes or logic belong here.
  */
@@ -33,11 +32,9 @@ public final class PhotonVisionHardware {
         }
     }
 
-    // Example: two-camera system (BLU + YEL)
-    public static final CameraConfig[] CAMERAS = new CameraConfig[] {
-        new CameraConfig("Bluecam", kVision.BLU.ROBOT_TO_CAMERA),
-        new CameraConfig("Yellowcam", kVision.YEL.ROBOT_TO_CAMERA)
-    };
+    /** Single-camera system: Bluecam only */
+    public static final CameraConfig BLUECAM =
+        new CameraConfig("Bluecam", kVision.BLU.ROBOT_TO_CAMERA);
 
     private PhotonVisionHardware() {}
 }
