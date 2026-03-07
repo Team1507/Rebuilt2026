@@ -224,6 +224,13 @@ public class LocalizationManager extends SubsystemBase {
         quest.seedPose(new Pose3d(pose));
     }
 
+    public void resetPose(Pose2d resetPose) {
+        // Reset the QuestPose
+        resetQuestPose(resetPose);
+        // Reset the drivetrain pose estimator to this new pose
+        swerve.seedPoseFromVision(resetPose);
+    }
+
     public void resetHeadingToZero() {
         // 1. Get the current fused pose (this is what the robot "thinks" it is)
         Pose2d current = getFusedPose();
