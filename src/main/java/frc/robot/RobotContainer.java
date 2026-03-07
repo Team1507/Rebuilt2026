@@ -494,6 +494,10 @@ public class RobotContainer {
             "Auto Blue Subway Right",
             AutoBlueSubwayRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
 
+            autoChooser.addOption(
+            "Auto Blue Subway Left",
+            AutoBlueSubwayLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+
         autoChooser.addOption(
             "Auto Shoot Until",
             AutoShootUntil.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));

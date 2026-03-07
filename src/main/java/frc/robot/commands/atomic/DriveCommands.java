@@ -488,6 +488,20 @@ public final class DriveCommands {
             });
     }
 
+    public static Command driveNoVision(
+        SwerveSubsystem swerve,
+        double distanceMeters,
+        double velocity,          // m/s
+        boolean stopAtEnd
+    ) {
+
+        return new CommandBuilder(swerve)
+            .named("driveNoVision")
+            .onExecute(() -> {
+
+            });
+    }
+
     public static Command driveForwardMeters(
         SwerveSubsystem swerve,
         double distanceMeters,
