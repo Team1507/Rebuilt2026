@@ -437,7 +437,9 @@ public class RobotContainer {
 
         bottomDriver.b()
             .whileTrue (IntakeRollerCommands.outtake(intakeRollerSubsystem))
-            .onFalse(IntakeRollerCommands.stop(intakeRollerSubsystem));
+            .whileTrue(IntakeArmCommands.down(intakeArmSubsystem))
+            .onFalse(IntakeRollerCommands.stop(intakeRollerSubsystem))
+            .onFalse(IntakeArmCommands.up(intakeArmSubsystem));
         
         // ----------------------------
         // Shooting
