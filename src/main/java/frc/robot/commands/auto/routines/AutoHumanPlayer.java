@@ -18,17 +18,19 @@ import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
 
-public class AutoBlueDepot{
+public class AutoHumanPlayer{
   /** Creates a new AutoBlueCenterRaymond. */
    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
+          //.resetPose(Nodes.Start.START_SUBWAY_RIGHT)
             .startTimer()
             .shootRPMUntil(4, kShooter.kRPM.BUMP_RAYMOND)
-            .driveTo(Nodes.Depot.INTAKE_DEPOT)
+            .driveTo(Nodes.Outpost.RIGHT_APPROACH_POINT)
             .intakeDeploy()
-            .withSpeed(MaxSpeed * 0.67)
-            .driveDistance(0.85)
+
+            
+            
             .build();
     }
 

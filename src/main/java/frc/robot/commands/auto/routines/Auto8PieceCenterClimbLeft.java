@@ -18,7 +18,7 @@ import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
 
 
-public class AutoBlue8PieceCenterClimbLeft {
+public class Auto8PieceCenterClimbLeft {
     public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)

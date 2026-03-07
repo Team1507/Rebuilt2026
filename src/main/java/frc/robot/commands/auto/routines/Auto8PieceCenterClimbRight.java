@@ -1,3 +1,4 @@
+
 //  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
 //  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
 //  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
@@ -17,18 +18,13 @@ import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
 
-
-public class AutoBlueDepotLeft {
+public class Auto8PieceCenterClimbRight {
     public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
-            .moveTo(Nodes.Start.START_DEPOT_LEFT)
-            .intakeDeploy()
-            .moveTo(Nodes.Depot.INTAKE_DEPOT)
-            .moveTo(Nodes.AllianceZoneBlue.BACK_LEFT)
-            .intakeRetract()
+            .moveTo(Nodes.AllianceZoneBlue.CENTER)
             .shoot()
-            .moveTo(Nodes.Tower.APPROACH_LEFT)
+            .moveTo(Nodes.Tower.APPROACH_RIGHT)
             .build();
     }
 }

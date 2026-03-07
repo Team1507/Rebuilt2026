@@ -12,29 +12,26 @@ import java.util.function.Consumer;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.kShooter;
 import frc.robot.commands.auto.AutoSequence;
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
 
-
-public class AutoBlueSubwayRight {
-    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
+public class AutoDepot{
+  /** Creates a new AutoBlueCenterRaymond. */
+   public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
-
-
+          //.resetPose(Nodes.Start.START_SUBWAY_LEFT)
             .startTimer()
-            .driveTo(Nodes.Start.START_SUBWAY_RIGHT)
-            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
-            .driveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY)
+            .shootRPMUntil(4, kShooter.kRPM.BUMP_RAYMOND)
+            .driveTo(Nodes.Depot.INTAKE_DEPOT)
             .intakeDeploy()
-            .driveTo(Nodes.Midfield.LEFT_RIGHT_SUBWAY)
-            .moveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY)
-            .intakeRetract()
-            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
-            .driveTo(Nodes.Start.START_SUBWAY_RIGHT)
-            .shoot()
+            .withSpeed(MaxSpeed * 0.67)
+            .driveDistance(0.85)
             .build();
     }
-}
+
+  }
+

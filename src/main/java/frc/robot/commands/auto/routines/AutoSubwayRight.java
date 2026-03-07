@@ -5,7 +5,7 @@
 //  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
-//                         Programmed by Andrew :)
+
 package frc.robot.commands.auto.routines;
 
 import java.util.function.Consumer;
@@ -17,23 +17,24 @@ import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
 
-public class AutoBlueSubwayLeft {
+
+public class AutoSubwayRight {
     public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
-            .startTimer()
-            .moveTo(Nodes.Start.START_SUBWAY_LEFT)
-            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .moveTo(Nodes.Midfield.LEFT_LEFT_SUBWAY)
-            .intakeDeploy()
-            .moveThrough(Nodes.Midfield.RIGHT_LEFT_SUBWAY, 0.5)
-             .intakeRetract()
-            .moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY, 0.5)
-             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .driveTo(Nodes.Start.START_SUBWAY_LEFT)
-            .shootUntil(18)
-             .moveTo(Nodes.Depot.INTAKE_DEPOT)
 
+
+            .startTimer()
+            .driveTo(Nodes.Start.START_SUBWAY_RIGHT)
+            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            .driveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY)
+            .intakeDeploy()
+            .driveTo(Nodes.Midfield.LEFT_RIGHT_SUBWAY)
+            .moveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY)
+            .intakeRetract()
+            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            .driveTo(Nodes.Start.START_SUBWAY_RIGHT)
+            .shoot()
             .build();
     }
 }
