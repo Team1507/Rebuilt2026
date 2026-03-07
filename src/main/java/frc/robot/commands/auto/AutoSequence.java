@@ -14,6 +14,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 // Java
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 // WPI Lib
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,7 +26,7 @@ import edu.wpi.first.wpilibj.Timer;
 // Framework
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
-
+import frc.robot.localization.LocalizationManager;
 // Commands
 import frc.robot.commands.tuning.MoveLog;
 import frc.robot.commands.atomic.*;
@@ -48,6 +50,7 @@ public class AutoSequence {
     // Required subsystem reference for movement commands
     private final SubsystemsRecord record;
     private final CoordinatorRecord coordinator;
+    private final Consumer<Pose2d> resetQuestPose;
     private final double MaxSpeed;
     private final double MaxAngularRate;
 
@@ -67,9 +70,10 @@ public class AutoSequence {
      * autonomous routine. Individual steps may override these values using
      * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}.</p>
      */
-    public AutoSequence(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
+    public AutoSequence(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
         this.record = record;
         this.coordinator = coordinator;
+        this.resetQuestPose = resetQuestPose;
         this.MaxSpeed = MaxSpeed;
         this.MaxAngularRate = MaxAngularRate;
     }
@@ -395,6 +399,11 @@ public class AutoSequence {
         .endLog();
     }
 
+    public AutoSequence resetPose(Pose2d pose) {
+        steps.add(Commands.runOnce(() -> resetQuestPose.accept(pose)));
+        return this;
+    }
+
     /**
      * Wait for a number of seconds before continuing.
      * This is already implemented for students.
@@ -426,7 +435,7 @@ public class AutoSequence {
         List<Command> commands = new ArrayList<>();
 
         for (AutoSequenceBuilder builder : builders) {
-            AutoSequence sub = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
+            AutoSequence sub = new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate);
             builder.build(sub);
             commands.add(sub.build());
         }
@@ -456,7 +465,7 @@ public class AutoSequence {
         List<Command> commands = new ArrayList<>();
 
         for (AutoSequenceBuilder builder : builders) {
-            AutoSequence sub = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
+            AutoSequence sub = new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate);
             builder.build(sub);
             commands.add(sub.build());
         }
@@ -485,12 +494,12 @@ public class AutoSequence {
      * ensuring its steps remain isolated from the parent sequence.</p>
      */
     public AutoSequence deadline(AutoSequenceBuilder deadlineBuilder, AutoSequenceBuilder... others) {
-        AutoSequence deadlineSeq = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
+        AutoSequence deadlineSeq = new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate);
         deadlineBuilder.build(deadlineSeq);
 
         List<Command> otherCMD = new ArrayList<>();
         for (AutoSequenceBuilder builder : others) {
-            AutoSequence sub = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
+            AutoSequence sub = new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate);
             builder.build(sub);
             otherCMD.add(sub.build());
         }

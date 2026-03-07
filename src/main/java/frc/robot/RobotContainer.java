@@ -492,36 +492,35 @@ public class RobotContainer {
 
         autoChooser.addOption(
             "Auto Blue Subway Right",
-            AutoBlueSubwayRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+            AutoBlueSubwayRight.build(subsystemsRecord, coordinatorRecord, localizationManager::resetQuestPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
-            autoChooser.addOption(
+        autoChooser.addOption(
             "Auto Blue Subway Left",
-            AutoBlueSubwayLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+            AutoBlueSubwayLeft.build(subsystemsRecord, coordinatorRecord, localizationManager::resetQuestPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Shoot Until",
-            AutoShootUntil.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            AutoShootUntil.build(subsystemsRecord, coordinatorRecord, localizationManager::resetQuestPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Autoah Raymond",
-            AutoahRaymond.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            AutoahRaymond.build(subsystemsRecord, coordinatorRecord, localizationManager::resetQuestPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
-            autoChooser.addOption(
+        autoChooser.addOption(
             "Auto Blue Human Player",
-            AutoHumanPlayerBlue.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            AutoHumanPlayerBlue.build(subsystemsRecord, coordinatorRecord, localizationManager::resetQuestPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
-            autoChooser.addOption(
+        autoChooser.addOption(
             "Auto Blue Depot",
-            AutoBlueDepot.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            AutoBlueDepot.build(subsystemsRecord, coordinatorRecord, localizationManager::resetQuestPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
-            autoChooser.addOption(
+        autoChooser.addOption(
             "Auto Blue Quest Test",
-            AutoTestQuest.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
-
+            AutoTestQuest.build(subsystemsRecord, coordinatorRecord, localizationManager::resetQuestPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Move Log",
-            AutoMoveLog.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
+            AutoMoveLog.build(subsystemsRecord, coordinatorRecord, localizationManager::resetQuestPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {
