@@ -95,6 +95,8 @@ public class DashboardManager {
         nt.getDoubleTopic("Shooter/BLU/Distance To Target").publish();
     private final DoublePublisher pubBLUShooterRPM =
         nt.getDoubleTopic("Shooter/BLU/Current RPM").publish();
+    private final DoublePublisher pubBLUShooterTargetRPM =
+        nt.getDoubleTopic("Shooter/BLU/Target RPM").publish();
 
     private final BooleanPublisher pubYELShooterSensor =
         nt.getBooleanTopic("Shooter/YEL/Sensor").publish();
@@ -102,12 +104,14 @@ public class DashboardManager {
         nt.getDoubleTopic("Shooter/YEL/Distance To Target").publish();
     private final DoublePublisher pubYELShooterRPM =
         nt.getDoubleTopic("Shooter/YEL/Current RPM").publish();
+        private final DoublePublisher pubYELShooterTargetRPM =
+        nt.getDoubleTopic("Shooter/YEL/Target RPM").publish();
 
     /* ---------------- Localization ---------------- */
     private final BooleanPublisher pubSeeded =
         nt.getBooleanTopic("Localization/PoseSeeded").publish();
-    private final BooleanSubscriber subResetSeed =
-        nt.getBooleanTopic("Localization/ResetPoseSeed").subscribe(false);
+    private final BooleanPublisher pubLocalizationResetSeed =
+        nt.getBooleanTopic("Localization/ResetPoseSeed").publish();
     private final DoublePublisher pubQuestBattery =
         nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
     private final BooleanPublisher pubQuestTracking =
@@ -148,6 +152,7 @@ public class DashboardManager {
 
     public void initDashboard() {
         SmartDashboard.putData("Auto Mode", autoChooser);
+        pubLocalizationResetSeed.set(false);
     }
 
     public void updateInputs() {
@@ -174,18 +179,23 @@ public class DashboardManager {
         pubBLUShooterRPM.set(subsystems.BLUshooter().getShooterRPM());
         pubBLUShooterSensor.set(bluShooter.ballFired);
         pubBLUShooterDist.set(bluShooter.distanceToTarget);
+        pubBLUShooterTargetRPM.set(subsystems.BLUshooter().getTargetRPM());
 
         var yelShooter = subsystems.YELshooter().getInputs();
         pubYELShooterRPM.set(subsystems.YELshooter().getShooterRPM());
         pubYELShooterSensor.set(yelShooter.ballFired);
         pubYELShooterDist.set(yelShooter.distanceToTarget);
+        pubYELShooterTargetRPM.set(subsystems.YELshooter().getTargetRPM());
 
         /* ---------------- Localization ---------------- */
         pubSeeded.set(localization.localizationManager().isStartupSeeded());
 
-        if (subResetSeed.get()) {
+        boolean resetSeed =
+            nt.getEntry("Localization/ResetPoseSeed").getBoolean(false);
+
+        if (resetSeed) {
             localization.localizationManager().resetVisionSeed();
-            nt.getBooleanTopic("Localization/ResetPoseSeed").publish().set(false);
+            nt.getEntry("Localization/ResetPoseSeed").setBoolean(false);
         }
 
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));

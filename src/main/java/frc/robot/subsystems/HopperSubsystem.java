@@ -62,9 +62,6 @@ public class HopperSubsystem extends SubsystemBase {
         if(safePower > 0.5) {
             io.runPower(kHopper.MANUAL_POSITIVE_POWER);
         }
-        else if(safePower< -0.5){
-            io.runPower(kHopper.MANUAL_NEGATIVE_POWER);
-        }
         else {
             io.runPower(0);
         }

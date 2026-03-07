@@ -159,6 +159,48 @@ public class AutoSequence {
         return this;
     }
 
+     public AutoSequence driveDistance(double target) {
+
+        double speedToUse = (nextSpeedOverride != null)
+            ? nextSpeedOverride
+            : MaxSpeed;
+
+        nextSpeedOverride = null;
+        nextAngularOverride = null;
+
+        steps.add(DriveCommands.driveForwardMeters(
+            record.swerve(),
+            target,
+            speedToUse,
+            false
+        ));
+
+        return this;
+    }
+    
+    public AutoSequence driveTo(Pose2d target) {
+
+        double speedToUse = (nextSpeedOverride != null)
+            ? nextSpeedOverride
+            : MaxSpeed;
+
+        double angularToUse = (nextAngularOverride != null)
+            ? nextAngularOverride
+            : MaxAngularRate;
+
+        nextSpeedOverride = null;
+        nextAngularOverride = null;
+
+        steps.add(DriveCommands.driveToPoint(
+            record.swerve(),
+            target,
+            speedToUse,
+            false
+        ));
+
+        return this;
+    }
+
     /**
      * Adds a movement step that drives the robot *through* the specified pose
      * without slowing down or attempting to stop precisely on the point.
@@ -267,6 +309,18 @@ public class AutoSequence {
             Commands.race(
                 ShooterControllers.shootModelBased(
                     coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY
+                ),
+                Commands.waitUntil(() -> autoTimer.get() >= endTime)
+            )
+        );
+        return this;
+    }
+
+    public AutoSequence shootRPMUntil(double endTime, double RPM) {
+        steps.add(
+            Commands.race(
+                ShooterControllers.shootFixedRPM(
+                    coordinator, RPM, kAgitator.AGITATE_TO_SHOOTER_DUTY
                 ),
                 Commands.waitUntil(() -> autoTimer.get() >= endTime)
             )

@@ -44,7 +44,7 @@ public final class Nodes {
     public static final class Hub {
         // Center of the Hub (computed from all 8 tags)
         public static final Pose2d CENTER =
-                new Pose2d(4.545, 4.020, Rotation2d.fromDegrees(0.0));
+                new Pose2d(4.6, 4.03, Rotation2d.fromDegrees(0.0));
 
         // Faces (approximate, based on tag clusters)
         public static final Pose2d FRONT_LEFT =
@@ -122,7 +122,8 @@ public final class Nodes {
                 approach(RIGHT_POINT, CENTER);
 
         public static final Pose2d INTAKE_DEPOT =
-                new Pose2d(0.2, 6.0, Rotation2d.fromDegrees(90.0));
+                new Pose2d(2.0, 5.8, Rotation2d.fromDegrees(180.0)) ;
+        
     }
 
     // ============================

@@ -204,9 +204,11 @@ public class Constants {
         // General shooter limits
         public static final class kRPM {
             public static final double MAX  = 4000.0;
-            public static final double LOB  = 1000.0;
+            public static final double LOB  = 2650.0;
             public static final double IDLE = 500.0;
             public static final double SAFE = 2800.0;
+
+            public static final double BUMP_RAYMOND = 2650;
         }
 
         public static final double TARGET_TOLERANCE = 20.0;
@@ -299,7 +301,7 @@ public class Constants {
         public static final double XY_KD = 0.45;
 
         // PID gains for rotation
-        public static final double THETA_KP = 1.0;
+        public static final double THETA_KP = 1.4;
         public static final double THETA_KI = 0.0;
         public static final double THETA_KD = 0.0;
 

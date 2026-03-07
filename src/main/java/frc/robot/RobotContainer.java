@@ -364,7 +364,7 @@ public class RobotContainer {
         // Hopper Default Command
         // ----------------------------
         hopperSubsystem.setDefaultCommand(
-            HopperCommands.manualPower(hopperSubsystem, () -> topDriver.getRightY())
+         HopperCommands.manualPower(hopperSubsystem, () -> topDriver.getRightY())
         );
     }
 
@@ -441,13 +441,7 @@ public class RobotContainer {
 
         // shoot ML
           bottomDriver.rightTrigger()
-            .whileTrue(
-                DriveCommands.maintainHeadingToTarget(
-                    swerve,
-                    shooterBLUsystem::getTargetPose,
-                    () -> -bottomDriver.getLeftY() * kSwerve.MAX_SPEED,
-                    () -> -bottomDriver.getLeftX() * kSwerve.MAX_SPEED)
-                .alongWith(ShooterControllers.shootModelBased(coordinatorRecord, kAgitator.AGITATE_TO_SHOOTER_DUTY)));
+            .whileTrue(ShooterControllers.shootModelBased(coordinatorRecord, kAgitator.AGITATE_TO_SHOOTER_DUTY));
 
         // Shoot lob
         bottomDriver.rightBumper()
@@ -491,6 +485,15 @@ public class RobotContainer {
         autoChooser.addOption(
             "Auto Shoot Until",
             AutoShootUntil.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+
+        autoChooser.addOption(
+            "Autoah Raymond",
+            AutoahRaymond.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+
+            autoChooser.addOption(
+            "Auto Blue Depot",
+            AutoBlueDepot.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+
 
         autoChooser.addOption(
             "Auto Move Log",
