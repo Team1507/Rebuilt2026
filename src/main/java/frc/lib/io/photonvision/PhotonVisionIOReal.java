@@ -60,7 +60,7 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
     }
 
     @Override
-    public void updateInputs(PhotonVisionInputs inputs, boolean seeded) {
+    public void updateInputs(PhotonVisionInputs inputs) {
 
         double now = Timer.getFPGATimestamp();
         Rotation2d heading = headingSupplier.get();

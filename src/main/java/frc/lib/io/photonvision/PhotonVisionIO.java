@@ -24,7 +24,7 @@ public interface PhotonVisionIO {
      * @param inputs The PhotonVisionInputs object to populate.
      * @param seeded Whether the pose estimator has been seeded.
      */
-    void updateInputs(PhotonVisionInputs inputs, boolean seeded);
+    void updateInputs(PhotonVisionInputs inputs);
 
     /** Number of cameras in the system. */
     int getCameraCount();

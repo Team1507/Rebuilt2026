@@ -37,8 +37,6 @@ public class PVManager extends SubsystemBase {
 
     private final PVPerCameraProcessor processor;
 
-    private boolean seeded = false;
-
     // Fused PV output
     private Optional<Pose2d> fusedPose = Optional.empty();
     private double fusedTimestamp = 0.0;
@@ -77,7 +75,7 @@ public class PVManager extends SubsystemBase {
         if (now - lastProcessTime < PROCESS_PERIOD) return;
         lastProcessTime = now;
 
-        io.updateInputs(inputs, seeded);
+        io.updateInputs(inputs);
 
         // Reset fused output
         fusedPose = Optional.empty();
@@ -90,7 +88,6 @@ public class PVManager extends SubsystemBase {
 
         // Debug state
         debugInfo.tagMode = tagMode.toString();
-        debugInfo.seeded = seeded;
 
         // Pull camera input
         var cam = inputs.camera;
@@ -173,10 +170,6 @@ public class PVManager extends SubsystemBase {
     public void setTagMode(PVPerCameraProcessor.TagMode newMode) {
         this.tagMode = newMode;
         processor.setTagMode(newMode);
-    }
-
-    public void setSeeded(boolean seeded) {
-        this.seeded = seeded;
     }
 
     public Optional<Pose2d> getFusedPose() {

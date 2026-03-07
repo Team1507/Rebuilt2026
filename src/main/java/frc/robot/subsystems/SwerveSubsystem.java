@@ -112,7 +112,7 @@ public class SwerveSubsystem extends SubsystemBase {
         io.addVisionMeasurement(pose, timestamp, stdDevs);
     }
 
-    public void seedPoseFromVision(Pose2d visionPose) {
+    public void setPoseFromVision(Pose2d visionPose) {
         // Reset pose estimator
         io.resetPose(visionPose);
 

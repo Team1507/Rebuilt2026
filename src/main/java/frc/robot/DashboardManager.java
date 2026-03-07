@@ -108,10 +108,6 @@ public class DashboardManager {
         nt.getDoubleTopic("Shooter/YEL/Target RPM").publish();
 
     /* ---------------- Localization ---------------- */
-    private final BooleanPublisher pubSeeded =
-        nt.getBooleanTopic("Localization/PoseSeeded").publish();
-    private final BooleanPublisher pubLocalizationResetSeed =
-        nt.getBooleanTopic("Localization/ResetPoseSeed").publish();
     private final DoublePublisher pubQuestBattery =
         nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
     private final BooleanPublisher pubQuestTracking =
@@ -152,7 +148,6 @@ public class DashboardManager {
 
     public void initDashboard() {
         SmartDashboard.putData("Auto Mode", autoChooser);
-        pubLocalizationResetSeed.set(false);
     }
 
     public void updateInputs() {
@@ -188,15 +183,6 @@ public class DashboardManager {
         pubYELShooterTargetRPM.set(subsystems.YELshooter().getTargetRPM());
 
         /* ---------------- Localization ---------------- */
-        pubSeeded.set(localization.localizationManager().isStartupSeeded());
-
-        boolean resetSeed =
-            nt.getEntry("Localization/ResetPoseSeed").getBoolean(false);
-
-        if (resetSeed) {
-            localization.localizationManager().resetVisionSeed();
-            nt.getEntry("Localization/ResetPoseSeed").setBoolean(false);
-        }
 
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
         pubQuestTracking.set(localization.questNav().isTracking());

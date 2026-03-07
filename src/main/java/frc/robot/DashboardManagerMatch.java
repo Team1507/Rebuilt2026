@@ -14,11 +14,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.lib.core.util.Alliance;
-import frc.robot.commands.atomic.*;
-import frc.robot.framework.*;
 import edu.wpi.first.wpilibj.DriverStation;
 
 
@@ -66,10 +62,6 @@ public class DashboardManagerMatch
         nt.getDoubleTopic("Intake/Arm/YEL/Current Position").publish();
 
     //visoion
-    private final BooleanPublisher pubSeeded =
-        nt.getBooleanTopic("Localization/PoseSeeded").publish();
-    private final BooleanPublisher pubLocalizationResetSeed =
-        nt.getBooleanTopic("Localization/ResetPoseSeed").publish();
     private final DoublePublisher pubQuestBattery =
         nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
     private final BooleanPublisher pubHasGoodVision =
@@ -102,7 +94,6 @@ public class DashboardManagerMatch
 
     public void initDashboard() {
         SmartDashboard.putData("Auto Mode", autoChooser);
-        pubLocalizationResetSeed.set(false);
         gameData = null;
         hubActive = true;
     }
@@ -135,15 +126,6 @@ public class DashboardManagerMatch
         pubIntakeYELPos.set(intake.yelPositionDeg);
 
         //quest
-        pubSeeded.set(localization.localizationManager().isStartupSeeded());
-
-        boolean resetSeed =
-            nt.getEntry("Localization/ResetPoseSeed").getBoolean(false);
-
-        if (resetSeed) {
-            localization.localizationManager().resetVisionSeed();
-            nt.getEntry("Localization/ResetPoseSeed").setBoolean(false);
-        }
 
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
         pubHasGoodVision.set(localization.pvManager().hasGoodVision());

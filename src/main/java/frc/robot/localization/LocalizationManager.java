@@ -36,7 +36,6 @@ public class LocalizationManager extends SubsystemBase {
     private final QuestNavManager quest;
     private final Telemetry telemetry;
 
-    private boolean startupSeeded = false;
     private int pvStableCount = 0;
 
     // 20 Hz throttle
@@ -85,16 +84,16 @@ public class LocalizationManager extends SubsystemBase {
         Pose2d odomPose = swerve.getPose();
 
         // ============================
-        // 2. Startup seeding
+        // 2. Disabled set pose based on PhotonVision
         // PV must be stable AND QuestNav must be tracking
         // ============================
 
-        if (!startupSeeded) {
+        if (!enabled) {
 
             boolean pvStable =
                 pvGood &&
                 pv.getFusedXyStd() < 1.0 &&
-                pv.getFusedAngStd() < 0.7;
+                pv.getFusedAngStd() < 1.0;
 
             if (pvStable) pvStableCount++;
             else pvStableCount = 0;
@@ -103,15 +102,10 @@ public class LocalizationManager extends SubsystemBase {
                 Pose2d seed = pvPoseOpt.get();
 
                 // Seed drivetrain
-                swerve.seedPoseFromVision(seed);
+                swerve.setPoseFromVision(seed);
 
                 // Seed QuestNav
-                quest.seedPose(new Pose3d(seed));
-
-                startupSeeded = true;
-                pv.setSeeded(true);
-
-                telemetry.logVisionStartupSeed(seed);
+                quest.setPose(new Pose3d(seed));
             }
         }
 
@@ -186,9 +180,9 @@ public class LocalizationManager extends SubsystemBase {
         // ============================
 
         if (!enabled) {
-            // DISABLED → PhotonVision ONLY reseeds
+            // DISABLED → PhotonVision ONLY sets pose
             if (pvGood) {
-                swerve.seedPoseFromVision(pvPoseOpt.get());
+                swerve.setPoseFromVision(pvPoseOpt.get());
             }
             return;
         }
@@ -211,24 +205,15 @@ public class LocalizationManager extends SubsystemBase {
         return swerve.getPose();
     }
 
-    public boolean isStartupSeeded() {
-        return startupSeeded;
-    }
-
-    public void resetVisionSeed() {
-        startupSeeded = false;
-        pv.setSeeded(false);
-    }
-
     public void resetQuestPose(Pose2d pose) {
-        quest.seedPose(new Pose3d(pose));
+        quest.setPose(new Pose3d(pose));
     }
 
     public void resetPose(Pose2d resetPose) {
         // Reset the QuestPose
         resetQuestPose(resetPose);
         // Reset the drivetrain pose estimator to this new pose
-        swerve.seedPoseFromVision(resetPose);
+        swerve.setPoseFromVision(resetPose);
     }
 
     public void resetHeadingToZero() {
@@ -243,6 +228,6 @@ public class LocalizationManager extends SubsystemBase {
         );
 
         // 3. Reset the drivetrain pose estimator to this new pose
-        swerve.seedPoseFromVision(zeroed);
+        swerve.setPoseFromVision(zeroed);
     }
 }
