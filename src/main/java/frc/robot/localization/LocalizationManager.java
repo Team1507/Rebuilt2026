@@ -43,18 +43,6 @@ public class LocalizationManager extends SubsystemBase {
     private double lastProcessTime = 0.0;
     private static final double PERIOD = 0.05;
 
-    // Vision source enable flags
-    private boolean usePhotonVision = true;
-    private boolean useQuestNav = true;
-
-    public void enablePhotonVision(boolean enable) {
-        usePhotonVision = enable;
-    }
-
-    public void enableQuestNav(boolean enable) {
-        useQuestNav = enable;
-    }
-
     public LocalizationManager(
         SwerveSubsystem swerve,
         PVManager pv,
@@ -85,21 +73,22 @@ public class LocalizationManager extends SubsystemBase {
         // ============================
 
         var pvPoseOpt = pv.getFusedPose();
-        boolean pvGood = usePhotonVision && pv.hasGoodVision();
-        boolean pvClose = usePhotonVision && pvClose();
+        boolean pvGood = pv.hasGoodVision();
+        boolean pvClose = pvClose();
 
-        boolean questGood = useQuestNav && quest.isTracking();
+        boolean questGood = quest.isTracking();
         Pose2d questPose = quest.getPose2d();
         double questTs = quest.getTimestamp();
 
         Pose2d odomPose = swerve.getPose();
+
         boolean enabled = DriverStation.isEnabled();
 
         // ============================
         // 2. Startup seeding (PV only)
         // ============================
 
-        if (!startupSeeded && usePhotonVision) {
+        if (!startupSeeded) {
 
             boolean pvStable =
                 pvGood &&
@@ -111,7 +100,7 @@ public class LocalizationManager extends SubsystemBase {
 
             if (pvStableCount >= 5) {
                 Pose2d seed = pvPoseOpt.get();
-                
+
                 // Seed drivetrain
                 swerve.seedPoseFromVision(seed);
 
@@ -132,20 +121,20 @@ public class LocalizationManager extends SubsystemBase {
         Pose2d translationSource;
 
         if (!enabled) {
-            // Disabled → PV or QuestNav or Odometry
+            // Disabled → PV owns translation
             if (pvGood) {
                 translationSource = pvPoseOpt.get();
                 telemetry.logLocalizationTranslationSource("PhotonVision (Disabled)");
             } else if (questGood) {
                 translationSource = questPose;
-                telemetry.logLocalizationTranslationSource("QuestNav (Disabled)");
+                telemetry.logLocalizationTranslationSource("QuestNav (Disabled-Fallback)");
             } else {
                 translationSource = odomPose;
                 telemetry.logLocalizationTranslationSource("Odometry (Disabled-Fallback)");
             }
         }
         else {
-            // Enabled → QuestNav primary
+            // Enabled → QuestNav owns translation
             if (questGood) {
                 translationSource = questPose;
                 telemetry.logLocalizationTranslationSource("QuestNav");
@@ -173,7 +162,7 @@ public class LocalizationManager extends SubsystemBase {
                 telemetry.logLocalizationHeadingSource("PhotonVision (Disabled)");
             } else if (questGood) {
                 heading = questPose.getRotation();
-                telemetry.logLocalizationHeadingSource("QuestNav (Disabled)");
+                telemetry.logLocalizationHeadingSource("QuestNav (Disabled-Fallback)");
             } else {
                 heading = swerve.getHeading();
                 telemetry.logLocalizationHeadingSource("Gyro (Disabled-Fallback)");
@@ -207,11 +196,9 @@ public class LocalizationManager extends SubsystemBase {
         // ============================
 
         if (!enabled) {
-            // Disabled → reseed from whichever source is active
+            // Disabled → PV fully controls pose
             if (pvGood) {
                 swerve.seedPoseFromVision(pvPoseOpt.get());
-            } else if (questGood) {
-                swerve.seedPoseFromVision(questPose);
             }
             return;
         }
@@ -259,7 +246,7 @@ public class LocalizationManager extends SubsystemBase {
     public void resetQuestPose(Pose2d pose) {
         quest.seedPose(new Pose3d(pose));
     }
-
+    
     public void resetHeadingToZero() {
         // 1. Get the current fused pose (this is what the robot "thinks" it is)
         Pose2d current = getFusedPose();

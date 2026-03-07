@@ -508,6 +508,10 @@ public class RobotContainer {
             "Auto Blue Depot",
             AutoBlueDepot.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
+            autoChooser.addOption(
+            "Auto Blue Quest Test",
+            AutoTestQuest.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+
 
         autoChooser.addOption(
             "Auto Move Log",

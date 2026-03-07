@@ -7,14 +7,20 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.framework.LocalizationRecord;
 import frc.robot.framework.SubsystemsRecord;
+
+import java.util.Optional;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.lib.core.util.Alliance;
 import frc.robot.commands.atomic.*;
 import frc.robot.framework.*;
+import edu.wpi.first.wpilibj.DriverStation;
+
 
 /** Add your docs here. */
 public class DashboardManagerMatch 
@@ -28,6 +34,10 @@ public class DashboardManagerMatch
 
     private double lastUpdate = 0.0;
     private static final double PERIOD = 0.20;   // 5 Hz
+
+    public boolean hubActive;
+    public String gameData;
+    Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
 
     //stuff
 
@@ -77,6 +87,9 @@ public class DashboardManagerMatch
     private final BooleanPublisher pubSetRobotPose =
         nt.getBooleanTopic("Set Pose/Reset Pose").publish();
 
+    //hubby
+    //private final 
+
     public DashboardManagerMatch(
         SubsystemsRecord subsystems,
         LocalizationRecord localization,
@@ -90,6 +103,8 @@ public class DashboardManagerMatch
     public void initDashboard() {
         SmartDashboard.putData("Auto Mode", autoChooser);
         pubLocalizationResetSeed.set(false);
+        gameData = null;
+        hubActive = true;
     }
 
     public void updateInputs() {
@@ -133,7 +148,7 @@ public class DashboardManagerMatch
         pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
         pubHasGoodVision.set(localization.pvManager().hasGoodVision());
 
-        double poseX = nt.getEntry("Set Pose/X").getDouble(0.0);
+                double poseX = nt.getEntry("Set Pose/X").getDouble(0.0);
         double poseY = nt.getEntry("Set Pose/Y").getDouble(0.0);
         double poseTheta = nt.getEntry("Set Pose/Theta").getDouble(0.0);
 
@@ -148,5 +163,34 @@ public class DashboardManagerMatch
             ));
             nt.getEntry("Set Pose/Reset Pose").setBoolean(false);
         }
+        
+        //hub stuff
+        gameData = DriverStation.getGameSpecificMessage();
+        if(gameData.length() > 0 && alliance.get().equals("Red")){
+            switch (gameData.charAt(0)){
+                case 'R' :
+                hubActive = true;
+                break;
+                case 'B' :
+                hubActive = false;
+                break;
+                default :
+                break;
+            }
+        }
+        else if(gameData.length() > 0 && alliance.get().equals("Blue")){
+            switch (gameData.charAt(0)){
+                case 'B' :
+                hubActive = true;
+                break;
+                case 'R' :
+                hubActive = false;
+                break;
+                default :
+                break;
+            }
+        }
+
     }
 }
+

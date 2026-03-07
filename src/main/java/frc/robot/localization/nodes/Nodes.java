@@ -264,7 +264,7 @@ public final class Nodes {
         public static final Pose2d LEFT =
                 new Pose2d(1.0, 2.000, Rotation2d.fromDegrees(0.0));
         public static final Pose2d CENTER =
-                new Pose2d(1.0, 4.115, Rotation2d.fromDegrees(0.0));
+                new Pose2d(2.5, 4.03, Rotation2d.fromDegrees(0.0));
         public static final Pose2d RIGHT =
                 new Pose2d(1.0, 6.200, Rotation2d.fromDegrees(0.0));
         public static final Pose2d BACK_LEFT =
