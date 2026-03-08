@@ -10,6 +10,7 @@ package frc.robot.commands.coordinators;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.core.util.CommandBuilder;
+import frc.robot.Constants.kIntake;
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.subsystems.ShooterSubsystem;
 
@@ -49,12 +50,14 @@ public final class ShooterControllers {
     // -------------------------------------------------------------------------
     public static Command shootModelBased(
         CoordinatorRecord record,
-        double agitatorDuty
+        double agitatorDuty,
+        double intakeRoller
     ) {
         return new CommandBuilder(
             record.BLUshooter(), record.YELshooter(),
             record.BLUfeeder(), record.YELfeeder(),
-            record.agitator()
+            record.agitator(),
+            record.roller()
         )
         .named("ShootModelBased")
         .onExecute(() -> {
@@ -68,6 +71,7 @@ public final class ShooterControllers {
 
             record.BLUfeeder().runRPM(bluFeederRPM);
             record.YELfeeder().runRPM(yelFeederRPM);
+            record.roller().run(intakeRoller);
 
             // 3. Latch feeding once shooters are ready
             if (!record.agitator().getInputs().feedingEnabled &&
@@ -89,6 +93,8 @@ public final class ShooterControllers {
             record.agitator().stop();
             // Resetting feedingEnabled for the agitator
             record.agitator().resetFeeding();
+
+            record.roller().stop();
         });
     }
 
@@ -98,17 +104,20 @@ public final class ShooterControllers {
     public static Command shootFixedRPM(
         CoordinatorRecord record,
         double shooterRPM,
-        double agitatorDuty
+        double agitatorDuty,
+        double intakeRoller
     ) {
         return new CommandBuilder(
             record.BLUshooter(), record.YELshooter(),
             record.BLUfeeder(), record.YELfeeder(),
-            record.agitator()
+            record.agitator(),
+            record.roller()
         )
         .named("ShootFixedRPM")
         .onInitialize(() -> {
             record.BLUshooter().setTargetRPM(shooterRPM);
             record.YELshooter().setTargetRPM(shooterRPM);
+            record.roller().run(intakeRoller);
         })
         .onExecute(() -> {
             // Feeders always spin once command starts
@@ -139,6 +148,8 @@ public final class ShooterControllers {
             record.agitator().stop();
             // Resetting feedingEnabled for the agitator
             record.agitator().resetFeeding();
+
+            record.roller().stop();
         });
     }
 }

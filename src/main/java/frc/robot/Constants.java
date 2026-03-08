@@ -127,7 +127,7 @@ public class Constants {
         /** Hopper target positions (in degrees). */ 
         public static final double RETRACTED_POS = 0.0; 
         public static final double EXTENDED_POS = 12.0;
-        public static final double SAFE_EXTENDED = 7.5;
+        public static final double SAFE_EXTENDED = 10.0;
         public static final double MAX_POS = 12.1;
 
         public static final double MANUAL_POSITIVE_POWER = -0.2;
@@ -152,8 +152,9 @@ public class Constants {
     public static final class kIntake {
 
         public static final double INTAKE_ROLLER_DUTY_LOW = 0.35;
-        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.5;
+        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.7;
         public static final double OUTTAKE_ROLLER_DUTY = -0.35;
+        
         
 
         public static final MotorConfig ROLLER_CONFIG =
@@ -401,7 +402,7 @@ public class Constants {
         // Mount transform: robot origin -> QuestNav sensor
         public static final Transform3d ROBOT_TO_QUEST =
             new Transform3d(
-                -0.22, 0.33, 0.39,
+                -0.20226, 0.304165, 0.39,
                 new Rotation3d(0.0, 0.0, Math.toRadians(90.0))
             );
     }

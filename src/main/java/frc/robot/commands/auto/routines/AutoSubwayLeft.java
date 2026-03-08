@@ -22,7 +22,7 @@ public class AutoSubwayLeft {
 
         return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
             .startTimer()
-            .moveTo(Nodes.Start.START_SUBWAY_LEFT)
+            .moveTo(Nodes.Start.LEFT)
             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
             .moveTo(Nodes.Midfield.LEFT_LEFT_SUBWAY)
             .intakeDeploy()
@@ -30,7 +30,7 @@ public class AutoSubwayLeft {
              .intakeRetract()
             .moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY, 0.5)
              .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .driveTo(Nodes.Start.START_SUBWAY_LEFT)
+            .driveTo(Nodes.Start.LEFT)
             .shootUntil(18)
              .moveTo(Nodes.Depot.INTAKE_DEPOT)
 

@@ -301,7 +301,7 @@ public class RobotContainer {
         new CoordinatorRecord(
             shooterYELsystem, shooterBLUsystem, 
             feederYELsystem, feederBLUsystem, 
-            agitatorSubsystem
+            agitatorSubsystem, intakeRollerSubsystem
         );
 
     // ==========================================================
@@ -447,11 +447,11 @@ public class RobotContainer {
 
         // shoot ML
           bottomDriver.rightTrigger()
-            .whileTrue(ShooterControllers.shootModelBased(coordinatorRecord, kAgitator.AGITATE_TO_SHOOTER_DUTY));
+            .whileTrue(ShooterControllers.shootModelBased(coordinatorRecord, kAgitator.AGITATE_TO_SHOOTER_DUTY, kIntake.INTAKE_ROLLER_DUTY_HIGH));
 
         // Shoot lob
         bottomDriver.rightBumper()
-            .whileTrue(ShooterControllers.shootFixedRPM(coordinatorRecord, kShooter.kRPM.LOB, kAgitator.AGITATE_TO_SHOOTER_DUTY));
+            .whileTrue(ShooterControllers.shootFixedRPM(coordinatorRecord, kShooter.kRPM.LOB, kAgitator.AGITATE_TO_SHOOTER_DUTY, kIntake.INTAKE_ROLLER_DUTY_HIGH));
         
         // ----------------------------
         // Climber
@@ -507,8 +507,8 @@ public class RobotContainer {
             AutoahRaymond.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Blue Human Player",
-            AutoHumanPlayer.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Blue Human Player Q",
+            AutoHumanPlayerQuest.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Blue Depot",

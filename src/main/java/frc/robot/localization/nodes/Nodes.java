@@ -139,7 +139,9 @@ public final class Nodes {
         public static final Pose2d LEFT_APPROACH_POINT =
                 new Pose2d(1.0, 0.651, Rotation2d.fromDegrees(0.0));
         public static final Pose2d RIGHT_APPROACH_POINT =
-                new Pose2d(1.0, 0.75, Rotation2d.fromDegrees(180.0));
+                new Pose2d(0.7, 1.1, Rotation2d.fromDegrees(180.0));
+        public static final Pose2d RIGHT_APPROACH_POINT_QUEST =
+                new Pose2d(0.9, 1.1, Rotation2d.fromDegrees(180.0));
 
         public static final Pose2d APPROACH_LEFT =
                 approach(LEFT_APPROACH_POINT, LEFT);
@@ -213,17 +215,11 @@ public final class Nodes {
     public static final class Start {
         // 2.0 m from Blue wall, spread across width
         public static final Pose2d LEFT =
-                new Pose2d(2.000, 2.000, Rotation2d.fromDegrees(0.0));
+                 new Pose2d(3.5,5.8,Rotation2d.fromDegrees(315.0));
         public static final Pose2d CENTER =
                 new Pose2d(2.000, 4.115, Rotation2d.fromDegrees(0.0));
         public static final Pose2d RIGHT =
-                new Pose2d(2.000, 6.200, Rotation2d.fromDegrees(0.0));
-        public static final Pose2d START_SUBWAY_RIGHT =
-                new Pose2d(3.5,2.5, Rotation2d.fromDegrees(45.0));
-        public static final Pose2d START_SUBWAY_LEFT =
-                new Pose2d(3.5,5.8,Rotation2d.fromDegrees(315.0));
-        public static final Pose2d START_DEPOT_LEFT =
-                new Pose2d(3.5, 6.0, Rotation2d.fromDegrees(0.0));
+               new Pose2d(3.5,2.5, Rotation2d.fromDegrees(55.0));
     }
 
     // ============================
@@ -273,4 +269,5 @@ public final class Nodes {
                 new Pose2d(2.0, 3.0, Rotation2d.fromDegrees(30.0));
         
     }
+
 }

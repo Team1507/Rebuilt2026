@@ -15,5 +15,6 @@ public record CoordinatorRecord(
     ShooterSubsystem YELshooter,
     FeederSubsystem BLUfeeder,
     FeederSubsystem YELfeeder,
-    AgitatorSubsystem agitator
+    AgitatorSubsystem agitator,
+    IntakeRollerSubsystem roller
 ) {}

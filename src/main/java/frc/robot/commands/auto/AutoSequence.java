@@ -33,6 +33,7 @@ import frc.robot.commands.coordinators.*;
 
 // Constants
 import frc.robot.Constants.kAgitator;
+import frc.robot.Constants.kIntake;
 
 /**
  * AutoSequence
@@ -294,7 +295,7 @@ public class AutoSequence {
      */
     public AutoSequence shoot() {
         steps.add(ShooterControllers.shootModelBased(
-            coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY
+            coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY, kIntake.INTAKE_ROLLER_DUTY_HIGH
         ));
         return this;
     }
@@ -311,7 +312,7 @@ public class AutoSequence {
         steps.add(
             Commands.race(
                 ShooterControllers.shootModelBased(
-                    coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY
+                    coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY, kIntake.INTAKE_ROLLER_DUTY_HIGH
                 ),
                 Commands.waitUntil(() -> autoTimer.get() >= endTime)
             )
@@ -323,7 +324,7 @@ public class AutoSequence {
         steps.add(
             Commands.race(
                 ShooterControllers.shootFixedRPM(
-                    coordinator, RPM, kAgitator.AGITATE_TO_SHOOTER_DUTY
+                    coordinator, RPM, kAgitator.AGITATE_TO_SHOOTER_DUTY, kIntake.INTAKE_ROLLER_DUTY_HIGH
                 ),
                 Commands.waitUntil(() -> autoTimer.get() >= endTime)
             )

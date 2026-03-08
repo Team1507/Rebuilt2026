@@ -25,15 +25,15 @@ public class AutoSubwayRight {
 
 
             .startTimer()
-            .driveTo(Nodes.Start.START_SUBWAY_RIGHT)
+            .driveTo(Nodes.Start.RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .driveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY)
             .intakeDeploy()
             .driveTo(Nodes.Midfield.LEFT_RIGHT_SUBWAY)
-            .moveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY)
-            .intakeRetract()
-            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
-            .driveTo(Nodes.Start.START_SUBWAY_RIGHT)
+           
+            .moveTo(Nodes.Midfield.RIGHT_OVER_BUMP)
+             .intakeRetract()
+            .driveTo(Nodes.Start.RIGHT)
             .shoot()
             .build();
     }

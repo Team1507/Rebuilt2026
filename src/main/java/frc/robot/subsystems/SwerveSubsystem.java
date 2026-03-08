@@ -113,11 +113,11 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public void setPoseFromVision(Pose2d visionPose) {
-        // Reset pose estimator
-        io.resetPose(visionPose);
-
         // Align gyro to match the vision heading
         io.alignGyro(visionPose.getRotation());
+
+        // Reset pose estimator
+        io.resetPose(visionPose);
     }
 
     // ==========================================================

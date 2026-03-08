@@ -147,31 +147,31 @@ public class DashboardManagerMatch
         }
         
         //hub stuff
-        gameData = DriverStation.getGameSpecificMessage();
-        if(gameData.length() > 0 && alliance.get().equals("Red")){
-            switch (gameData.charAt(0)){
-                case 'R' :
-                hubActive = true;
-                break;
-                case 'B' :
-                hubActive = false;
-                break;
-                default :
-                break;
-            }
-        }
-        else if(gameData.length() > 0 && alliance.get().equals("Blue")){
-            switch (gameData.charAt(0)){
-                case 'B' :
-                hubActive = true;
-                break;
-                case 'R' :
-                hubActive = false;
-                break;
-                default :
-                break;
-            }
-        }
+        // gameData = DriverStation.getGameSpecificMessage();
+        // if(gameData.length() > 0 && alliance.get().equals("Red")){
+        //     switch (gameData.charAt(0)){
+        //         case 'R' :
+        //         hubActive = true;
+        //         break;
+        //         case 'B' :
+        //         hubActive = false;
+        //         break;
+        //         default :
+        //         break;
+        //     }
+        // }
+        // else if(gameData.length() > 0 && alliance.get().equals("Blue")){
+        //     switch (gameData.charAt(0)){
+        //         case 'B' :
+        //         hubActive = true;
+        //         break;
+        //         case 'R' :
+        //         hubActive = false;
+        //         break;
+        //         default :
+        //         break;
+        //     }
+        // }
 
     }
 }

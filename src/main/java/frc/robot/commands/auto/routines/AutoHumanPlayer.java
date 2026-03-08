@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.Constants.kShooter;
 import frc.robot.commands.auto.AutoSequence;
 import frc.robot.framework.CoordinatorRecord;
@@ -23,14 +24,18 @@ public class AutoHumanPlayer{
    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
-          //.resetPose(Nodes.Start.START_SUBWAY_RIGHT)
+            .resetPose(Nodes.Start.RIGHT)
             .startTimer()
-            .shootRPMUntil(4, kShooter.kRPM.BUMP_RAYMOND)
+            .shootRPMUntil(3.5, kShooter.kRPM.BUMP_RAYMOND)
             .driveTo(Nodes.Outpost.RIGHT_APPROACH_POINT)
             .intakeDeploy()
-
-            
-            
+            .withSpeed(MaxSpeed * 0.7) .driveDistance(0.25)
+            .waitSeconds(1.5)
+            .withSpeed(MaxSpeed * .7).moveThrough(Nodes.Outpost.RIGHT_APPROACH_POINT, 0.1)
+            .parallel(  
+              seq -> seq.intakeRetract(),
+              seq -> seq.driveTo(Nodes.Start.RIGHT))
+            .shootRPMUntil(19.5, kShooter.kRPM.BUMP_RAYMOND)
             .build();
     }
 
