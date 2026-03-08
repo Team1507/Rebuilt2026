@@ -64,9 +64,9 @@ public class Constants {
     public static final class kClimber {
 
         /** Mechanism setpoints (in mechanism units, not motor rotations). */
-        public static final double UP = 0.0;
+        public static final double UP = 0.0; //if climber is zero wile down set 1.6
         public static final double DOWN = -1.6;
-
+ 
         /** Robot-relative aliases for convenience. */
         public static final double ROBOT_UP = DOWN;
         public static final double ROBOT_DOWN = UP;
@@ -151,8 +151,8 @@ public class Constants {
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kIntake {
 
-        public static final double INTAKE_ROLLER_DUTY_LOW = 0.35;
-        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.7;
+        public static final double INTAKE_ROLLER_DUTY_LOW = 0.4;
+        public static final double INTAKE_ROLLER_DUTY_HIGH = 1.0;
         public static final double OUTTAKE_ROLLER_DUTY = -0.35;
         
         
@@ -271,7 +271,7 @@ public class Constants {
         }
         
         public static final double MAX_SPEED =
-            0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+            0.8 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
 
         public static final double MAX_ANGULAR_RATE =
             RotationsPerSecond.of(0.82100).in(RadiansPerSecond);
@@ -288,7 +288,7 @@ public class Constants {
 
     // ╔═══════════════════════════════════════════════════════════════╗
     // ║                     MOVE‑TO‑POSE CONSTANTS                    ║
-    // ║             (Arcane Pathfinding & Guidance Runes)             ║
+    // ║             (kys Pathfinding & Guidance Runes)             ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kMoveToPose {
 
@@ -375,7 +375,7 @@ public class Constants {
             public static final Transform3d ROBOT_TO_CAMERA =
                 new Transform3d(
                     new Translation3d(-0.201775, 0.246126, 0.69125),
-                    new Rotation3d(0, Math.toRadians(10), 0.0)
+                    new Rotation3d(0, Math.toRadians(10), Math.toRadians(3.5))
                 );
         }
 

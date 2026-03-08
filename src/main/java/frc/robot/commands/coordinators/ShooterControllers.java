@@ -69,8 +69,7 @@ public final class ShooterControllers {
             double bluFeederRPM = record.BLUshooter().getTargetRPM() * 0.75;
             double yelFeederRPM = record.YELshooter().getTargetRPM() * 0.75;
 
-            record.BLUfeeder().runRPM(bluFeederRPM);
-            record.YELfeeder().runRPM(yelFeederRPM);
+            
             record.roller().run(intakeRoller);
 
             // 3. Latch feeding once shooters are ready
@@ -82,6 +81,8 @@ public final class ShooterControllers {
             // 4. Agitator runs once feeding is enabled
             if (record.agitator().getInputs().feedingEnabled) {
                 record.agitator().run(agitatorDuty);
+                record.BLUfeeder().runRPM(bluFeederRPM);
+                record.YELfeeder().runRPM(yelFeederRPM);
             }
         })
         .onEnd(interrupted -> {

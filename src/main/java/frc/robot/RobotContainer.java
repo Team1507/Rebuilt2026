@@ -458,7 +458,7 @@ public class RobotContainer {
         //----------------------------
 
         //need to hold the button for the climber to move up or down
-        topDriver.y().whileTrue(ClimberCommands.robotUp(climberSubsystem));
+        topDriver.y().whileTrue(ClimberCommands.robotUp(climberSubsystem)); 
         topDriver.x().whileTrue(ClimberCommands.robotDown(climberSubsystem));
 
         // ----------------------------
@@ -492,7 +492,7 @@ public class RobotContainer {
 
         autoChooser.addOption(
             "Auto Blue Subway Right",
-            AutoSubwayRight.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            AutoSubwayRight.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Blue Subway Left",

@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj.Timer;
 // Framework
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
-
+import frc.robot.subsystems.IntakeRollerSubsystem;
 // Commands
 import frc.robot.commands.tuning.MoveLog;
 import frc.robot.commands.atomic.*;
@@ -287,6 +287,10 @@ public class AutoSequence {
         );
         return this;
     }
+
+    // public AutoSequence intakeHigh(){
+    //     IntakeRollerCommands.highRollerSpeed(IntakeRollerSubsystem roller);
+    // }
 
     /**
      * This should add a Command that performs the robot's scoring routine.
