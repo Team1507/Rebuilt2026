@@ -61,11 +61,8 @@ public class DashboardManagerMatch
     private final DoublePublisher pubIntakeYELPos =
         nt.getDoubleTopic("Intake/Arm/YEL/Current Position").publish();
 
-    //visoion
-    private final DoublePublisher pubQuestBattery =
-        nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
     private final BooleanPublisher pubHasGoodVision =
-        nt.getBooleanTopic("Localization/PhotonVision/Has Good Vision").publish();
+        nt.getBooleanTopic("Localization/PhotonVision/HasTargets").publish();
 
     private final DoublePublisher pubSetPoseX =
         nt.getDoubleTopic("Set Pose/X").publish();
@@ -125,12 +122,9 @@ public class DashboardManagerMatch
         pubIntakeBLUPos.set(intake.bluPositionDeg);
         pubIntakeYELPos.set(intake.yelPositionDeg);
 
-        //quest
+        pubHasGoodVision.set(localization.vision() != null);
 
-        pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
-        pubHasGoodVision.set(localization.pvManager().hasGoodVision());
-
-                double poseX = nt.getEntry("Set Pose/X").getDouble(0.0);
+        double poseX = nt.getEntry("Set Pose/X").getDouble(0.0);
         double poseY = nt.getEntry("Set Pose/Y").getDouble(0.0);
         double poseTheta = nt.getEntry("Set Pose/Theta").getDouble(0.0);
 
@@ -138,7 +132,7 @@ public class DashboardManagerMatch
             nt.getEntry("Set Pose/Reset Pose").getBoolean(false);
 
         if (resetPose) {
-            localization.localizationManager().resetQuestPose(new Pose2d(
+            localization.swerve().resetLocalization(new Pose2d(
                 poseX,
                 poseY,
                 new Rotation2d(poseTheta)

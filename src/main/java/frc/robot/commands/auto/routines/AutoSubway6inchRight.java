@@ -8,7 +8,6 @@
 
 package frc.robot.commands.auto.routines;
 
-import java.util.function.Consumer;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,23 +17,23 @@ import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
 
 
-public class AutoSubwayRight {
-    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
+public class AutoSubway6inchRight {
+    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
-        return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
+        return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
 
-            .resetPose(Nodes.Start.RIGHT)
             .startTimer()
             .driveTo(Nodes.Start.RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.2)
             .intakeDeploy()
-            .driveTo(Nodes.Midfield.LEFT_RIGHT_SUBWAY)
+            .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
            
-            .driveTo(Nodes.Midfield.RIGHT_OVER_BUMP)
-             .intakeRetract()
+            .parallel(
+                seq -> seq.intakeRetract(),
+                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2))  
             .driveTo(Nodes.Start.RIGHT)
-            .shoot()
+            .shootUntil(19.5)
             .build();
     }
 }

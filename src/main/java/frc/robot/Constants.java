@@ -12,11 +12,7 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 
 import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
 
@@ -288,7 +284,7 @@ public class Constants {
 
     // ╔═══════════════════════════════════════════════════════════════╗
     // ║                     MOVE‑TO‑POSE CONSTANTS                    ║
-    // ║             (kys Pathfinding & Guidance Runes)             ║
+    // ║             (Pathfinding & Guidance Runes)             ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kMoveToPose {
 
@@ -390,22 +386,6 @@ public class Constants {
         }
     }
 
-    // ╔═══════════════════════════════════════════════════════════════╗
-    // ║                            QuestNav                           ║
-    // ╚═══════════════════════════════════════════════════════════════╝
-    public static final class kQuest {
-
-        public static final Matrix<N3, N1> STD_DEVS = VecBuilder.fill(0.02, 0.02, 0.05);
-
-        public static final double ACCEPTABLE_DISTANCE_TOLERANCE = 0.1;
-        
-        // Mount transform: robot origin -> QuestNav sensor
-        public static final Transform3d ROBOT_TO_QUEST =
-            new Transform3d(
-                -0.20226, 0.304165, 0.39,
-                new Rotation3d(0.0, 0.0, Math.toRadians(90.0))
-            );
-    }
 }
    
         

@@ -10,15 +10,21 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import org.littletonrobotics.junction.Logger;
+
+import frc.lib.core.math.geometry.VisionMeasurement;
 import frc.lib.io.swerve.SwerveIO;
 import frc.lib.io.swerve.SwerveInputs;
+import frc.robot.localization.vision.Vision;
 
 /**
  * Thin, IO-based swerve subsystem.
@@ -33,16 +39,35 @@ public class SwerveSubsystem extends SubsystemBase {
     private final SwerveIO io;
     private final SwerveInputs inputs = new SwerveInputs();
 
+    private Vision vision;
+
     public SwerveSubsystem(SwerveIO io) {
         this.io = io;
+    }
+
+    public void setVision(Vision vision) {
+        this.vision = vision;
     }
 
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-        // Optional: publish telemetry here
-        // Telemetry.log("Swerve/Pose", inputs.pose);
-        // Telemetry.log("Swerve/Speeds", inputs.speeds);
+
+        // Log fused robot pose in 3D (flat on ground, Z = 0)
+        Logger.recordOutput("Vision/RobotPose3d", new Pose3d(inputs.pose));
+
+        if (vision != null) {
+            vision.addHeadingData(Timer.getFPGATimestamp(), io.getHeading());
+
+            VisionMeasurement[] measurements = vision.getUnreadResults();
+            Pose3d[] photonPoses = new Pose3d[measurements.length];
+            for (int i = 0; i < measurements.length; i++) {
+                VisionMeasurement m = measurements[i];
+                io.addVisionMeasurement(m.pose(), m.timestamp(), m.stdDevs());
+                photonPoses[i] = new Pose3d(m.pose());
+            }
+            Logger.recordOutput("Vision/PhotonVision/AcceptedPoses3d", photonPoses);
+        }
     }
 
     // ==========================================================
@@ -94,9 +119,17 @@ public class SwerveSubsystem extends SubsystemBase {
         return io.getHeading();
     }
 
-    /** Reset the robot pose. */
+    /** Reset the robot pose (odometry only). */
     public void resetPose(Pose2d pose) {
         io.resetPose(pose);
+    }
+
+    /** Resets the pose estimator and vision heading history. */
+    public void resetLocalization(Pose2d pose) {
+        io.resetPose(pose);
+        if (vision != null) {
+            vision.resetHeadingData(Timer.getFPGATimestamp(), pose.getRotation());
+        }
     }
 
     public void setTemporaryTargetPose(Pose2d tempPose) {

@@ -167,40 +167,6 @@ public class Telemetry {
     }
 
 
-    /* ---------------- QuestNav Telemetry ---------------- */
-
-    public void logQuestNavRawPose(Pose3d pose) {
-        //Logger.recordOutput("QuestNav/RawPose", pose);
-    }
-
-    public void logQuestNavCorrectedPose(Pose2d pose) {
-        //Logger.recordOutput("QuestNav/CorrectedPose", pose);
-    }
-
-    public void logQuestNavTracking(boolean tracking) {
-        Logger.recordOutput("QuestNav/Tracking", tracking);
-    }
-
-    public void logQuestNavBattery(int percent) {
-        Logger.recordOutput("QuestNav/BatteryPercent", percent);
-    }
-
-    public void logQuestNavAppTimestamp(double timestamp) {
-        Logger.recordOutput("QuestNav/AppTimestamp", timestamp);
-    }
-
-    public void logQuestNavFrameTimestamp(double timestamp) {
-        Logger.recordOutput("QuestNav/FrameTimestamp", timestamp);
-    }
-
-    public void logQuestNavLatency(double latencyMs) {
-        Logger.recordOutput("QuestNav/LatencyMs", latencyMs);
-    }
-
-    public void logQuestNavConnected(boolean connected) {
-        Logger.recordOutput("QuestNav/Connected", connected);
-    }
-
     /* ---------------- Drivetrain Telemetry ---------------- */
 
     public void logDriveState(SwerveDriveState state) {

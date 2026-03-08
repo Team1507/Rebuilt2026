@@ -200,14 +200,13 @@ public final class Nodes {
         public static final Pose2d RIGHT_LEFT_SUBWAY =
                 new Pose2d(7.2, 4.0, Rotation2d.fromDegrees(270.0));
         public static final Pose2d LEFT_LEFT_SUBWAY =
-                new Pose2d(7.2
-                , 7.4, Rotation2d.fromDegrees(270.0));
+                new Pose2d(7.2, 7.4, Rotation2d.fromDegrees(270.0));
 
         //bump nodes
         public static final Pose2d RIGHT_OVER_BUMP =
-                new Pose2d(5.5,2.2, Rotation2d.fromDegrees(45.0));
+                new Pose2d(5.5,2.2, Rotation2d.fromDegrees(135.0));
         public static final Pose2d LEFT_OVER_BUMP =
-                new Pose2d(6.3,5.0, Rotation2d.fromDegrees(45.0));
+                new Pose2d(6.3,5.0, Rotation2d.fromDegrees(135.0));
     }
 
     // ============================

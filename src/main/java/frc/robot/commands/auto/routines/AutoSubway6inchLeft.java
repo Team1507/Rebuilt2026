@@ -8,7 +8,6 @@
 //                         Programmed by Andrew :)
 package frc.robot.commands.auto.routines;
 
-import java.util.function.Consumer;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,22 +16,23 @@ import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
 
-public class AutoSubwayLeft {
-    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
+public class AutoSubway6inchLeft {
+    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
-        return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
+        return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
             .startTimer()
-            .moveTo(Nodes.Start.LEFT)
+            .driveTo(Nodes.Start.LEFT)
             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .moveTo(Nodes.Midfield.LEFT_LEFT_SUBWAY)
+            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
             .intakeDeploy()
             .moveThrough(Nodes.Midfield.RIGHT_LEFT_SUBWAY, 0.5)
-             .intakeRetract()
-            .moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY, 0.5)
-             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
+
+            .parallel(
+                seq -> seq.intakeRetract(),
+                seq -> seq.moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2))  
             .driveTo(Nodes.Start.LEFT)
             .shootUntil(18)
-             .moveTo(Nodes.Depot.INTAKE_DEPOT)
+            .moveTo(Nodes.Depot.INTAKE_DEPOT)
 
             .build();
     }

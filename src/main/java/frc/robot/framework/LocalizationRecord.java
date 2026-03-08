@@ -8,12 +8,10 @@
 
 package frc.robot.framework;
 
-import frc.robot.localization.LocalizationManager;
-import frc.robot.localization.vision.PVManager;
-import frc.robot.localization.vision.QuestNavManager;
+import frc.robot.localization.vision.Vision;
+import frc.robot.subsystems.SwerveSubsystem;
 
 public record LocalizationRecord(
-    LocalizationManager localizationManager,
-    PVManager pvManager,
-    QuestNavManager questNav
+    SwerveSubsystem swerve,
+    Vision vision
 ) {}

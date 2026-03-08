@@ -9,7 +9,6 @@
 
 package frc.robot.commands.auto.routines;
 
-import java.util.function.Consumer;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,9 +18,9 @@ import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
 
 public class Auto8PieceCenterClimbRight {
-    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, Consumer<Pose2d> resetQuestPose, double MaxSpeed, double MaxAngularRate) {
+    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
-        return new AutoSequence(record, coordinator, resetQuestPose, MaxSpeed, MaxAngularRate)
+        return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
             .moveTo(Nodes.AllianceZoneBlue.CENTER)
             .shoot()
             .moveTo(Nodes.Tower.APPROACH_RIGHT)

@@ -31,11 +31,9 @@ import frc.robot.commands.coordinators.*;
 import frc.robot.subsystems.*;
 
 // Localization
-import frc.robot.localization.LocalizationManager;
 import frc.robot.localization.nodes.Nodes.Hub;
 import frc.robot.localization.nodes.Nodes.Tower;
-import frc.robot.localization.vision.PVManager;
-import frc.robot.localization.vision.QuestNavManager;
+import frc.robot.localization.vision.Vision;
 
 // IO Layer (Hardware Abstractions)
 import frc.lib.io.agitator.*;
@@ -44,7 +42,6 @@ import frc.lib.io.feeder.*;
 import frc.lib.io.hopper.*;
 import frc.lib.io.intakearm.*;
 import frc.lib.io.intakeroller.*;
-import frc.lib.io.photonvision.*;
 import frc.lib.io.shooter.*;
 import frc.lib.io.swerve.*;
 
@@ -105,26 +102,10 @@ public class RobotContainer {
     // Localization
     // ==========================================================
 
-    // QuestNav (IO-based, no longer fused directly)
-    private final QuestNavManager questNav =
-        new QuestNavManager(logger);
-
-    // PhotonVision IO (explicit camera names)
-    private final PhotonVisionIO pvIO =
-        new PhotonVisionIOReal(() -> swerve.getHeading());
-
-    // PhotonVision manager (fuses cameras only)
-    private final PVManager pvManager =
-        new PVManager(pvIO, logger);
-
-    // Localization manager (final fusion layer)
-    private final LocalizationManager localizationManager =
-        new LocalizationManager(
-            swerve,
-            pvManager,
-            questNav,
-            logger
-        );
+    private final Vision vision = new Vision(new Vision.CameraConfig[] {
+        new Vision.CameraConfig(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA),
+        new Vision.CameraConfig(kVision.YEL.NAME, kVision.YEL.ROBOT_TO_CAMERA)
+    });
 
     // ==========================================================
     // Shooter + Model
@@ -162,7 +143,7 @@ public class RobotContainer {
 
     // pose + model
     // ----------------------------
-    private final Supplier<Pose2d> poseSupplier = localizationManager::getFusedPose;
+    private final Supplier<Pose2d> poseSupplier = swerve::getPose;
 
     private final ShooterModel shooterModelConfig =
         ModelLoader.load(
@@ -308,11 +289,7 @@ public class RobotContainer {
     // LocalizationRecord
     // ==========================================================
     private final LocalizationRecord localizationRecord =
-        new LocalizationRecord(
-            localizationManager,
-            pvManager,
-            questNav
-        );
+        new LocalizationRecord(swerve, vision);
 
     // ==========================================================
     // Autonomous chooser
@@ -332,6 +309,8 @@ public class RobotContainer {
     // Robot Container Constructor
     // ==========================================================
     public RobotContainer() {
+        swerve.setVision(vision);
+
         shooterBLUsystem.setShotTrainer(shotBLUTrainer);
         shooterYELsystem.setShotTrainer(shotYELTrainer);
 
@@ -472,7 +451,9 @@ public class RobotContainer {
         // Reset Gyro
         // ----------------------------
         bottomDriver.start().whileTrue(
-            Commands.run(() -> localizationManager.resetHeadingToZero())
+            Commands.run(() -> swerve.resetLocalization(
+                new Pose2d(swerve.getPose().getTranslation(), new edu.wpi.first.math.geometry.Rotation2d())
+            ))
         );
     }
 
@@ -491,36 +472,44 @@ public class RobotContainer {
         autoChooser.setDefaultOption("Do Nothing", Commands.print("Doing nothing"));
 
         autoChooser.addOption(
-            "Auto Blue Subway Right",
-            AutoSubwayRight.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Subway 6 inch Right",
+            AutoSubway6inchRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Blue Subway Left",
-            AutoSubwayLeft.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Subway 6 inch Left",
+            AutoSubway6inchLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+
+        autoChooser.addOption(
+            "Auto Subway Footlong Right",
+            AutoSubwayFootlongRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 1.0, kSwerve.MAX_ANGULAR_RATE));
+
+        autoChooser.addOption(
+            "Auto Subway Footlong Left",
+            AutoSubwayFootlongLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 1.0, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Shoot Until",
-            AutoShootUntil.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            AutoShootUntil.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Autoah Raymond",
-            AutoahRaymond.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            AutoahRaymond.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Blue Human Player Q",
-            AutoHumanPlayerQuest.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Human Player Q",
+            AutoHumanPlayerQuest.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Blue Depot",
-            AutoDepot.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Depot",
+            AutoDepot.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Blue Quest Test",
-            AutoTestQuest.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Quest Test",
+            AutoTestQuest.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Move Log",
-            AutoMoveLog.build(subsystemsRecord, coordinatorRecord, localizationManager::resetPose, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            AutoMoveLog.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {

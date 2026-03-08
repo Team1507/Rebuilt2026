@@ -107,29 +107,8 @@ public class DashboardManager {
         private final DoublePublisher pubYELShooterTargetRPM =
         nt.getDoubleTopic("Shooter/YEL/Target RPM").publish();
 
-    /* ---------------- Localization ---------------- */
-    private final DoublePublisher pubQuestBattery =
-        nt.getDoubleTopic("Localization/QuestNav/BatteryPercent").publish();
-    private final BooleanPublisher pubQuestTracking =
-        nt.getBooleanTopic("Localization/QuestNav/Is Tracking").publish();
     private final BooleanPublisher pubHasGoodVision =
-        nt.getBooleanTopic("Localization/PhotonVision/Has Good Vision").publish();
-
-    /* ---------------- PV Debug ---------------- */
-    private final BooleanPublisher pubPVGood =
-        nt.getBooleanTopic("PhotonVision/Fused/HasGoodVision").publish();
-    private final BooleanPublisher pubPVSeeded =
-        nt.getBooleanTopic("PhotonVision/Fused/Seeded").publish();
-    private final DoublePublisher pubPVX =
-        nt.getDoubleTopic("PhotonVision/Fused/Pose/X").publish();
-    private final DoublePublisher pubPVY =
-        nt.getDoubleTopic("PhotonVision/Fused/Pose/Y").publish();
-    private final DoublePublisher pubPVHeading =
-        nt.getDoubleTopic("PhotonVision/Fused/Pose/HeadingDeg").publish();
-    private final DoublePublisher pubPVXYStd =
-        nt.getDoubleTopic("PhotonVision/Fused/StdDev/XY").publish();
-    private final DoublePublisher pubPVAngStd =
-        nt.getDoubleTopic("PhotonVision/Fused/StdDev/Ang").publish();
+        nt.getBooleanTopic("Localization/PhotonVision/HasTargets").publish();
 
     /* ---------------- Rising-edge tracking ---------------- */
     private boolean prevAgitator, prevClimber, prevBLUFeeder, prevYELFeeder;
@@ -184,23 +163,7 @@ public class DashboardManager {
 
         /* ---------------- Localization ---------------- */
 
-        pubQuestBattery.set(localization.questNav().getBatteryPercent().orElse(-1));
-        pubQuestTracking.set(localization.questNav().isTracking());
-        pubHasGoodVision.set(localization.pvManager().hasGoodVision());
-
-        /* ---------------- PhotonVision Debug ---------------- */
-        var pv = localization.pvManager().getDebugInfo();
-
-        pubPVGood.set(pv.fusedValid);
-        pubPVSeeded.set(pv.seeded);
-
-        if (pv.fusedValid) {
-            pubPVX.set(pv.fusedPose.getX());
-            pubPVY.set(pv.fusedPose.getY());
-            pubPVHeading.set(pv.fusedPose.getRotation().getDegrees());
-            pubPVXYStd.set(pv.fusedXyStd);
-            pubPVAngStd.set(pv.fusedAngStd);
-        }
+        pubHasGoodVision.set(localization.vision() != null);
 
         /* ---------------- Manual RUN Buttons ---------------- */
         boolean agitator = subAgitatorRun.get();
