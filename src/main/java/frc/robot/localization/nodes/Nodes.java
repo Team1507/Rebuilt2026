@@ -194,13 +194,14 @@ public final class Nodes {
         // public static final Pose2d LEFT_LEFT_SUBWAY =
         //         new Pose2d(7.8, 7.4, Rotation2d.fromDegrees(180.0)); real
         public static final Pose2d RIGHT_RIGHT_SUBWAY =
-                new Pose2d(7.5, 0.85, Rotation2d.fromDegrees(90.0));
+                new Pose2d(7.2, 0.85, Rotation2d.fromDegrees(90.0));
         public static final Pose2d LEFT_RIGHT_SUBWAY =
-                new Pose2d(7.5, 4.0, Rotation2d.fromDegrees(90.0));
+                new Pose2d(7.2, 4.0, Rotation2d.fromDegrees(90.0));
         public static final Pose2d RIGHT_LEFT_SUBWAY =
-                new Pose2d(7.5, 4.0, Rotation2d.fromDegrees(270.0));
+                new Pose2d(7.2, 4.0, Rotation2d.fromDegrees(270.0));
         public static final Pose2d LEFT_LEFT_SUBWAY =
-                new Pose2d(7.5, 7.4, Rotation2d.fromDegrees(270.0));
+                new Pose2d(7.2
+                , 7.4, Rotation2d.fromDegrees(270.0));
 
         //bump nodes
         public static final Pose2d RIGHT_OVER_BUMP =
@@ -221,6 +222,7 @@ public final class Nodes {
         public static final Pose2d RIGHT =
                new Pose2d(3.5,2.5, Rotation2d.fromDegrees(55.0));
     }
+    
 
     // ============================
     // PARKING / ENDGAME (Red-side)
