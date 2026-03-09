@@ -204,9 +204,9 @@ public final class Nodes {
 
         //bump nodes
         public static final Pose2d RIGHT_OVER_BUMP =
-                new Pose2d(5.5,2.2, Rotation2d.fromDegrees(135.0));
+                new Pose2d(5.5,2.3, Rotation2d.fromDegrees(135.0));
         public static final Pose2d LEFT_OVER_BUMP =
-                new Pose2d(6.3,5.0, Rotation2d.fromDegrees(135.0));
+                new Pose2d(6.3,5.4, Rotation2d.fromDegrees(135.0));
     }
 
     // ============================

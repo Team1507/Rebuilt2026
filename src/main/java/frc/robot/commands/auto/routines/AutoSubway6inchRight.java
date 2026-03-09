@@ -25,10 +25,13 @@ public class AutoSubway6inchRight {
             .startTimer()
             .driveTo(Nodes.Start.RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
-            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.2)
-            .intakeDeploy()
+            .intakeHigh()
+            .parallel(
+                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.5),
+                seq -> seq.intakeDeploy())
             .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
            
+            .intakeLow()
             .parallel(
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2))  

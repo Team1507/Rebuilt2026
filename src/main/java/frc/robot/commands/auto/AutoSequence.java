@@ -284,9 +284,15 @@ public class AutoSequence {
         return this;
     }
 
-    // public AutoSequence intakeHigh(){
-    //     IntakeRollerCommands.highRollerSpeed(IntakeRollerSubsystem roller);
-    // }
+    public AutoSequence intakeLow(){
+        IntakeRollerCommands.lowRollerSpeed(record.intakeRoller());
+        return this;
+    }
+
+    public AutoSequence intakeHigh(){
+        IntakeRollerCommands.highRollerSpeed(record.intakeRoller());
+        return this;
+    }
 
     /**
      * This should add a Command that performs the robot's scoring routine.

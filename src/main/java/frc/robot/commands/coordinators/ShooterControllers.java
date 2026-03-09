@@ -122,12 +122,8 @@ public final class ShooterControllers {
         })
         .onExecute(() -> {
             // Feeders always spin once command starts
-            record.BLUfeeder().runRPM(
-                record.BLUshooter().getTargetRPM() * 0.75
-            );
-            record.YELfeeder().runRPM(
-                record.YELshooter().getTargetRPM() * 0.75
-            );
+            double bluFeederRPM = record.BLUshooter().getTargetRPM() * 0.75;
+            double yelFeederRPM = record.YELshooter().getTargetRPM() * 0.75;
 
             // Latch feeding once shooters are ready
             if (!record.agitator().getInputs().feedingEnabled &&
@@ -138,6 +134,8 @@ public final class ShooterControllers {
             // Agitator runs once feeding is enabled
             if (record.agitator().getInputs().feedingEnabled) {
                 record.agitator().run(agitatorDuty);
+                record.BLUfeeder().runRPM(bluFeederRPM);
+                record.YELfeeder().runRPM(yelFeederRPM);
             }
         })
         .onEnd(interrupted -> {
