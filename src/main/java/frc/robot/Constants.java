@@ -147,8 +147,9 @@ public class Constants {
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kIntake {
 
-        public static final double INTAKE_ROLLER_DUTY_LOW = 0.4;
-        public static final double INTAKE_ROLLER_DUTY_HIGH = 1.0;
+        public static final double INTAKE_ROLLER_DUTY_LOW = 0.3;
+        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.6;
+        public static final double INTAKE_ROLLER_DUTY_IDLE = 0.1;
         public static final double OUTTAKE_ROLLER_DUTY = -0.35;
         
         
@@ -163,10 +164,10 @@ public class Constants {
             public static final double MAX_ANGLE_DEGREES = 138.0;
             public static final double MIN_ANGLE_DEGREES = 0.0;
             public static final double DEPLOYED_ANGLE_DEGREES = 135.0;
-            public static final double RETRACTED_ANGLE_DEGREES = 82.0;
+            public static final double RETRACTED_ANGLE_DEGREES = 75.0;
 
-            public static final double MANUAL_POSITIVE_POWER = 0.2;
-            public static final double MANUAL_NEGATIVE_POWER = -0.2;
+            public static final double MANUAL_POSITIVE_POWER = 0.4;
+            public static final double MANUAL_NEGATIVE_POWER = -0.4;
 
             public static final MotorConfig BLU_CONFIG =
                 MotorConfig.builder(ControlMode.POSITION)
@@ -175,7 +176,7 @@ public class Constants {
                     .gravity(0.1, GravityType.COSINE)
                     .reverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
-                    .voltageLimits(4, -4)
+                    .voltageLimits(8, -8)
                     .withBrake()
                     .build();
 
@@ -187,7 +188,7 @@ public class Constants {
                     .gravity(0.1, GravityType.COSINE)
                     .reverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
-                    .voltageLimits(4, -4)
+                    .voltageLimits(8, -8)
                     .build();
         }
     }

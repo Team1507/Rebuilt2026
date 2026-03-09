@@ -15,6 +15,7 @@ import frc.robot.commands.auto.AutoSequence;
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
+import frc.robot.Constants.kShooter;
 
 
 public class AutoSubway6inchRight {
@@ -23,11 +24,11 @@ public class AutoSubway6inchRight {
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
 
             .startTimer()
-            .driveTo(Nodes.Start.RIGHT)
-            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            // .driveTo(Nodes.Start.RIGHT)
+            .driveTo(Nodes.Midfield.RIGHT_OVER_BUMP)
             .intakeHigh()
             .parallel(
-                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.5),
+                seq -> seq.withSpeed(MaxSpeed * 0.5).moveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY),
                 seq -> seq.intakeDeploy())
             .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
            
@@ -36,7 +37,20 @@ public class AutoSubway6inchRight {
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2))  
             .driveTo(Nodes.Start.RIGHT)
-            .shootUntil(19.5)
+            .shootRPMUntil(15, kShooter.kRPM.BUMP_RAYMOND)
+            //second time
+            //  .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            // .intakeHigh()
+            // .parallel(
+            //     seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.5),
+            //     seq -> seq.intakeDeploy())
+            // .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
+            // .intakeLow()
+            // .parallel(
+            //     seq -> seq.intakeRetract(),
+            //     seq -> seq.moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2))  
+            // .driveTo(Nodes.Start.RIGHT)
+            // .shootRPMUntil(20, kShooter.kRPM.BUMP_RAYMOND)
             .build();
     }
 }

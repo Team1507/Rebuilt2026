@@ -285,12 +285,12 @@ public class AutoSequence {
     }
 
     public AutoSequence intakeLow(){
-        IntakeRollerCommands.lowRollerSpeed(record.intakeRoller());
+        steps.add(IntakeRollerCommands.lowRollerSpeed(record.intakeRoller()));
         return this;
     }
 
     public AutoSequence intakeHigh(){
-        IntakeRollerCommands.highRollerSpeed(record.intakeRoller());
+        steps.add(IntakeRollerCommands.highRollerSpeed(record.intakeRoller()));
         return this;
     }
 

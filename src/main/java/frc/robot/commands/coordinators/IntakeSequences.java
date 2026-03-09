@@ -31,11 +31,12 @@ public final class IntakeSequences {
         IntakeRollerSubsystem roller
     ) {
         return HopperCommands.extend(hopper)
+            //.alongWith(IntakeRollerCommands.stop(roller)
             .alongWith(
                 Commands.waitUntil(hopper::isHopperSafeForIntake)
                     .andThen(
                         IntakeArmCommands.down(arm)
-                            .alongWith(IntakeRollerCommands.intake(roller))
+                            .alongWith(IntakeRollerCommands.intake(roller))//)
                     )
             );
     }
@@ -48,4 +49,6 @@ public final class IntakeSequences {
             .alongWith(IntakeRollerCommands.stop(roller));
     }
 }
+
+
 

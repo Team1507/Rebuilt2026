@@ -58,6 +58,12 @@ public final class IntakeRollerCommands {
             .onInitialize(roller::stop)
             .isFinished(true);
     }
+    public static Command idleRollerSpeed(IntakeRollerSubsystem roller) {
+        return new CommandBuilder(roller) 
+            .named("IntakeRollerSetIdle")
+            .onInitialize(()->roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_IDLE))
+            .isFinished(true);
+    }
     public static Command highRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller) 
             .named("IntakeRollerSetDutyHigh")

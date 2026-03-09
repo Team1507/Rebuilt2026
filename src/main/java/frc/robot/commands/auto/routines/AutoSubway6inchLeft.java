@@ -21,7 +21,7 @@ public class AutoSubway6inchLeft {
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
             .startTimer()
-            .driveTo(Nodes.Start.LEFT)
+            // .driveTo(Nodes.Start.LEFT)
             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
@@ -34,9 +34,31 @@ public class AutoSubway6inchLeft {
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2))  
             .driveTo(Nodes.Start.LEFT)
-            .shootUntil(18)
-            .moveTo(Nodes.Depot.INTAKE_DEPOT)
-
+            .shootUntil(10)
+            //second time
+            .startTimer()
+            .driveTo(Nodes.Start.LEFT)
+            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
+            .intakeHigh()
+            .parallel(
+                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY, 0.5),
+                seq -> seq.intakeDeploy())
+            .moveTo(Nodes.Midfield.RIGHT_LEFT_SUBWAY)
+            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
+            .parallel(
+                seq -> seq.intakeRetract(),
+                seq -> seq.moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2))  
+            .driveTo(Nodes.Start.LEFT)
+            .shootUntil(20)
+            //second time
+            .startTimer()
+            .driveTo(Nodes.Start.LEFT)
+            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
+            .intakeHigh()
+            .parallel(
+                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY, 0.5),
+                seq -> seq.intakeDeploy())
+            .moveTo(Nodes.Midfield.RIGHT_LEFT_SUBWAY)
             .build();
     }
 }
