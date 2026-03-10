@@ -33,6 +33,7 @@ public final class IntakeRollerCommands {
             .named("IntakeRollerIntake")
             .onInitialize(() -> roller.run())
             .isFinished(true); // one-shot command
+            
     }
 
     /** Run roller backward to eject game pieces. */
