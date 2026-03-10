@@ -393,11 +393,11 @@ public class RobotContainer {
         // Intake
         // ----------------------------
 
-        topDriver.a()
-            .onTrue(IntakeRollerCommands.idleRollerSpeed(intakeRollerSubsystem))
-            .onFalse(IntakeSequences.stow(
-                    intakeArmSubsystem,
-                    intakeRollerSubsystem));
+        // topDriver.a()
+        //     .onTrue(IntakeRollerCommands.idleRollerSpeed(intakeRollerSubsystem))
+        //     .onFalse(IntakeSequences.stow(
+        //             intakeArmSubsystem,
+        //             intakeRollerSubsystem));
 
         topDriver.rightTrigger(0.5)
             .onTrue(IntakeRollerCommands.highRollerSpeed(intakeRollerSubsystem));
