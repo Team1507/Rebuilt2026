@@ -24,7 +24,7 @@ public class AutoSubway6inchRight {
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
 
             .startTimer()
-            // .driveTo(Nodes.Start.RIGHT)
+             //.driveTo(Nodes.Start.RIGHT)
             .driveTo(Nodes.Midfield.RIGHT_OVER_BUMP)
             .intakeHigh()
             .parallel(
@@ -35,9 +35,11 @@ public class AutoSubway6inchRight {
             .intakeLow()
             .parallel(
                 seq -> seq.intakeRetract(),
-                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2))  
+                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2))  
+                //.moveTo(Nodes.Midfield.RIGHT_OVER_BUMP)
             .driveTo(Nodes.Start.RIGHT)
-            .shootRPMUntil(15, kShooter.kRPM.BUMP_RAYMOND)
+            //.shootRPMUntil(15, kShooter.kRPM.BUMP_RAYMOND)
+            .shootUntil(15)
             //second time
             //  .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             // .intakeHigh()
