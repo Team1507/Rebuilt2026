@@ -29,7 +29,7 @@ import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.commands.tuning.MoveLog;
 import frc.robot.commands.atomic.*;
 import frc.robot.commands.coordinators.*;
-
+import frc.lib.core.math.FieldFlip;
 // Constants
 import frc.robot.Constants.kAgitator;
 import frc.robot.Constants.kIntake;
@@ -530,5 +530,10 @@ public class AutoSequence {
     @ FunctionalInterface
     public interface AutoSequenceBuilder {
         void build(AutoSequence sequence);
+
+        //private static fieldFlip(Fiel) {
+
+
+      //  }
     }
 }

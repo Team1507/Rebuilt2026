@@ -36,7 +36,6 @@ public class AutoSubway6inchRight {
             .parallel(
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2))  
-                //.moveTo(Nodes.Midfield.RIGHT_OVER_BUMP)
             .driveTo(Nodes.Start.RIGHT)
             //.shootRPMUntil(15, kShooter.kRPM.BUMP_RAYMOND)
             .shootUntil(15)
