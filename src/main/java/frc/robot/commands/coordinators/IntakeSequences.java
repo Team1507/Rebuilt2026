@@ -46,7 +46,7 @@ public final class IntakeSequences {
         IntakeRollerSubsystem roller
     ) {
         return IntakeArmCommands.up(arm)
-            .alongWith(IntakeRollerCommands.idleRollerSpeed(roller));
+            .alongWith(IntakeRollerCommands.runIdleRollerSpeed(roller));
     }
 }
 

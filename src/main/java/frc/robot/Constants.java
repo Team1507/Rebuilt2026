@@ -49,7 +49,7 @@ public class Constants {
 
 
         /** Duty cycles for agitator behavior. */
-        public static final double AGITATE_TO_SHOOTER_DUTY = 0.5;
+        public static final double AGITATE_TO_SHOOTER_DUTY = 0.7;
         public static final double AGITATE_TO_INTAKE_DUTY = -0.3;
     }
 
