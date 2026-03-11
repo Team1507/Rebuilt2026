@@ -60,6 +60,9 @@ import frc.robot.framework.*;
 
 // Constants
 import frc.robot.Constants.*;
+import frc.robot.DashBoardStuff.DashboardManager;
+import frc.robot.DashBoardStuff.DashboardManagerManual;
+import frc.robot.DashBoardStuff.DashboardManagerMatch;
 
 public class RobotContainer {
 
@@ -305,6 +308,8 @@ public class RobotContainer {
     private final DashboardManagerMatch dashboardManagerMatch =
         new DashboardManagerMatch(subsystemsRecord, localizationRecord, autoChooser);
 
+    private final DashboardManagerManual dashboardManagerManual =
+        new DashboardManagerManual(subsystemsRecord);
     // ==========================================================
     // Robot Container Constructor
     // ==========================================================
@@ -528,10 +533,10 @@ public class RobotContainer {
     // ==========================================================
     // Dashboard access for Robot.java
     // ==========================================================
-    public DashboardManager getDashboard() {
-        return dashboardManager;
-    }
-    public DashboardManagerMatch getDashboardMatch() {
-        return dashboardManagerMatch;
+    
+    public void updateDashboard(){
+        dashboardManager.updateInputs();
+        dashboardManagerMatch.updateInputs();
+        dashboardManagerManual.updateInputs();
     }
 }
