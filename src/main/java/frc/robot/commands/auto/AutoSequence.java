@@ -30,6 +30,7 @@ import frc.robot.commands.tuning.MoveLog;
 import frc.robot.commands.atomic.*;
 import frc.robot.commands.coordinators.*;
 import frc.lib.core.math.FieldFlip;
+import frc.lib.core.util.Alliance;
 // Constants
 import frc.robot.Constants.kAgitator;
 import frc.robot.Constants.kIntake;
@@ -138,6 +139,7 @@ public class AutoSequence {
      */
     public AutoSequence moveTo(Pose2d target) {
 
+        Pose2d translatedTarget = translate(target);
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
@@ -151,7 +153,7 @@ public class AutoSequence {
 
         steps.add(DriveCommands.moveToPose(
             record.swerve(),
-            target,
+            translatedTarget,
             speedToUse,
             angularToUse
         ));
@@ -180,6 +182,7 @@ public class AutoSequence {
     
     public AutoSequence driveTo(Pose2d target) {
 
+        Pose2d translatedTarget = translate(target);
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
@@ -193,7 +196,7 @@ public class AutoSequence {
 
         steps.add(DriveCommands.driveToPoint(
             record.swerve(),
-            target,
+            translatedTarget,
             speedToUse,
             false
         ));
@@ -224,6 +227,7 @@ public class AutoSequence {
      */
     public AutoSequence moveThrough(Pose2d target, double passRadius) {
 
+        Pose2d translatedTarget = translate(target);
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
@@ -238,7 +242,7 @@ public class AutoSequence {
 
         steps.add(DriveCommands.moveThroughPose(
             record.swerve(),
-            target,
+            translatedTarget,
             speedToUse,
             angularToUse,
             passRadius
@@ -349,7 +353,8 @@ public class AutoSequence {
     }
 
     public AutoSequence headingToTarget(Pose2d targetPose) {
-        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> targetPose));
+        Pose2d translatedTarget = translate(targetPose);
+        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> translatedTarget));
         return this;
     }
     
@@ -376,7 +381,8 @@ public class AutoSequence {
     }
 
     public AutoSequence startLog(Pose2d targetPose) {
-        steps.add(MoveLog.startLog(record.swerve(), targetPose));
+        Pose2d translatedTarget = translate(targetPose);
+        steps.add(MoveLog.startLog(record.swerve(), translatedTarget));
         return this;
     }
 
@@ -396,10 +402,11 @@ public class AutoSequence {
     }
 
     public AutoSequence logMoveTo(Pose2d target) {
+        Pose2d translatedTarget = translate(target);
         return this
-        .startLog(target)
+        .startLog(translatedTarget)
         .deadline(
-            seq -> seq.moveTo(target),   // deadline
+            seq -> seq.moveTo(translatedTarget),   // deadline
             seq -> seq.recordLog()       // runs until moveTo finishes
         )
         .endLog();
@@ -535,5 +542,14 @@ public class AutoSequence {
 
 
       //  }
+    }
+    public Pose2d translate(Pose2d original) {
+        if(Alliance.isRed()){
+            return FieldFlip.overDiagonal(original);
+        }
+        else{
+            return original;
+        }
+
     }
 }
