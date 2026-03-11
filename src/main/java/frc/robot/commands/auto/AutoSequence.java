@@ -174,7 +174,7 @@ public class AutoSequence {
             record.swerve(),
             target,
             speedToUse,
-            false
+            true
         ));
 
         return this;
@@ -198,7 +198,7 @@ public class AutoSequence {
             record.swerve(),
             translatedTarget,
             speedToUse,
-            false
+            true
         ));
 
         return this;

@@ -60,7 +60,7 @@ public final class DriveCommands {
         double error = desired.minus(current).getRadians();
         error = MathUtil.angleModulus(error); // wrap to [-π, π]
 
-        double kP = 5.0; // rad/s per rad of error
+        double kP = 5.5; // rad/s per rad of error
         return error * kP;
     }
 
@@ -169,7 +169,7 @@ public final class DriveCommands {
                     )
                 );
 
-                return error < Math.toRadians(20.0);
+                return error < Math.toRadians(5.0);
             })
             .onEnd(swerve::stop);
     }
