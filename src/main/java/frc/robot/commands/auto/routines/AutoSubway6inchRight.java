@@ -25,20 +25,20 @@ public class AutoSubway6inchRight {
 
             .startTimer()
              //.driveTo(Nodes.Start.RIGHT)
-            .driveTo(Nodes.Midfield.RIGHT_OVER_BUMP)
+            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .intakeLow()
             .parallel(
-                seq -> seq.withSpeed(MaxSpeed * 0.5).moveTo(Nodes.Midfield.RIGHT_RIGHT_SUBWAY),
+                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.2),
                 seq -> seq.intakeDeploy())
-            .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
+            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
            
-            .intakeLow()
+            .intakeHigh()
             .parallel(
                 seq -> seq.intakeRetract(),
-                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2))  
+                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5))  
             .driveTo(Nodes.Start.RIGHT)
-            //.shootRPMUntil(15, kShooter.kRPM.BUMP_RAYMOND)
-            .shootUntil(15)
+            .shootRPMUntil(15, kShooter.kRPM.BUMP_RAYMOND)
+            //.shootUntil(15)
             //second time
             //  .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             // .intakeHigh()

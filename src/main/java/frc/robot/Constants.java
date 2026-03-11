@@ -148,7 +148,7 @@ public class Constants {
     public static final class kIntake {
 
         public static final double INTAKE_ROLLER_DUTY_LOW = 0.3;
-        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.6;
+        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.4;
         public static final double INTAKE_ROLLER_DUTY_IDLE = 0.1;
         public static final double OUTTAKE_ROLLER_DUTY = -0.35;
         

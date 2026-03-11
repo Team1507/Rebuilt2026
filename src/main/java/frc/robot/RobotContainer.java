@@ -444,8 +444,7 @@ public class RobotContainer {
         //----------------------------
 
         //need to hold the button for the climber to move up or down
-        topDriver.y().whileTrue(ClimberCommands.robotUp(climberSubsystem)); 
-        topDriver.x().whileTrue(ClimberCommands.robotDown(climberSubsystem));
+        topDriver.y().whileTrue(ClimberCommands.robotUp(climberSubsystem));
 
         // ----------------------------
         // Agitator
