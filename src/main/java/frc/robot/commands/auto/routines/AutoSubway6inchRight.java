@@ -36,22 +36,7 @@ public class AutoSubway6inchRight {
             .driveTo(Nodes.Start.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
-            //please dont spinn
             .shootUntil(15)
-            //.shootUntil(15)
-            //second time
-            //  .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
-            // .intakeHigh()
-            // .parallel(
-            //     seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.5),
-            //     seq -> seq.intakeDeploy())
-            // .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
-            // .intakeLow()
-            // .parallel(
-            //     seq -> seq.intakeRetract(),
-            //     seq -> seq.moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2))  
-            // .driveTo(Nodes.Start.RIGHT)
-            // .shootRPMUntil(20, kShooter.kRPM.BUMP_RAYMOND)
             .build();
     }
 }
