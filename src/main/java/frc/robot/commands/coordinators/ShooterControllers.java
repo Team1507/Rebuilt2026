@@ -10,10 +10,10 @@ package frc.robot.commands.coordinators;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.core.util.CommandBuilder;
-import frc.robot.Constants.kIntake;
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.subsystems.ShooterSubsystem;
 
+import static frc.robot.Constants.kIntake.INTAKE_ROLLER_DUTY_IDLE;
 import static frc.robot.Constants.kShooter.TARGET_TOLERANCE;
 
 /**
@@ -95,7 +95,7 @@ public final class ShooterControllers {
             // Resetting feedingEnabled for the agitator
             record.agitator().resetFeeding();
 
-            record.roller().stop();
+            record.roller().run(INTAKE_ROLLER_DUTY_IDLE);
         });
     }
 
@@ -148,7 +148,7 @@ public final class ShooterControllers {
             // Resetting feedingEnabled for the agitator
             record.agitator().resetFeeding();
 
-            record.roller().stop();
+            record.roller().run(INTAKE_ROLLER_DUTY_IDLE);
         });
     }
 }

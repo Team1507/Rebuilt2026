@@ -152,8 +152,6 @@ public class Constants {
         public static final double INTAKE_ROLLER_DUTY_IDLE = 0.1;
         public static final double OUTTAKE_ROLLER_DUTY = -0.35;
         
-        
-
         public static final MotorConfig ROLLER_CONFIG =
             MotorConfig.builder(ControlMode.DUTY_CYCLE)
                 .voltageLimits(7.0, -7.0)

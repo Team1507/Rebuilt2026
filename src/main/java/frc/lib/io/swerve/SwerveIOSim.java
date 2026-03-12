@@ -8,8 +8,6 @@
 
 package frc.lib.io.swerve;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;

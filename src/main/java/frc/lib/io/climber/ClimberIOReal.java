@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Servo;
 import frc.lib.core.math.GearRatio;
 import frc.lib.core.util.MotorConfig;
-import frc.lib.hardware.ClimberHardware;
 import frc.robot.framework.base.Subsystems1507;
 
 /**

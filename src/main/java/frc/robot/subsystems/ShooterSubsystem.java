@@ -245,6 +245,7 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
             sim.simulate(0.02);
         }
 
+        inputs.targetRPM = targetMotorRPS * 60.0;
         io.setTargetRPS(targetMotorRPS);
 
         // -----------------------------
