@@ -141,7 +141,7 @@ public final class Nodes {
         public static final Pose2d RIGHT_APPROACH_POINT =
                 new Pose2d(0.7, 1.1, Rotation2d.fromDegrees(180.0));
         public static final Pose2d RIGHT_APPROACH_POINT_QUEST =
-                new Pose2d(0.9, 1.1, Rotation2d.fromDegrees(180.0));
+                new Pose2d(1.0, 0.7, Rotation2d.fromDegrees(180.0));
 
         public static final Pose2d APPROACH_LEFT =
                 approach(LEFT_APPROACH_POINT, LEFT);
