@@ -359,6 +359,11 @@ public class AutoSequence {
         steps.add(DriveCommands.pointToTarget(record.swerve(), () -> translatedTarget));
         return this;
     }
+
+    public AutoSequence resetPose(Pose2d resetPose) {
+        steps.add(Commands.runOnce(() -> record.swerve().resetPose(resetPose)));
+        return this;
+    }
     
     // may add more actions here:
     // - shoot()

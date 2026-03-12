@@ -377,8 +377,7 @@ public class RobotContainer {
         //             intakeRollerSubsystem));
 
         topDriver.rightTrigger(0.5)
-            .onTrue(IntakeRollerCommands.highRollerSpeed(intakeRollerSubsystem));
-           // .onFalse(IntakeRollerCommands.lowRollerSpeed(intakeRollerSubsystem));
+            .onTrue(IntakeRollerCommands.incrementRollerDC(intakeRollerSubsystem));
 
         topDriver.leftTrigger(0.5)
             .onTrue(IntakeRollerCommands.lowRollerSpeed(intakeRollerSubsystem));
@@ -460,12 +459,6 @@ public class RobotContainer {
         autoChooser.addOption(
             "Auto Subway 6 inch Right",
             AutoSubway6inchRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
-            
-        autoChooser.addOption(
-            "Auto Double Subway",
-            AutoDoubleSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
-
-
         autoChooser.addOption(
             "Auto Subway 6 inch Left",
             AutoSubway6inchLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
@@ -493,6 +486,17 @@ public class RobotContainer {
         autoChooser.addOption(
             "Auto Depot",
             AutoDepot.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+        autoChooser.addOption(
+            "Auto Double Subway",
+            AutoDoubleSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+
+        autoChooser.addOption(
+            "Auto Subway 18 Inch",
+            AutoSubway18Inch.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+
+            autoChooser.addOption(
+            "Auto Subway Outpost",
+            AutoSubwayOutpost.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {

@@ -24,7 +24,7 @@ public class AutoDoubleSubway {
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
 
             .startTimer()
-             .driveTo(Nodes.Start.RIGHT)
+            .resetPose(Nodes.Start.RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
@@ -39,13 +39,15 @@ public class AutoDoubleSubway {
             .driveTo(Nodes.Start.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
-            .shootUntil(11)
-            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            .shootUntil(9)
+            
+            .withSpeed(MaxSpeed).moveThrough(Nodes.Midfield.RIGHT_TURN,0.2)
+            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP2, 0.2)
             .intakeHigh()
             .parallel(
-                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.1),
+                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LOWER_RIGHT_RIGHT_SUBWAY, 0.1),
                 seq -> seq.intakeDeploy())
-            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
+            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.MIDDLE_RIGHT_SUBWAY, 0.2)
             .intakeHigh()
             .parallel(
                 seq -> seq.intakeRetract(),

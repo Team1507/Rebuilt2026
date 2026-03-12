@@ -79,6 +79,8 @@ public class DashboardManager {
     // Intake
     private DoublePublisher pubIntakeBLUPos;
     private DoublePublisher pubIntakeYELPos;
+    private DoublePublisher pubIntakeRollerCurrentDC;
+    private DoublePublisher pubIntakeRollerCmdDC;
 
     // Vision
     private BooleanPublisher pubHasGoodVision;
@@ -188,6 +190,11 @@ public class DashboardManager {
                 matchNT.getDoubleTopic("Intake/Arm/BLU/Current Position").publish();
             pubIntakeYELPos =
                 matchNT.getDoubleTopic("Intake/Arm/YEL/Current Position").publish();
+
+            pubIntakeRollerCurrentDC =
+                matchNT.getDoubleTopic("Intake/Roller/Roller Current DC").publish();
+            pubIntakeRollerCmdDC =
+                matchNT.getDoubleTopic("Intake/Roller/Roller Cmd DC").publish();
 
             pubHasGoodVision =
                 matchNT.getBooleanTopic("Localization/PhotonVision/HasTargets").publish();
@@ -421,6 +428,29 @@ public class DashboardManager {
         }
     }
 
+    private void updateMatch() {
+
+        pubBLUShooterRPM.set(subsystems.BLUshooter().getShooterRPM());
+        pubBLUShooterTargetRPM.set(subsystems.BLUshooter().getTargetRPM());
+
+        pubYELShooterRPM.set(subsystems.YELshooter().getShooterRPM());
+        pubYELShooterTargetRPM.set(subsystems.YELshooter().getTargetRPM());
+
+        var hopper = subsystems.hopper().getInputs();
+        pubHopperPos.set(hopper.position);
+        pubHopperExtended.set(hopper.hopperRetracted);
+
+        var intake = subsystems.intakeArm().getInputs();
+        pubIntakeBLUPos.set(intake.bluPositionDeg);
+        pubIntakeYELPos.set(intake.yelPositionDeg);
+
+        var roller = subsystems.intakeRoller().getInputs();
+        pubIntakeRollerCurrentDC.set(roller.dutyCycle);
+        pubIntakeRollerCmdDC.set(roller.cmdDutyCycle);
+
+        pubHasGoodVision.set(localization.vision() != null);
+    }
+
     private void updateManual() {
         boolean agitator = subAgitatorRun.get();
         boolean climberRun = subClimberRun.get();
@@ -470,25 +500,6 @@ public class DashboardManager {
         prevIntakeRoller = intakeRoller;
         prevBLUShooter = bluShooterRun;
         prevYELShooter = yelShooterRun;
-    }
-
-    private void updateMatch() {
-
-        pubBLUShooterRPM.set(subsystems.BLUshooter().getShooterRPM());
-        pubBLUShooterTargetRPM.set(subsystems.BLUshooter().getTargetRPM());
-
-        pubYELShooterRPM.set(subsystems.YELshooter().getShooterRPM());
-        pubYELShooterTargetRPM.set(subsystems.YELshooter().getTargetRPM());
-
-        var hopper = subsystems.hopper().getInputs();
-        pubHopperPos.set(hopper.position);
-        pubHopperExtended.set(hopper.hopperRetracted);
-
-        var intake = subsystems.intakeArm().getInputs();
-        pubIntakeBLUPos.set(intake.bluPositionDeg);
-        pubIntakeYELPos.set(intake.yelPositionDeg);
-
-        pubHasGoodVision.set(localization.vision() != null);
     }
 
     private void updateMonitorAgitator() {

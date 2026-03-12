@@ -148,7 +148,7 @@ public class Constants {
     public static final class kIntake {
 
         public static final double INTAKE_ROLLER_DUTY_LOW = 0.3;
-        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.4;
+        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.6;
         public static final double INTAKE_ROLLER_DUTY_IDLE = 0.1;
         public static final double OUTTAKE_ROLLER_DUTY = -0.35;
         
@@ -159,9 +159,9 @@ public class Constants {
 
         public static final class kArm {
 
-            public static final double MAX_ANGLE_DEGREES = 138.0;
+            public static final double MAX_ANGLE_DEGREES = 140.0;
             public static final double MIN_ANGLE_DEGREES = 0.0;
-            public static final double DEPLOYED_ANGLE_DEGREES = 135.0;
+            public static final double DEPLOYED_ANGLE_DEGREES = 138.0;
             public static final double RETRACTED_ANGLE_DEGREES = 82.0;
 
             public static final double MANUAL_POSITIVE_POWER = 0.4;
