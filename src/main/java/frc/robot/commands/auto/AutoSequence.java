@@ -141,7 +141,7 @@ public class AutoSequence {
      */
     public AutoSequence moveTo(Pose2d target) {
 
-        Pose2d translatedTarget = translate(target);
+       
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
@@ -155,7 +155,7 @@ public class AutoSequence {
 
         steps.add(DriveCommands.moveToPose(
             record.swerve(),
-            translatedTarget,
+            target,
             speedToUse,
             angularToUse
         ));
@@ -184,7 +184,7 @@ public class AutoSequence {
     
     public AutoSequence driveTo(Pose2d target) {
 
-        Pose2d translatedTarget = translate(target);
+       
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
@@ -198,7 +198,7 @@ public class AutoSequence {
 
         steps.add(DriveCommands.driveToPoint(
             record.swerve(),
-            translatedTarget,
+            target,
             speedToUse,
             true
         ));
@@ -229,7 +229,6 @@ public class AutoSequence {
      */
     public AutoSequence moveThrough(Pose2d target, double passRadius) {
 
-        Pose2d translatedTarget = translate(target);
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
@@ -244,7 +243,7 @@ public class AutoSequence {
 
         steps.add(DriveCommands.moveThroughPose(
             record.swerve(),
-            translatedTarget,
+            target,
             speedToUse,
             angularToUse,
             passRadius
@@ -354,9 +353,8 @@ public class AutoSequence {
         return this;
     }
 
-    public AutoSequence headingToTarget(Pose2d targetPose) {
-        Pose2d translatedTarget = translate(targetPose);
-        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> translatedTarget));
+    public AutoSequence headingToTarget(Pose2d resePose) {
+        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> resePose));
         return this;
     }
 

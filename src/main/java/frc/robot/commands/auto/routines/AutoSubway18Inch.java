@@ -24,7 +24,7 @@ public class AutoSubway18Inch {
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
 
             .startTimer()
-            .resetPose(Nodes.Start.RIGHT)
+            .resetPose(Nodes.Start.Blue.RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
@@ -36,23 +36,26 @@ public class AutoSubway18Inch {
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5))
                 .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)  
-            .driveTo(Nodes.Start.RIGHT)
+            .driveTo(Nodes.Start.Blue.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
             .shootUntil(9)
             .changeHeading(Nodes.Midfield.RIGHT_TURN)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP2, 0.2)
+            .withSpeed(MaxSpeed *0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY,0.2)
+            
             .intakeHigh()
             .parallel(
-                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.MIDDLE_RIGHT_SUBWAY, 0.1),
-                seq -> seq.intakeDeploy(),
-                seq -> seq.withSpeed(MaxSpeed * 0.5).intakeHigh())
-            .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
-            .withSpeed(MaxSpeed * 0.5).intakeHigh()
-            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.DOUBLE_LEFT_SUBWAY, 0.5)
-            .moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.2)
-            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)  
-            .driveTo(Nodes.Start.LEFT)
+                seq -> seq.withSpeed(MaxSpeed *0.5).moveThrough(Nodes.Midfield.MIDDLE_18INCH_SUBWAY, 0.1),
+                seq -> seq.intakeDeploy())            .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
+                .moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2)
+                .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+                .moveTo(Nodes.Start.Blue.RIGHT)
+            // .withSpeed(MaxSpeed * 0.5).intakeHigh()
+            // .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.DOUBLE_LEFT_SUBWAY, 0.5)
+            // .moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.2)
+            // .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)  
+            //.driveTo(Nodes.Start.LEFT)
             .waitSeconds(0.5)
             .pointToShoot()
             .shootUntil(20)

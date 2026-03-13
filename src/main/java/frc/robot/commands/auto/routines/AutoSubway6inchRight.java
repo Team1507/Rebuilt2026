@@ -21,7 +21,7 @@ public class AutoSubway6inchRight {
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
 
             .startTimer()
-            .resetPose(Nodes.Start.RIGHT)
+            .resetPose(Nodes.Start.Blue.RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
@@ -34,7 +34,7 @@ public class AutoSubway6inchRight {
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5))
                 .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)  
-            .driveTo(Nodes.Start.RIGHT)
+            .driveTo(Nodes.Start.Blue.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
             .shootUntil(19.99)

@@ -29,7 +29,7 @@ public class AutoHumanPlayer{
             .withSpeed(MaxSpeed * .7).moveThrough(Nodes.Outpost.RIGHT_APPROACH_POINT, 0.1)
             .parallel(  
               seq -> seq.intakeRetract(),
-              seq -> seq.driveTo(Nodes.Start.RIGHT))
+              seq -> seq.driveTo(Nodes.Start.Blue.RIGHT))
             .shootRPMUntil(19.5, kShooter.kRPM.BUMP_RAYMOND)
             .build();
     }

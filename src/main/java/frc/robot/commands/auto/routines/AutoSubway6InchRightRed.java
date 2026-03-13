@@ -8,60 +8,36 @@
 
 package frc.robot.commands.auto.routines;
 
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.kShooter;
 import frc.robot.commands.auto.AutoSequence;
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
-import frc.robot.Constants.kShooter;
 
-
-public class AutoSubwayOutpost {
+public class AutoSubway6InchRightRed {
     public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
 
             .startTimer()
-            .resetPose(Nodes.Start.Blue.RIGHT)
-            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            .resetPose(Nodes.Start.Red.RIGHT)
+            .moveThrough(Nodes.Midfield.Red.RIGHT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
-                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.1),
+                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY_RED, 0.1),
                 seq -> seq.intakeDeploy())
-            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
+            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY_RED, 0.2)
+           
             .intakeHigh()
             .parallel(
                 seq -> seq.intakeRetract(),
-                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5))
-                .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)  
-            .driveTo(Nodes.Start.Blue.RIGHT)
+                seq -> seq.moveThrough(Nodes.Midfield.Red.RIGHT_BEFORE_BUMP, 0.5))
+                .moveThrough(Nodes.Midfield.Red.RIGHT_OVER_BUMP, 0.2)  
+            .driveTo(Nodes.Start.Red.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
-            .shootUntil(9)
-
-             .driveTo(Nodes.Outpost.RIGHT_APPROACH_POINT_QUEST)
-            .intakeDeploy()
-            .withSpeed(MaxSpeed * 0.7) .driveDistance(0.15)
-            .waitSeconds(1.5)
-            .withSpeed(MaxSpeed * .7).moveThrough(Nodes.Outpost.RIGHT_APPROACH_POINT, 0.1)
-            .parallel(  
-              seq -> seq.intakeRetract(),
-              seq -> seq.driveTo(Nodes.Start.Blue.RIGHT))
-            .shootRPMUntil(19.5, kShooter.kRPM.BUMP_RAYMOND)
-
-        // .moveTo(Nodes.Midfield.SUBWAY_LINEUP_OUTPOST)
-        // .intakeDeploy()
-        // .withSpeed(MaxSpeed * 0.7) .driveDistance(0.15)        
-        // .waitSeconds(2)
-        // .parallel(
-        //     seq -> seq.intakeRetract(),
-        //     seq -> seq.moveTo(Nodes.Start.RIGHT)
-        // )
-        // .pointToShoot()
-        // .waitSeconds(0.5)
-        // .shootUntil(20)
+            .shootUntil(19.99)
             .build();
     }
 }
