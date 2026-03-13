@@ -29,7 +29,7 @@ public class AutoShootUntil {
             // .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.5)
             // .moveThrough(Nodes.Start.START_SUBWAY_RIGHT, 0.5)
             .moveTo(Nodes.AllianceZoneBlue.BACK_RIGHT)
-            .pointToTarget()
+            .pointToShoot()
             .shootUntil(7.0)
             .moveTo(Nodes.Tower.APPROACH_RIGHT)
             .moveTo(Nodes.Tower.CLIMB)

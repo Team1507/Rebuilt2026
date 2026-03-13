@@ -218,6 +218,38 @@ public final class DriveCommands {
             .onEnd(swerve::stop);
     }
 
+    public static Command changeHeading(
+        SwerveSubsystem swerve,
+        Pose2d targetPose
+    ) {
+
+        return new CommandBuilder(swerve)
+            .named("Change Heading")
+            .onExecute(() -> {
+
+                Pose2d current = swerve.getPose();
+                Rotation2d desiredHeading = targetPose.getRotation();
+
+                double omega = computeOmega(current.getRotation(), desiredHeading);
+
+                swerve.drive(new ChassisSpeeds(0.0, 0.0, omega));
+            })
+            .isFinished(() -> {
+
+                Pose2d current = swerve.getPose();
+                Rotation2d desiredHeading = targetPose.getRotation();
+
+                double error = Math.abs(
+                    MathUtil.angleModulus(
+                        current.getRotation().minus(desiredHeading).getRadians()
+                    )
+                );
+
+                return error < Math.toRadians(5.0);
+            })
+            .onEnd(swerve::stop);
+    }
+
     // =========================================================================
     // Move Through Pose (vector-based, no slowdown)
     // =========================================================================

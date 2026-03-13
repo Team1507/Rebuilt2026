@@ -40,13 +40,13 @@ public class AutoSubway18Inch {
             .waitSeconds(0.5)
             .pointToShoot()
             .shootUntil(9)
-            
-            .withSpeed(MaxSpeed).moveThrough(Nodes.Midfield.RIGHT_TURN,0.2)
+            .changeHeading(Nodes.Midfield.RIGHT_TURN)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP2, 0.2)
             .intakeHigh()
             .parallel(
-                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.1),
-                seq -> seq.intakeDeploy())
+                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.MIDDLE_RIGHT_SUBWAY, 0.1),
+                seq -> seq.intakeDeploy(),
+                seq -> seq.withSpeed(MaxSpeed * 0.5).intakeHigh())
             .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
             .withSpeed(MaxSpeed * 0.5).intakeHigh()
             .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.DOUBLE_LEFT_SUBWAY, 0.5)

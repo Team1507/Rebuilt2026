@@ -344,8 +344,8 @@ public class AutoSequence {
         return this;
     }
 
-    public AutoSequence pointToTarget() {
-        steps.add(DriveCommands.pointToTarget(record.swerve(), record.BLUshooter()::getTargetPose));
+    public AutoSequence changeHeading(Pose2d targetPose) {
+        steps.add(DriveCommands.changeHeading(record.swerve(), targetPose));
         return this;
     }
 

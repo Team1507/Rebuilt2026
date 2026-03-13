@@ -87,6 +87,7 @@ public final class IntakeRollerCommands {
         return new CommandBuilder(roller) 
             .named("IntakeRollerSetDutyLow")
             .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_LOW))
+            .onExecute (() -> roller.run())
             .isFinished(true);
     }
     
@@ -94,6 +95,7 @@ public final class IntakeRollerCommands {
         return new CommandBuilder(roller)
             .named("IntakeRollerIntake")
             .onInitialize(() -> roller.run(kIntake.INTAKE_ROLLER_DUTY_IDLE))
+            .onExecute (() -> roller.run())
             .isFinished(true); // one-shot command  
     }
 }

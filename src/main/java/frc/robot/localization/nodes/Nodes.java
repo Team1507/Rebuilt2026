@@ -224,7 +224,7 @@ public final class Nodes {
         public static final Pose2d LEFT_BEFORE_BUMP =
                 new Pose2d(7.5,5.6, Rotation2d.fromDegrees(315.0));
         public static final Pose2d RIGHT_TURN =
-               new Pose2d(1.85,2.6, Rotation2d.fromDegrees(170.0));
+               new Pose2d(1.95,2.6, Rotation2d.fromDegrees(170.0));
     }
 
     // ============================
