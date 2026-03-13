@@ -462,6 +462,9 @@ public class RobotContainer {
         autoChooser.addOption(
             "Auto Subway 6 inch Right Red",
             AutoSubway6InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+             autoChooser.addOption(
+            "Auto Subway 6 inch Left Red",
+            AutoSubway6InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         autoChooser.addOption(
             "Auto Subway 6 inch Left",
             AutoSubway6inchLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
@@ -469,15 +472,7 @@ public class RobotContainer {
         autoChooser.addOption(
             "Auto Subway Footlong Right",
             AutoSubwayFootlongRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 1.0, kSwerve.MAX_ANGULAR_RATE));
-
-        autoChooser.addOption(
-            "Auto Subway Footlong Left",
-            AutoSubwayFootlongLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 1.0, kSwerve.MAX_ANGULAR_RATE));
-
-        autoChooser.addOption(
-            "Auto Shoot Until",
-            AutoShootUntil.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
-
+        
         autoChooser.addOption(
             "Autoah Raymond",
             AutoahRaymond.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
@@ -487,9 +482,6 @@ public class RobotContainer {
             AutoHumanPlayerQuest.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Depot",
-            AutoDepot.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
-        autoChooser.addOption(
             "Auto Double Subway",
             AutoDoubleSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
@@ -497,11 +489,7 @@ public class RobotContainer {
             "Auto Subway 18 Inch",
             AutoSubway18Inch.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
-            autoChooser.addOption(
-            "Auto Subway Outpost",
-            AutoSubwayOutpost.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
-
-            autoChooser.addOption(
+        autoChooser.addOption(
             "Auto Subway Around Hub",
             AutoSubwayAroundTheHub.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
     }
