@@ -497,6 +497,10 @@ public class RobotContainer {
             autoChooser.addOption(
             "Auto Subway Outpost",
             AutoSubwayOutpost.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+
+            autoChooser.addOption(
+            "Auto Subway Around Hub",
+            AutoSubwayAroundTheHub.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {

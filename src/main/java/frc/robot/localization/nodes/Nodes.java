@@ -141,7 +141,7 @@ public final class Nodes {
         public static final Pose2d RIGHT_APPROACH_POINT =
                 new Pose2d(0.7, 1.1, Rotation2d.fromDegrees(180.0));
         public static final Pose2d RIGHT_APPROACH_POINT_QUEST =
-                new Pose2d(1.0, 0.7, Rotation2d.fromDegrees(180.0));
+                new Pose2d(1.1, 1.1, Rotation2d.fromDegrees(180.0));
 
         public static final Pose2d APPROACH_LEFT =
                 approach(LEFT_APPROACH_POINT, LEFT);
@@ -201,6 +201,14 @@ public final class Nodes {
                 new Pose2d(7.75, 7.4, Rotation2d.fromDegrees(90.0));
         public static final Pose2d LEFT_FOOTLONG_SUBWAY =
                 new Pose2d(7.75, 7.2, Rotation2d.fromDegrees(270.0));
+        public static final Pose2d SUBWAY_AROUND_THE_HUB =
+                new Pose2d(2.0, 5.0, Rotation2d.fromDegrees(270.0));
+
+
+        public static final Pose2d SUBWAY_LINEUP_OUTPOST =
+                new Pose2d(1.55, 0.85, Rotation2d.fromDegrees(180.0));
+        public static final Pose2d SUBWAY_INTAKE_OUTPOST =
+                new Pose2d(1.0, 0.85, Rotation2d.fromDegrees(180.0));
 
         //bump nodes
         public static final Pose2d RIGHT_OVER_BUMP =
@@ -210,11 +218,11 @@ public final class Nodes {
         public static final Pose2d LEFT_OVER_BUMP =
                 new Pose2d(6.3,5.6, Rotation2d.fromDegrees(315.0));
         public static final Pose2d LEFT_OVER_BUMP2 =
-                new Pose2d(6.3,5.6, Rotation2d.fromDegrees(135.0));
+                new Pose2d(6.3,5.6, Rotation2d.fromDegrees(315.0));
         public static final Pose2d RIGHT_BEFORE_BUMP =
-                new Pose2d(7.5,2.0, Rotation2d.fromDegrees(190.0));
+                new Pose2d(7.5,2.0, Rotation2d.fromDegrees(170.0));
         public static final Pose2d LEFT_BEFORE_BUMP =
-                new Pose2d(7.5,5.6, Rotation2d.fromDegrees(135.0));
+                new Pose2d(7.5,5.6, Rotation2d.fromDegrees(315.0));
         public static final Pose2d RIGHT_TURN =
                new Pose2d(1.85,2.6, Rotation2d.fromDegrees(170.0));
     }

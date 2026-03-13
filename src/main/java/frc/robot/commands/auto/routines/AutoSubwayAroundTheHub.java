@@ -18,7 +18,7 @@ import frc.robot.localization.nodes.Nodes;
 import frc.robot.Constants.kShooter;
 
 
-public class AutoSubwayOutpost {
+public class AutoSubwayAroundTheHub {
     public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
@@ -40,28 +40,25 @@ public class AutoSubwayOutpost {
             .waitSeconds(0.5)
             .pointToShoot()
             .shootUntil(9)
+            .moveThrough (Nodes.Midfield.SUBWAY_AROUND_THE_HUB, 0.2)
+            .moveThrough(Nodes.Start.LEFT, 0.2)
+            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
+            .intakeHigh()
+            .parallel(
+                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY, 0.1),
+                seq -> seq.intakeDeploy())
+            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_LEFT_SUBWAY, 0.5)
 
-             .driveTo(Nodes.Outpost.RIGHT_APPROACH_POINT_QUEST)
-            .intakeDeploy()
-            .withSpeed(MaxSpeed * 0.7) .driveDistance(0.15)
-            .waitSeconds(1.5)
-            .withSpeed(MaxSpeed * .7).moveThrough(Nodes.Outpost.RIGHT_APPROACH_POINT, 0.1)
-            .parallel(  
-              seq -> seq.intakeRetract(),
-              seq -> seq.driveTo(Nodes.Start.RIGHT))
-            .shootRPMUntil(19.5, kShooter.kRPM.BUMP_RAYMOND)
 
-        // .moveTo(Nodes.Midfield.SUBWAY_LINEUP_OUTPOST)
-        // .intakeDeploy()
-        // .withSpeed(MaxSpeed * 0.7) .driveDistance(0.15)        
-        // .waitSeconds(2)
-        // .parallel(
-        //     seq -> seq.intakeRetract(),
-        //     seq -> seq.moveTo(Nodes.Start.RIGHT)
-        // )
-        // .pointToShoot()
-        // .waitSeconds(0.5)
-        // .shootUntil(20)
+            .intakeHigh()
+            .parallel(
+                seq -> seq.intakeRetract(),
+                seq -> seq.moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.5))  
+            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
+            .driveTo(Nodes.Start.LEFT)
+            .waitSeconds(0.5)
+            .pointToShoot()
+            .shootUntil(19.99)
             .build();
     }
 }
