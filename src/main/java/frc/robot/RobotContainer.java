@@ -460,9 +460,9 @@ public class RobotContainer {
             "Auto Subway 6 inch Right",
             AutoSubway6inchRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         autoChooser.addOption(
-            "Auto Subway 6 inch Right Red",
+            "Auto Subway 6 inch Right red",
             AutoSubway6InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
-             autoChooser.addOption(
+        autoChooser.addOption(
             "Auto Subway 6 inch Left Red",
             AutoSubway6InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         autoChooser.addOption(
