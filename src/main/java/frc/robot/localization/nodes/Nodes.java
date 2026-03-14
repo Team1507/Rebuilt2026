@@ -44,9 +44,9 @@ public final class Nodes {
     public static final class Hub {
         // Center of the Hub (computed from all 8 tags)
         public static final Pose2d CENTER =
-                new Pose2d(4.6, 4.03, Rotation2d.fromDegrees(0.0));
+                new Pose2d(4.8, 4.03, Rotation2d.fromDegrees(0.0));
         public static final Pose2d RED_CENTER =
-                new Pose2d(10.5, 3.7, Rotation2d.fromDegrees(0.0));
+                new Pose2d(12.0, 3.7, Rotation2d.fromDegrees(0.0));
 
         // Faces (approximate, based on tag clusters)
         public static final Pose2d FRONT_LEFT =
@@ -190,17 +190,17 @@ public final class Nodes {
         public static final Pose2d RIGHT_RIGHT_SUBWAY =
                 new Pose2d(7.95, 0.85, Rotation2d.fromDegrees(90.0));
         public static final Pose2d LOWER_RIGHT_RIGHT_SUBWAY =
-                new Pose2d(6.3 , 0.85, Rotation2d.fromDegrees(90.0));
+                new Pose2d(7.0 , 0.85, Rotation2d.fromDegrees(90.0));
         public static final Pose2d LEFT_RIGHT_SUBWAY =
                 new Pose2d(7.95,2.95,Rotation2d.fromDegrees(90.0));
         public static final Pose2d MIDDLE_RIGHT_SUBWAY =
-                new Pose2d(6.3,4.0,Rotation2d.fromDegrees(90.0));
+                new Pose2d(7.0,4.0,Rotation2d.fromDegrees(90.0));
         public static final Pose2d MIDDLE_18INCH_SUBWAY =
                 new Pose2d(7.95,4.0,Rotation2d.fromDegrees(90.0));
         public static final Pose2d RIGHT_LEFT_SUBWAY =
                 new Pose2d(7.95, 5.0, Rotation2d.fromDegrees(270.0));
         public static final Pose2d LEFT_LEFT_SUBWAY =
-                new Pose2d(7.95, 7.4, Rotation2d.fromDegrees(90.0));
+                new Pose2d(7.95, 7.4, Rotation2d.fromDegrees(270.0));
         public static final Pose2d DOUBLE_LEFT_SUBWAY =
                 new Pose2d(7.95, 7.4, Rotation2d.fromDegrees(90.0));
         public static final Pose2d LEFT_FOOTLONG_SUBWAY =
@@ -282,7 +282,7 @@ public final class Nodes {
         public static final class Blue {
                 // 2.0 m from Blue wall, spread across width
                 public static final Pose2d LEFT =
-                        new Pose2d(3.5,5.6,Rotation2d.fromDegrees(55.0));
+                        new Pose2d(3.5,5.6,Rotation2d.fromDegrees(315.0));
                 public static final Pose2d CENTER =
                         new Pose2d(2.000, 4.115, Rotation2d.fromDegrees(0.0));
                 public static final Pose2d RIGHT =

@@ -28,7 +28,7 @@ public class AutoDoubleSubway {
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
-                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.1),
+                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.1),
                 seq -> seq.intakeDeploy())
             .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
             .intakeHigh()
@@ -39,13 +39,12 @@ public class AutoDoubleSubway {
             .driveTo(Nodes.Start.Blue.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
-            .shootUntil(9)
-            
+            .shootUntil(10)
            .changeHeading(Nodes.Midfield.RIGHT_TURN)      
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP2, 0.2)
             .intakeHigh()
             .parallel(
-                seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LOWER_RIGHT_RIGHT_SUBWAY, 0.1),
+                seq -> seq.moveThrough(Nodes.Midfield.LOWER_RIGHT_RIGHT_SUBWAY, 0.1),
                 seq -> seq.intakeDeploy())
             .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.MIDDLE_RIGHT_SUBWAY, 0.2)
             .intakeHigh()

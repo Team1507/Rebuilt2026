@@ -357,6 +357,11 @@ public class AutoSequence {
         return this;
     }
 
+    public AutoSequence setShooterTarget(Pose2d pose) {
+        steps.add(Commands.runOnce(() -> record.BLUshooter().setShooterTarget(pose)));
+        steps.add(Commands.runOnce(() -> record.YELshooter().setShooterTarget(pose)));
+        return this;
+    }
 
     public AutoSequence headingToTarget(Pose2d targetPose) {
         steps.add(DriveCommands.pointToTarget(record.swerve(), () -> targetPose));

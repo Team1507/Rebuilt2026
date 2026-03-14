@@ -144,6 +144,10 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
         return ratio.toOutput(targetMotorRPS) * 60.0;
     }
 
+    public void setShooterTarget(Pose2d target) {
+        targetPose = target;
+    }
+
     // ------------------------------------------------------------
     // Model‑driven shooter
     // ------------------------------------------------------------

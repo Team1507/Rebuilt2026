@@ -45,7 +45,7 @@ public class Constants {
             MotorConfig.builder()
                 .inverted(true)
                 .withVoltageLimits(3.5, -3.5)
-                .withStatorCurrentLimit(Amps.of(25))
+                .withStatorCurrentLimit(Amps.of(45))
                 .build();
 
 
@@ -228,7 +228,7 @@ public class Constants {
                 .withPID(0.1, 0.0, 0.02)
                 .withFeedforward(0.32, 0.12231, 0.0)
                 .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(60))
+                .withStatorCurrentLimit(Amps.of(70))
                 .build();
 
 
@@ -238,7 +238,7 @@ public class Constants {
                 .withPID(0.1, 0.0, 0.02)
                 .withFeedforward(0.32, 0.12231, 0.0)
                 .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(60))
+                .withStatorCurrentLimit(Amps.of(70))
                 .build();
 
 

@@ -42,6 +42,7 @@ public class AutoSubway6inchLeft {
             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
             .driveTo(Nodes.Start.Blue.LEFT)
             .waitSeconds(0.5)
+            
             .pointToShoot()
             .shootUntil(19.99)
             .build();
