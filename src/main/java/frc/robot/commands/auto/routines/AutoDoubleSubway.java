@@ -41,7 +41,7 @@ public class AutoDoubleSubway {
             .pointToShoot()
             .shootUntil(9)
             
-            .withSpeed(MaxSpeed).moveThrough(Nodes.Midfield.RIGHT_TURN,0.2)
+           .changeHeading(Nodes.Midfield.RIGHT_TURN)      
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP2, 0.2)
             .intakeHigh()
             .parallel(
@@ -56,7 +56,7 @@ public class AutoDoubleSubway {
             .driveTo(Nodes.Start.Blue.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
-            .shootUntil(20)
+            .shootUntil(19.99)
             .build();
     }
 }

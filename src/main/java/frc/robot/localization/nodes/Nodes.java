@@ -45,6 +45,8 @@ public final class Nodes {
         // Center of the Hub (computed from all 8 tags)
         public static final Pose2d CENTER =
                 new Pose2d(4.6, 4.03, Rotation2d.fromDegrees(0.0));
+        public static final Pose2d RED_CENTER =
+                new Pose2d(10.6, 4.03, Rotation2d.fromDegrees(0.0));
 
         // Faces (approximate, based on tag clusters)
         public static final Pose2d FRONT_LEFT =
@@ -243,7 +245,7 @@ public final class Nodes {
         public static final Pose2d LEFT_BEFORE_BUMP =
                 new Pose2d(7.5,5.6, Rotation2d.fromDegrees(315.0));
         public static final Pose2d RIGHT_TURN =
-               new Pose2d(1.95,2.6, Rotation2d.fromDegrees(170.0));
+               new Pose2d(1.95,2.6, Rotation2d.fromDegrees(145.0));
 
                public static final class Red{
                public static final Pose2d RIGHT_OVER_BUMP =

@@ -51,6 +51,7 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
 
     private final Supplier<Pose2d> poseSupplier;
     private Pose2d targetPose;
+    private Pose2d targetPoseRed;
     private final ShooterKinematics kinematics;
 
     private double targetMotorRPS = 0.0;
@@ -195,6 +196,11 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
 
     /** @return current targetPose */
     public Pose2d getTargetPose() {
+        return targetPose;
+    }
+
+     /** @return current targetPose */
+    public Pose2d getTargetPoseRed() {
         return targetPose;
     }
 

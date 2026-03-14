@@ -50,7 +50,7 @@ public class AutoSubway18Inch {
                 seq -> seq.intakeDeploy())            .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
                 .moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2)
                 .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
-                .moveTo(Nodes.Start.Blue.RIGHT)
+                .driveTo(Nodes.Start.Blue.RIGHT)
             // .withSpeed(MaxSpeed * 0.5).intakeHigh()
             // .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.DOUBLE_LEFT_SUBWAY, 0.5)
             // .moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.2)
@@ -58,7 +58,7 @@ public class AutoSubway18Inch {
             //.driveTo(Nodes.Start.LEFT)
             .waitSeconds(0.5)
             .pointToShoot()
-            .shootUntil(20)
+            .shootUntil(19.99)
             .build();
     }
 }
