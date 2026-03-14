@@ -21,6 +21,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
+
 import frc.lib.core.math.geometry.VisionMeasurement;
 import frc.lib.io.swerve.SwerveIO;
 import frc.lib.io.swerve.SwerveInputs;
@@ -85,19 +87,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     /** Changes the position of the swerve modules to lock the robot in place */
     public void lock() {
-        SwerveModuleState[] lockStates = new SwerveModuleState[] {
-            new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
-            new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
-            new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
-            new SwerveModuleState(0, Rotation2d.fromDegrees(45))
-        };
-
-        io.setModuleStates(lockStates);
-    }
-
-    /** Directly set module states (used by autos / PathPlanner). */
-    public void setModuleStates(SwerveModuleState[] states) {
-        io.setModuleStates(states);
+        io.setControl(new SwerveDriveBrake());
     }
 
     /** Stop all motion. */

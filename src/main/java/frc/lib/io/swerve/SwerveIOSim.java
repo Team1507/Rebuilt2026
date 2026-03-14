@@ -8,6 +8,8 @@
 
 package frc.lib.io.swerve;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -55,11 +57,6 @@ public class SwerveIOSim implements SwerveIO {
     public void driveRobotRelative(ChassisSpeeds speeds) {}
 
     @Override
-    public void setModuleStates(SwerveModuleState[] states) {
-        this.moduleStates = states;
-    }
-
-    @Override
     public Pose2d getPose() {
         return pose;
     }
@@ -81,6 +78,8 @@ public class SwerveIOSim implements SwerveIO {
     public Rotation2d getHeading() {
         return heading;
     }
+
+    public void setControl(SwerveRequest request) {}
 
     @Override
     public void stop() {

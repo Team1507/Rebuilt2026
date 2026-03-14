@@ -750,7 +750,7 @@ public final class DriveCommands {
     public static Command lock(SwerveSubsystem swerve) {
         return new CommandBuilder(swerve)
             .named("SwerveLock")
-            .onExecute(swerve::lock)
-            .onEnd(swerve::stop);
+            .onExecute(() -> swerve.lock())   // apply every loop
+            .onEnd(swerve::stop);             // stop when released
     }
 }

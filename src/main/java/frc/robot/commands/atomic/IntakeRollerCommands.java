@@ -94,7 +94,7 @@ public final class IntakeRollerCommands {
     public static Command runIdleRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller)
             .named("IntakeRollerIntake")
-            .onInitialize(() -> roller.run(kIntake.INTAKE_ROLLER_DUTY_IDLE))
+            .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_IDLE))
             .onExecute (() -> roller.run())
             .isFinished(true); // one-shot command  
     }

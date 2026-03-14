@@ -48,10 +48,17 @@ public abstract class Subsystems1507 extends SubsystemBase {
         cfg.Voltage.withPeakForwardVoltage(Volts.of(configs[0].peakForwardVoltage()))
                 .withPeakReverseVoltage(Volts.of(configs[0].peakReverseVoltage()));
 
-        // NEW: Apply brake or coast mode
+        // Apply brake or coast mode
         cfg.MotorOutput.NeutralMode = configs[0].brakeMode()
                 ? NeutralModeValue.Brake
                 : NeutralModeValue.Coast;
+
+        // Apply Stator current limit
+        cfg.withCurrentLimits(
+            new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(configs[0].statorCurrentLimit())
+                .withStatorCurrentLimitEnable(true)
+        );
 
         // Apply limit switch settings (from slot0 config)
         applyLimitSwitches(cfg.HardwareLimitSwitch, configs[0]);
@@ -85,10 +92,17 @@ public abstract class Subsystems1507 extends SubsystemBase {
         cfg.Voltage.withPeakForwardVoltage(Volts.of(configs[0].peakForwardVoltage()))
                 .withPeakReverseVoltage(Volts.of(configs[0].peakReverseVoltage()));
 
-        // NEW: Apply brake or coast mode
+        // Apply brake or coast mode
         cfg.MotorOutput.NeutralMode = configs[0].brakeMode()
                 ? NeutralModeValue.Brake
                 : NeutralModeValue.Coast;
+
+        // Apply Stator current limit
+        cfg.withCurrentLimits(
+            new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(configs[0].statorCurrentLimit())
+                .withStatorCurrentLimitEnable(true)
+        );
 
         // Apply limit switch settings (from slot0 config)
         applyLimitSwitches(cfg.HardwareLimitSwitch, configs[0]);

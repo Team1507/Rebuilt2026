@@ -8,11 +8,12 @@
 
 package frc.lib.io.swerve;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 
@@ -53,16 +54,6 @@ public interface SwerveIO {
     void driveRobotRelative(ChassisSpeeds speeds);
 
     /**
-     * Directly sets the module states.
-     *
-     * <p>This is required for trajectory following (PathPlanner, WPILib
-     * HolonomicDriveController, etc.).
-     *
-     * @param states desired module states
-     */
-    void setModuleStates(SwerveModuleState[] states);
-
-    /**
      * Returns the current estimated pose of the robot.
      *
      * @return the drivetrain pose
@@ -96,6 +87,8 @@ public interface SwerveIO {
      * Returns the Pigeon Yaw
      */
     Rotation2d getHeading();
+
+    void setControl(SwerveRequest request);
 
     /**
      * Stops all module motion.
