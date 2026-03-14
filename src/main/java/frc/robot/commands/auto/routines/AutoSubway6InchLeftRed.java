@@ -42,7 +42,7 @@ public class AutoSubway6InchLeftRed {
             .moveThrough(Nodes.Start.Red.LEFT_OVER_BUMP, 0.2)
             .driveTo(Nodes.Start.Blue.LEFT_RED)
             .waitSeconds(0.5)
-            .pointToShoot()
+            .headingToTarget(Nodes.Hub.RED_CENTER)
             .shootUntil(19.99)
             .build();
     }

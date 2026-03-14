@@ -358,8 +358,8 @@ public class AutoSequence {
     }
 
 
-    public AutoSequence headingToTarget(Pose2d resePose) {
-        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> resePose));
+    public AutoSequence headingToTarget(Pose2d targetPose) {
+        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> targetPose));
         return this;
     }
 
