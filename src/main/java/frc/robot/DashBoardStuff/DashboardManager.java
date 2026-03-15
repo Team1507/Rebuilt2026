@@ -156,6 +156,15 @@ public class DashboardManager {
     private DoublePublisher pubMonYellowShooterTemp;
     private DoublePublisher pubMonYellowShooterCurrent;
 
+    private static double round(double value, int decimals) {
+        double scale = Math.pow(10, decimals);
+        return Math.round(value * scale) / scale;
+    }
+
+    private static double whole(double value) {
+        return Math.round(value);
+    }
+
     public DashboardManager(
         SubsystemsRecord subsystems,
         LocalizationRecord localization,
@@ -431,23 +440,25 @@ public class DashboardManager {
 
     private void updateMatch() {
 
-        pubBLUShooterRPM.set(subsystems.BLUshooter().getShooterRPM());
-        pubBLUShooterTargetRPM.set(subsystems.BLUshooter().getTargetRPM());
+        var bluShooterInputs = subsystems.BLUshooter().getInputs();
+        pubBLUShooterRPM.set(whole(bluShooterInputs.currentRPM));
+        pubBLUShooterTargetRPM.set(whole(bluShooterInputs.targetRPM));
 
-        pubYELShooterRPM.set(subsystems.YELshooter().getShooterRPM());
-        pubYELShooterTargetRPM.set(subsystems.YELshooter().getTargetRPM());
+        var yelShooterInputs = subsystems.YELshooter().getInputs();
+        pubYELShooterRPM.set(whole(yelShooterInputs.currentRPM));
+        pubYELShooterTargetRPM.set(whole(yelShooterInputs.targetRPM));
 
         var hopper = subsystems.hopper().getInputs();
-        pubHopperPos.set(hopper.position);
-        pubHopperExtended.set(hopper.hopperRetracted);
+        pubHopperPos.set(round(hopper.position, 1));
+        pubHopperExtended.set(hopper.hopperExtended);
 
         var intake = subsystems.intakeArm().getInputs();
-        pubIntakeBLUPos.set(intake.bluPositionDeg);
-        pubIntakeYELPos.set(intake.yelPositionDeg);
+        pubIntakeBLUPos.set(round(intake.bluPositionDeg, 1));
+        pubIntakeYELPos.set(round(intake.yelPositionDeg, 1));
 
         var roller = subsystems.intakeRoller().getInputs();
-        pubIntakeRollerCurrentDC.set(roller.dutyCycle);
-        pubIntakeRollerCmdDC.set(roller.cmdDutyCycle);
+        pubIntakeRollerCurrentDC.set(round(roller.dutyCycle, 1));
+        pubIntakeRollerCmdDC.set(round(roller.cmdDutyCycle, 1));
 
         pubHasGoodVision.set(localization.vision() != null);
     }
@@ -465,40 +476,57 @@ public class DashboardManager {
 
         if (agitator && !prevAgitator)
             CommandScheduler.getInstance().schedule(
-                AgitatorCommands.manual(subsystems.agitator(), () -> subAgitatorDuty.get())
-            );
+                AgitatorCommands.manual(
+                    subsystems.agitator(),
+                    () -> round(subAgitatorDuty.get(), 2)));
+
         if (climberRun && !prevClimber)
             CommandScheduler.getInstance().schedule(
-                ClimberCommands.manual(subsystems.climber(), () -> subClimberPos.get())
-            );
+                ClimberCommands.manual(
+                    subsystems.climber(),
+                    () -> round(subClimberPos.get(), 1)));
+
         if (bluFeeder && !prevBLUFeeder)
             CommandScheduler.getInstance().schedule(
-                FeederCommands.manual(subsystems.BLUfeeder(), () -> subBLUFeederRPM.get())
-            );
+                FeederCommands.manual(
+                    subsystems.BLUfeeder(),
+                    () -> whole(subBLUFeederRPM.get())));
+
         if (yelFeeder && !prevYELFeeder)
             CommandScheduler.getInstance().schedule(
-                FeederCommands.manual(subsystems.YELfeeder(), () -> subYELFeederRPM.get())
-            );
+                FeederCommands.manual(
+                    subsystems.YELfeeder(),
+                    () -> whole(subYELFeederRPM.get())));
+
         if (hopperRun && !prevHopper)
             CommandScheduler.getInstance().schedule(
-                HopperCommands.manualPosition(subsystems.hopper(), () -> subHopperAngle.get())
-            );
+                HopperCommands.manualPosition(
+                    subsystems.hopper(),
+                    () -> round(subHopperAngle.get(), 1)));
+
         if (intakeArm && !prevIntakeArm)
             CommandScheduler.getInstance().schedule(
-                IntakeArmCommands.manualAngle(subsystems.intakeArm(), () -> subIntakeArmAngle.get())
-            );
+                IntakeArmCommands.manualAngle(
+                    subsystems.intakeArm(),
+                    () -> whole(subIntakeArmAngle.get())));
+
         if (intakeRoller && !prevIntakeRoller)
             CommandScheduler.getInstance().schedule(
-                IntakeRollerCommands.manual(subsystems.intakeRoller(), () -> subIntakeRollerDuty.get())
-            );
+                IntakeRollerCommands.manual(
+                    subsystems.intakeRoller(),
+                    () -> round(subIntakeRollerDuty.get(), 2)));
+
         if (bluShooterRun && !prevBLUShooter)
             CommandScheduler.getInstance().schedule(
-                ShooterCommands.manual(subsystems.BLUshooter(), () -> subBLUShooterRPM.get())
-            );
+                ShooterCommands.manual(
+                    subsystems.BLUshooter(),
+                    () -> whole(subBLUShooterRPM.get())));
+
         if (yelShooterRun && !prevYELShooter)
             CommandScheduler.getInstance().schedule(
-                ShooterCommands.manual(subsystems.YELshooter(), () -> subYELShooterRPM.get())
-            );
+                ShooterCommands.manual(
+                    subsystems.YELshooter(),
+                    () -> whole(subYELShooterRPM.get())));
 
         if (!agitator && prevAgitator) subsystems.agitator().getCurrentCommand().cancel();
         if (!climberRun && prevClimber) subsystems.climber().getCurrentCommand().cancel();
@@ -521,49 +549,50 @@ public class DashboardManager {
         prevYELShooter = yelShooterRun;
     }
 
+
     private void updateMonitorAgitator() {
         var inputs = subsystems.agitator().getInputs();
 
-        pubMonAgitatorDuty.set(inputs.dutyCycle);
-        pubMonAgitatorTemp.set(inputs.temperatureC);
-        pubMonAgitatorCurrent.set(inputs.currentA);
+        pubMonAgitatorDuty.set(round(inputs.dutyCycle, 2));
+        pubMonAgitatorTemp.set(round(inputs.temperatureC, 1));
+        pubMonAgitatorCurrent.set(round(inputs.currentA, 1));
         pubMonAgitatorFeeding.set(inputs.feedingEnabled);
     }
 
     private void updateMonitorClimber() {
         var inputs = subsystems.climber().getInputs();
 
-        pubMonClimberPosition.set(inputs.position);
-        pubMonClimberMotorPosition.set(inputs.motorPosition);
-        pubMonClimberTemp.set(inputs.temperatureC);
-        pubMonClimberCurrent.set(inputs.currentA);
+        pubMonClimberPosition.set(round(inputs.position, 1));
+        pubMonClimberMotorPosition.set(round(inputs.motorPosition, 1));
+        pubMonClimberTemp.set(round(inputs.temperatureC, 1));
+        pubMonClimberCurrent.set(round(inputs.currentA, 1));
     }
 
     private void updateMonitorFeederBlue() {
         var inputs = subsystems.BLUfeeder().getInputs();
 
-        pubMonBlueFeederRPM.set(inputs.velocityRPM);
-        pubMonBlueFeederRPS.set(inputs.motorRPS);
-        pubMonBlueFeederTemp.set(inputs.temperatureC);
-        pubMonBlueFeederCurrent.set(inputs.currentA);
+        pubMonBlueFeederRPM.set(whole(inputs.velocityRPM));
+        pubMonBlueFeederRPS.set(round(inputs.motorRPS, 1));
+        pubMonBlueFeederTemp.set(round(inputs.temperatureC, 1));
+        pubMonBlueFeederCurrent.set(round(inputs.currentA, 1));
     }
 
     private void updateMonitorFeederYellow() {
         var inputs = subsystems.YELfeeder().getInputs();
 
-        pubMonYellowFeederRPM.set(inputs.velocityRPM);
-        pubMonYellowFeederRPS.set(inputs.motorRPS);
-        pubMonYellowFeederTemp.set(inputs.temperatureC);
-        pubMonYellowFeederCurrent.set(inputs.currentA);
+        pubMonYellowFeederRPM.set(whole(inputs.velocityRPM));
+        pubMonYellowFeederRPS.set(round(inputs.motorRPS, 1));
+        pubMonYellowFeederTemp.set(round(inputs.temperatureC, 1));
+        pubMonYellowFeederCurrent.set(round(inputs.currentA, 1));
     }
 
     private void updateMonitorHopper() {
         var inputs = subsystems.hopper().getInputs();
 
-        pubMonHopperPosition.set(inputs.position);
+        pubMonHopperPosition.set(round(inputs.position, 1));
         pubMonHopperMagSensor.set(inputs.magSensor);
-        pubMonHopperTemp.set(inputs.temperatureC);
-        pubMonHopperCurrent.set(inputs.currentA);
+        pubMonHopperTemp.set(round(inputs.temperatureC, 1));
+        pubMonHopperCurrent.set(round(inputs.currentA, 1));
         pubMonHopperRetracted.set(inputs.hopperRetracted);
         pubMonHopperExtended.set(inputs.hopperExtended);
         pubMonHopperReverseLimit.set(inputs.reverseLimit);
@@ -572,47 +601,47 @@ public class DashboardManager {
     private void updateMonitorIntakeArm() {
         var inputs = subsystems.intakeArm().getInputs();
 
-        pubMonBlueIntakeArmPosition.set(inputs.bluPositionDeg);
+        pubMonBlueIntakeArmPosition.set(whole(inputs.bluPositionDeg));
         pubMonBlueIntakeArmReverseLimit.set(inputs.bluReverseLimit);
-        pubMonBlueIntakeArmMotorPosition.set(inputs.bluMotorRot);
-        pubMonBlueIntakeArmTemp.set(inputs.bluTempC);
-        pubMonBlueIntakeArmCurrent.set(inputs.bluCurrentA);
+        pubMonBlueIntakeArmMotorPosition.set(round(inputs.bluMotorRot, 1));
+        pubMonBlueIntakeArmTemp.set(round(inputs.bluTempC, 1));
+        pubMonBlueIntakeArmCurrent.set(round(inputs.bluCurrentA, 1));
 
-        pubMonYellowIntakeArmPosition.set(inputs.yelPositionDeg);
+        pubMonYellowIntakeArmPosition.set(whole(inputs.yelPositionDeg));
         pubMonYellowIntakeArmReverseLimit.set(inputs.yelReverseLimit);
-        pubMonYellowIntakeArmMotorPosition.set(inputs.yelMotorRot);
-        pubMonYellowIntakeArmTemp.set(inputs.yelTempC);
-        pubMonYellowIntakeArmCurrent.set(inputs.yelCurrentA);
+        pubMonYellowIntakeArmMotorPosition.set(round(inputs.yelMotorRot, 1));
+        pubMonYellowIntakeArmTemp.set(round(inputs.yelTempC, 1));
+        pubMonYellowIntakeArmCurrent.set(round(inputs.yelCurrentA, 1));
     }
 
     private void updateMonitorIntakeRoller() {
         var inputs = subsystems.intakeRoller().getInputs();
 
-        pubMonIntakeRollerDutyCycle.set(inputs.dutyCycle);
-        pubMonIntakeRollerTemp.set(inputs.temperatureC);
-        pubMonIntakeRollerCurrent.set(inputs.currentA);
-        pubMonIntakeRollerCmdDutyCycle.set(inputs.cmdDutyCycle);
+        pubMonIntakeRollerDutyCycle.set(round(inputs.dutyCycle, 2));
+        pubMonIntakeRollerTemp.set(round(inputs.temperatureC, 1));
+        pubMonIntakeRollerCurrent.set(round(inputs.currentA, 1));
+        pubMonIntakeRollerCmdDutyCycle.set(round(inputs.cmdDutyCycle, 2));
     }
 
     private void updateMonitorShooterBlue() {
         var inputs = subsystems.BLUshooter().getInputs();
 
-        pubMonBlueShooterMotorRPS.set(inputs.motorRPS);
-        pubMonBlueShooterCurrentRPM.set(inputs.currentRPM);
-        pubMonBlueShooterTargetRPM.set(inputs.targetRPM);
-        pubMonBlueShooterDistanceToTarget.set(inputs.distanceToTarget);
-        pubMonBlueShooterTemp.set(inputs.temperatureC);
-        pubMonBlueShooterCurrent.set(inputs.currentA);
+        pubMonBlueShooterMotorRPS.set(round(inputs.motorRPS, 1));
+        pubMonBlueShooterCurrentRPM.set(whole(inputs.currentRPM));
+        pubMonBlueShooterTargetRPM.set(whole(inputs.targetRPM));
+        pubMonBlueShooterDistanceToTarget.set(round(inputs.distanceToTarget, 2));
+        pubMonBlueShooterTemp.set(round(inputs.temperatureC, 1));
+        pubMonBlueShooterCurrent.set(round(inputs.currentA, 1));
     }
 
     private void updateMonitorShooterYellow() {
         var inputs = subsystems.YELshooter().getInputs();
 
-        pubMonYellowShooterMotorRPS.set(inputs.motorRPS);
-        pubMonYellowShooterCurrentRPM.set(inputs.currentRPM);
-        pubMonYellowShooterTargetRPM.set(inputs.targetRPM);
-        pubMonYellowShooterDistanceToTarget.set(inputs.distanceToTarget);
-        pubMonYellowShooterTemp.set(inputs.temperatureC);
-        pubMonYellowShooterCurrent.set(inputs.currentA);
+        pubMonYellowShooterMotorRPS.set(round(inputs.motorRPS, 1));
+        pubMonYellowShooterCurrentRPM.set(whole(inputs.currentRPM));
+        pubMonYellowShooterTargetRPM.set(whole(inputs.targetRPM));
+        pubMonYellowShooterDistanceToTarget.set(round(inputs.distanceToTarget, 2));
+        pubMonYellowShooterTemp.set(round(inputs.temperatureC, 1));
+        pubMonYellowShooterCurrent.set(round(inputs.currentA, 1));
     }
 }
