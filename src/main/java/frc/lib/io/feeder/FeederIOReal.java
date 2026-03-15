@@ -8,8 +8,14 @@
 
 package frc.lib.io.feeder;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 
 import frc.lib.core.math.GearRatio;
 import frc.lib.core.util.MotorConfig;
@@ -24,23 +30,44 @@ public class FeederIOReal extends Subsystems1507 implements FeederIO {
     private final TalonFX motor;
     private final GearRatio ratio = FeederHardware.RATIO;
 
+    // Cached CTRE signals
+    private final StatusSignal<AngularVelocity> velocitySig;
+    private final StatusSignal<Current> currentSig;
+    private final StatusSignal<Temperature> tempSig;
+
     private final VelocityVoltage velocityRequest =
         new VelocityVoltage(0).withSlot(0);
 
     public FeederIOReal(int canID, MotorConfig config) {
         this.motor = new TalonFX(canID);
-        
         configureFXMotor(motor, config);
+
+        // Grab signals once
+        velocitySig = motor.getVelocity();
+        currentSig = motor.getStatorCurrent();
+        tempSig = motor.getDeviceTemp();
+
+        // Set CAN update rate (20–50 Hz is plenty)
+        BaseStatusSignal.setUpdateFrequencyForAll(
+            100,
+            velocitySig, currentSig, tempSig
+        );
     }
 
     @Override
     public void updateInputs(FeederInputs inputs) {
-        inputs.motorRPS = motor.getVelocity().getValueAsDouble();
-        double motorRPM = inputs.motorRPS * 60.0;
+        // Bulk refresh (1 CAN transaction instead of 3)
+        BaseStatusSignal.refreshAll(velocitySig, currentSig, tempSig);
+
+        // Read cached values
+        double motorRPS = velocitySig.getValueAsDouble();
+        inputs.motorRPS = motorRPS;
+
+        double motorRPM = motorRPS * 60.0;
         inputs.velocityRPM = ratio.toOutput(motorRPM);
 
-        inputs.currentA = motor.getStatorCurrent().getValueAsDouble();
-        inputs.temperatureC = motor.getDeviceTemp().getValueAsDouble();
+        inputs.currentA = currentSig.getValueAsDouble();
+        inputs.temperatureC = tempSig.getValueAsDouble();
     }
 
     @Override

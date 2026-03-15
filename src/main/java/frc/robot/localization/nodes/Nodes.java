@@ -85,8 +85,6 @@ public final class Nodes {
                 new Pose2d(CENTER.getX() - 0.50, CENTER.getY(), Rotation2d.fromDegrees(270.0));
         private static final Pose2d LEFT_POINT =
                 new Pose2d(CENTER.getX(), CENTER.getY() + 0.50, Rotation2d.fromDegrees(270.0));
-        private static final Pose2d RIGHT_POINT =
-                new Pose2d(CENTER.getX(), CENTER.getY() - 0.50, Rotation2d.fromDegrees(270.0));
 
         public static final Pose2d APPROACH_FRONT =
                 approach(FRONT_POINT, CENTER);

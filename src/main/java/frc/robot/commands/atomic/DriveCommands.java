@@ -21,7 +21,6 @@ import java.util.function.Supplier;
 
 import frc.lib.core.util.CommandBuilder;
 import frc.robot.Constants.kMoveThroughPose;
-import frc.robot.Constants.kMoveToPose;
 
 /**
  * Collection of atomic drive commands for the swerve subsystem.
@@ -268,6 +267,7 @@ public final class DriveCommands {
      * @param passRadius distance threshold for considering the pose "passed"
      * @return a command that drives through the pose
      */
+    @SuppressWarnings("resource")
     public static Command moveThroughPose(
         SwerveSubsystem swerve,
         Pose2d targetPose,
@@ -357,161 +357,6 @@ public final class DriveCommands {
                 }
 
                 return false;
-            })
-            .onEnd(swerve::stop);
-    }
-
-    // =========================================================================
-    // Move To Pose (full PID control)
-    // =========================================================================
-
-    /**
-     * Moves the robot to a target pose using full PID control on both translation
-     * and rotation. Includes slowdown ramps, deadbands, and stall detection.
-     *
-     * <p>This is the most precise pose movement command in the system.</p>
-     *
-     * @param swerve the swerve subsystem
-     * @param targetPose the desired pose
-     * @param maxSpeed maximum translation speed
-     * @param maxAngularSpeed maximum rotation speed
-     * @return a command that drives to the pose
-     */
-    public static Command moveToPose(
-        SwerveSubsystem swerve,
-        Pose2d targetPose,
-        double maxSpeed,
-        double maxAngularSpeed
-    ) {
-
-        PIDController distancePID = new PIDController(
-            kMoveToPose.XY_KP,
-            kMoveToPose.XY_KI,
-            kMoveToPose.XY_KD
-        );
-
-        PIDController thetaPID = new PIDController(
-            kMoveToPose.THETA_KP,
-            kMoveToPose.THETA_KI,
-            kMoveToPose.THETA_KD
-        );
-
-        thetaPID.enableContinuousInput(-Math.PI, Math.PI);
-
-        final double[] stallStartTime = { -1.0 };
-
-        return new CommandBuilder(swerve)
-            .named("MoveToPose_VectorPID_NoMinSpeed")
-            .onInitialize(() -> {
-                distancePID.reset();
-                thetaPID.reset();
-                stallStartTime[0] = -1.0;
-            })
-            .onExecute(() -> {
-
-                Pose2d current = swerve.getPose();
-
-                // Vector to target
-                double dx = targetPose.getX() - current.getX();
-                double dy = targetPose.getY() - current.getY();
-                double distance = Math.hypot(dx, dy);
-
-                if (distance < 1e-6) {
-                    swerve.stop();
-                    return;
-                }
-
-                double dirX = dx / distance;
-                double dirY = dy / distance;
-
-                // PID on distance
-                double pidOut = distancePID.calculate(0.0, distance);
-                double speed = pidOut;
-
-                // Terminal slowdown
-                double slowdownStart = kMoveToPose.SLOWDOWN_START;
-                double minSpeedAtZero = 0.0;
-
-                double maxAllowedSpeed;
-                if (distance > slowdownStart) {
-                    maxAllowedSpeed = maxSpeed;
-                } else {
-                    double t = distance / slowdownStart;
-                    maxAllowedSpeed = MathUtil.interpolate(minSpeedAtZero, maxSpeed, t);
-                }
-
-                speed = MathUtil.clamp(speed, -maxAllowedSpeed, maxAllowedSpeed);
-
-                // Final deadband
-                if (distance < kMoveToPose.POSITION_TOLERANCE_METERS &&
-                    Math.abs(speed) < 0.05) {
-                    speed = 0.0;
-                }
-
-                // Convert scalar → XY
-                double xSpeed = dirX * speed;
-                double ySpeed = dirY * speed;
-
-                // Rotation PID + angular slowdown
-                double thetaSpeed = thetaPID.calculate(
-                    current.getRotation().getRadians(),
-                    targetPose.getRotation().getRadians()
-                );
-
-                double angleScale = MathUtil.clamp(distance / slowdownStart, 0.25, 1.0);
-                thetaSpeed *= angleScale;
-
-                thetaSpeed = MathUtil.clamp(thetaSpeed, -maxAngularSpeed, maxAngularSpeed);
-
-                // Field → robot
-                ChassisSpeeds robotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(
-                    xSpeed,
-                    ySpeed,
-                    thetaSpeed,
-                    current.getRotation()
-                );
-
-                swerve.driveRobotRelative(robotRelative);
-            })
-            .isFinished(() -> {
-
-                Pose2d current = swerve.getPose();
-
-                double dist =
-                    current.getTranslation().getDistance(targetPose.getTranslation());
-
-                double angleError =
-                    Math.abs(current.getRotation().minus(targetPose.getRotation()).getRadians());
-
-                boolean atPos = dist < kMoveToPose.POSITION_TOLERANCE_METERS;
-                boolean atAngle = angleError < kMoveToPose.ANGLE_TOLERANCE_RADIANS;
-
-                if (atPos && atAngle) return true;
-
-                // Stall detection near target
-                boolean nearTarget = dist < 1.5 * kMoveToPose.POSITION_TOLERANCE_METERS;
-                if (!nearTarget) {
-                    stallStartTime[0] = -1.0;
-                    return false;
-                }
-
-                ChassisSpeeds speeds = swerve.getInputs().speeds;
-                double speedMag = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
-
-                boolean effectivelyStopped = speedMag < kMoveToPose.STALL_THRESHOLD;
-                double now = Timer.getFPGATimestamp();
-
-                if (!effectivelyStopped) {
-                    stallStartTime[0] = -1.0;
-                    return false;
-                }
-
-                if (stallStartTime[0] < 0.0) {
-                    stallStartTime[0] = now;
-                    return false;
-                }
-
-                return (now - stallStartTime[0]) > kMoveToPose.STALL_TIMEOUT;
             })
             .onEnd(swerve::stop);
     }

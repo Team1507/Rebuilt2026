@@ -10,8 +10,14 @@ package frc.lib.io.hopper;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFXS;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 
 import frc.lib.core.math.GearRatio;
 import frc.lib.core.util.MotorConfig;
@@ -27,6 +33,11 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
     private final GearRatio ratio;
     private final DigitalInput halSensor;
 
+    // Cached CTRE signals
+    private final StatusSignal<Angle> positionSig;
+    private final StatusSignal<Current> currentSig;
+    private final StatusSignal<Temperature> tempSig;
+
     private final PositionDutyCycle positionRequest =
         new PositionDutyCycle(0).withSlot(0);
 
@@ -36,37 +47,56 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
         this.halSensor = new DigitalInput(sensorDIO);
 
         configureFXSMotor(motor, config);
+
+        // Grab signals once
+        positionSig = motor.getPosition();
+        currentSig = motor.getStatorCurrent();
+        tempSig = motor.getDeviceTemp();
+
+        // Set CAN update rate (20–50 Hz is ideal)
+        BaseStatusSignal.setUpdateFrequencyForAll(
+            75,
+            positionSig, currentSig, tempSig
+        );
     }
 
     @Override
     public void updateInputs(HopperInputs inputs) {
-        // Raw sensor units from TalonFXS
-        inputs.motorRot = motor.getPosition().getValueAsDouble();
+        // Bulk refresh (1 CAN transaction instead of 3)
+        BaseStatusSignal.refreshAll(positionSig, currentSig, tempSig);
 
-        // Convert sensor units → real-world inches using scaling
-        inputs.position = ratio.sensorToReal(inputs.motorRot);
+        // Read cached values
+        double motorRot = positionSig.getValueAsDouble();
+        inputs.motorRot = motorRot;
 
-        inputs.currentA = motor.getStatorCurrent().getValueAsDouble();
-        inputs.temperatureC = motor.getDeviceTemp().getValueAsDouble();
+        // Convert sensor → real-world inches
+        inputs.position = ratio.sensorToReal(motorRot);
+
+        inputs.currentA = currentSig.getValueAsDouble();
+        inputs.temperatureC = tempSig.getValueAsDouble();
+
+        // HAL sensor (reverse limit)
         inputs.reverseLimit = !halSensor.get();
-        if(inputs.reverseLimit){
+
+        // Auto-zero when hitting the back limit
+        if (inputs.reverseLimit) {
             motor.setPosition(0);
         }
 
-        // Hopper is extended if real-world inches exceed safe threshold
+        // Hopper extended check
         inputs.hopperExtended = inputs.position > kHopper.SAFE_EXTENDED;
     }
 
     @Override
     public void setPosition(double position) {
-        // Hopper is linear, not rotational — convert inches instead
-        double safePosition = position; // if commands still use degrees, rename later
-        if(!halSensor.get() && position < 0) {
+        double safePosition = position;
+
+        // Prevent commanding negative motion into the limit switch
+        if (!halSensor.get() && position < 0) {
             safePosition = 0.0;
         }
-        double sensorUnits = ratio.realToSensor(safePosition);
 
-        
+        double sensorUnits = ratio.realToSensor(safePosition);
         motor.setControl(positionRequest.withPosition(sensorUnits));
     }
 
@@ -78,10 +108,13 @@ public class HopperIOReal extends Subsystems1507 implements HopperIO {
     @Override
     public void runPower(double power) {
         boolean atRev = !halSensor.get();
-        double safePower =power;
-        if(atRev && power < 0) {
+        double safePower = power;
+
+        // Prevent reverse motion into the limit switch
+        if (atRev && power < 0) {
             safePower = 0;
         }
+
         motor.set(safePower);
     }
 

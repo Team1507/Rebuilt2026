@@ -33,7 +33,6 @@ import frc.robot.DashBoardStuff.DashboardManager;
 
 // Localization
 import frc.robot.localization.nodes.Nodes.Hub;
-import frc.robot.localization.nodes.Nodes.Tower;
 import frc.robot.localization.vision.Vision;
 
 // IO Layer (Hardware Abstractions)
@@ -355,26 +354,8 @@ public class RobotContainer {
             );
 
         // ----------------------------
-        // Preplanned poses
-        // ----------------------------
-        bottomDriver.povDown()
-            .onTrue(DriveCommands.moveToPose(swerve, Tower.APPROACH_LEFT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
-
-        bottomDriver.povLeft()
-            .onTrue(DriveCommands.moveToPose(swerve, Hub.APPROACH_LEFT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
-
-        bottomDriver.povRight()
-            .onTrue(DriveCommands.moveToPose(swerve, Hub.APPROACH_RIGHT, kSwerve.MAX_SPEED, kSwerve.MAX_ANGULAR_RATE));
-
-        // ----------------------------
         // Intake
         // ----------------------------
-
-        // topDriver.a()
-        //     .onTrue(IntakeRollerCommands.idleRollerSpeed(intakeRollerSubsystem))
-        //     .onFalse(IntakeSequences.stow(
-        //             intakeArmSubsystem,
-        //             intakeRollerSubsystem));
 
         topDriver.rightTrigger(0.5)
             .onTrue(IntakeRollerCommands.incrementRollerDC(intakeRollerSubsystem));
@@ -438,9 +419,6 @@ public class RobotContainer {
             ))
         );
     }
-    // ==========================================================
-    // feild flip
-    // ==========================================================
     
     // ==========================================================
     // Telemetry
@@ -459,12 +437,15 @@ public class RobotContainer {
         autoChooser.addOption(
             "Auto Subway 6 inch Right",
             AutoSubway6inchRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+
         autoChooser.addOption(
             "Auto Subway 6 inch Right red",
             AutoSubway6InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+
         autoChooser.addOption(
             "Auto Subway 6 inch Left Red",
             AutoSubway6InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+
         autoChooser.addOption(
             "Auto Subway 6 inch Left",
             AutoSubway6inchLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
@@ -489,7 +470,7 @@ public class RobotContainer {
             "Auto Subway 18 Inch",
             AutoSubway18Inch.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         
-            autoChooser.addOption(
+        autoChooser.addOption(
             "Auto Subway 18 Inch Red",
             AutoSubway18InchRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 

@@ -291,42 +291,9 @@ public class Constants {
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
-    // ║                     MOVE‑TO‑POSE CONSTANTS                    ║
+    // ║                 MOVE‑THROUGH‑POSE CONSTANTS                   ║
     // ║                (Pathfinding & Guidance Runes)                 ║
     // ╚═══════════════════════════════════════════════════════════════╝
-    public static final class kMoveToPose {
-
-        // PID gains for X/Y translation
-        public static final double XY_KP = 1.476; // increasing kP can decrease settle time
-            /*Note: When a non‑zero settle time is observed, increasing XY_KP can reduce 
-              terminal convergence time, provided overshoot, 
-              oscillation, and jitter metrics remain clean. 
-             */
-        public static final double XY_KI = 0.0;
-        public static final double XY_KD = 0.45;
-
-        // PID gains for rotation
-        public static final double THETA_KP = 1.4;
-        public static final double THETA_KI = 0.0;
-        public static final double THETA_KD = 0.0;
-
-        // Deadband near target
-        public static final double DEADBAND_ERROR = 0.05;
-        public static final double SLOWDOWN_START = 0.6;
-        public static final double SLOWDOWN_MIN = 0.2;
-
-        // Minimum Speed for movements
-        public static final double MIN_SPEED = 0.25;
-
-        // Tolerances
-        public static final double POSITION_TOLERANCE_METERS = 0.09;
-        public static final double ANGLE_TOLERANCE_RADIANS = Math.toRadians(1.0);
-
-        // Stall detection
-        public static final double STALL_THRESHOLD = 0.05;  // m/s
-        public static final double STALL_TIMEOUT = 0.35;    // seconds
-    }
-
     public static final class kMoveThroughPose {
 
         // PID gains for X/Y translation

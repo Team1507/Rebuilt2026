@@ -12,6 +12,7 @@ import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.atomic.*;
 import frc.robot.framework.*;
 
@@ -463,23 +464,41 @@ public class DashboardManager {
         boolean yelShooterRun = subYELShooterRun.get();
 
         if (agitator && !prevAgitator)
-            AgitatorCommands.manual(subsystems.agitator(), () -> subAgitatorDuty.get()).schedule();
+            CommandScheduler.getInstance().schedule(
+                AgitatorCommands.manual(subsystems.agitator(), () -> subAgitatorDuty.get())
+            );
         if (climberRun && !prevClimber)
-            ClimberCommands.manual(subsystems.climber(), () -> subClimberPos.get()).schedule();
+            CommandScheduler.getInstance().schedule(
+                ClimberCommands.manual(subsystems.climber(), () -> subClimberPos.get())
+            );
         if (bluFeeder && !prevBLUFeeder)
-            FeederCommands.manual(subsystems.BLUfeeder(), () -> subBLUFeederRPM.get()).schedule();
+            CommandScheduler.getInstance().schedule(
+                FeederCommands.manual(subsystems.BLUfeeder(), () -> subBLUFeederRPM.get())
+            );
         if (yelFeeder && !prevYELFeeder)
-            FeederCommands.manual(subsystems.YELfeeder(), () -> subYELFeederRPM.get()).schedule();
+            CommandScheduler.getInstance().schedule(
+                FeederCommands.manual(subsystems.YELfeeder(), () -> subYELFeederRPM.get())
+            );
         if (hopperRun && !prevHopper)
-            HopperCommands.manualPosition(subsystems.hopper(), () -> subHopperAngle.get()).schedule();
+            CommandScheduler.getInstance().schedule(
+                HopperCommands.manualPosition(subsystems.hopper(), () -> subHopperAngle.get())
+            );
         if (intakeArm && !prevIntakeArm)
-            IntakeArmCommands.manualAngle(subsystems.intakeArm(), () -> subIntakeArmAngle.get()).schedule();
+            CommandScheduler.getInstance().schedule(
+                IntakeArmCommands.manualAngle(subsystems.intakeArm(), () -> subIntakeArmAngle.get())
+            );
         if (intakeRoller && !prevIntakeRoller)
-            IntakeRollerCommands.manual(subsystems.intakeRoller(), () -> subIntakeRollerDuty.get()).schedule();
+            CommandScheduler.getInstance().schedule(
+                IntakeRollerCommands.manual(subsystems.intakeRoller(), () -> subIntakeRollerDuty.get())
+            );
         if (bluShooterRun && !prevBLUShooter)
-            ShooterCommands.manual(subsystems.BLUshooter(), () -> subBLUShooterRPM.get()).schedule();
+            CommandScheduler.getInstance().schedule(
+                ShooterCommands.manual(subsystems.BLUshooter(), () -> subBLUShooterRPM.get())
+            );
         if (yelShooterRun && !prevYELShooter)
-            ShooterCommands.manual(subsystems.YELshooter(), () -> subYELShooterRPM.get()).schedule();
+            CommandScheduler.getInstance().schedule(
+                ShooterCommands.manual(subsystems.YELshooter(), () -> subYELShooterRPM.get())
+            );
 
         if (!agitator && prevAgitator) subsystems.agitator().getCurrentCommand().cancel();
         if (!climberRun && prevClimber) subsystems.climber().getCurrentCommand().cancel();

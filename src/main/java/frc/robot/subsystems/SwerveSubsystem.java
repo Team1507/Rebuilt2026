@@ -13,13 +13,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 
@@ -55,9 +52,6 @@ public class SwerveSubsystem extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
 
-        // Log fused robot pose in 3D (flat on ground, Z = 0)
-        Logger.recordOutput("Vision/RobotPose3d", new Pose3d(inputs.pose));
-
         if (vision != null) {
             vision.addHeadingData(Timer.getFPGATimestamp(), io.getHeading());
 
@@ -68,7 +62,6 @@ public class SwerveSubsystem extends SubsystemBase {
                 io.addVisionMeasurement(m.pose(), m.timestamp(), m.stdDevs());
                 photonPoses[i] = new Pose3d(m.pose());
             }
-            Logger.recordOutput("Vision/PhotonVision/AcceptedPoses3d", photonPoses);
         }
     }
 

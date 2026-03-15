@@ -121,48 +121,6 @@ public class AutoSequence {
         return this;
     }
 
-   /**
-     * Adds a movement step that drives the robot to the specified target pose.
-     *
-     * <p>This method automatically applies any temporary speed overrides set by
-     * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}. If no
-     * override is active, the default maxSpeed and maxAngularRate provided in the
-     * constructor are used.</p>
-     *
-     * <p>Speed overrides apply to only this movement command and are cleared
-     * immediately afterward, ensuring later steps return to the default speed
-     * profile unless explicitly overridden again.</p>
-     *
-     * @param target The desired end pose for the robot.
-     * @return This AutoSequence instance for fluent chaining.
-     *
-     * <p><strong>Note:</strong> Students should not modify this method. It defines
-     * the core behavior of movement steps within the autonomous builder.</p>
-     */
-    public AutoSequence moveTo(Pose2d target) {
-
-       
-        double speedToUse = (nextSpeedOverride != null)
-            ? nextSpeedOverride
-            : MaxSpeed;
-
-        double angularToUse = (nextAngularOverride != null)
-            ? nextAngularOverride
-            : MaxAngularRate;
-
-        nextSpeedOverride = null;
-        nextAngularOverride = null;
-
-        steps.add(DriveCommands.moveToPose(
-            record.swerve(),
-            target,
-            speedToUse,
-            angularToUse
-        ));
-
-        return this;
-    }
-
      public AutoSequence driveDistance(double target) {
 
         double speedToUse = (nextSpeedOverride != null)
@@ -188,10 +146,6 @@ public class AutoSequence {
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
-
-        double angularToUse = (nextAngularOverride != null)
-            ? nextAngularOverride
-            : MaxAngularRate;
 
         nextSpeedOverride = null;
         nextAngularOverride = null;

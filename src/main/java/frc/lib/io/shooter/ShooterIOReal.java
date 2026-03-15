@@ -8,11 +8,17 @@
 
 package frc.lib.io.shooter;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 
 import edu.wpi.first.wpilibj.DigitalInput;
-
-import com.ctre.phoenix6.controls.VelocityVoltage;
 
 import frc.lib.core.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
@@ -45,6 +51,15 @@ public class ShooterIOReal extends Subsystems1507 implements ShooterIO {
     private final VelocityVoltage velocityRequest =
         new VelocityVoltage(0).withSlot(0);
 
+    // -----------------------------
+    // Cached CTRE signals
+    // -----------------------------
+    private final StatusSignal<AngularVelocity> velocitySig;
+    private final StatusSignal<Current> statorCurrentSig;
+    private final StatusSignal<Current> supplyCurrentSig;
+    private final StatusSignal<Temperature> tempSig;
+    private final StatusSignal<Voltage> voltageSig;
+
     /**
      * Creates a real shooter IO implementation.
      *
@@ -54,11 +69,22 @@ public class ShooterIOReal extends Subsystems1507 implements ShooterIO {
     public ShooterIOReal(int canID, MotorConfig config, int sensorDIO) {
         this.motor = new TalonFX(canID);
         this.config = config;
-
         this.ballSensor = new DigitalInput(sensorDIO);
 
-        // Apply PID/FF/voltage limits to the motor
         configureFXMotor(motor, config);
+
+        // Grab signals once
+        velocitySig = motor.getVelocity();
+        statorCurrentSig = motor.getStatorCurrent();
+        supplyCurrentSig = motor.getSupplyCurrent();
+        tempSig = motor.getDeviceTemp();
+        voltageSig = motor.getMotorVoltage();
+
+        // Set CAN update rate (20–50 Hz is ideal)
+        BaseStatusSignal.setUpdateFrequencyForAll(
+            100,
+            velocitySig, statorCurrentSig, supplyCurrentSig, tempSig, voltageSig
+        );
     }
 
     /**
@@ -68,15 +94,21 @@ public class ShooterIOReal extends Subsystems1507 implements ShooterIO {
      */
     @Override
     public void updateInputs(ShooterInputs inputs) {
-        inputs.motorRPS = motor.getVelocity().getValueAsDouble();
+        // Bulk refresh (1 CAN transaction instead of 5)
+        BaseStatusSignal.refreshAll(
+            velocitySig, statorCurrentSig, supplyCurrentSig, tempSig, voltageSig
+        );
+
+        // Cached values
+        inputs.motorRPS = velocitySig.getValueAsDouble();
         inputs.currentRPM = inputs.motorRPS * 60.0;
 
-        inputs.temperatureC = motor.getDeviceTemp().getValueAsDouble();
-        inputs.currentA = motor.getStatorCurrent().getValueAsDouble();
+        inputs.temperatureC = tempSig.getValueAsDouble();
+        inputs.currentA = statorCurrentSig.getValueAsDouble();
 
-        inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
-        inputs.statorCurrent = motor.getStatorCurrent().getValueAsDouble();
-        inputs.supplyCurrent = motor.getSupplyCurrent().getValueAsDouble();
+        inputs.appliedVolts = voltageSig.getValueAsDouble();
+        inputs.statorCurrent = statorCurrentSig.getValueAsDouble();
+        inputs.supplyCurrent = supplyCurrentSig.getValueAsDouble();
 
         inputs.ballFired = getBallSensor();
     }

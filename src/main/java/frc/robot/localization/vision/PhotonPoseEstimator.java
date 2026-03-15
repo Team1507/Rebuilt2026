@@ -559,8 +559,6 @@ public class PhotonPoseEstimator {
                         cameraResult.getMultiTagResult().get().estimatedPose.best.plus(robotToCamera.inverse())
                     );
                 } else {
-                    // HACK - use fallback strategy to gimme a seed pose
-                    // TODO - make sure nested update doesn't break state
                     var nestedUpdate = update(
                         cameraResult,
                         cameraMatrix,

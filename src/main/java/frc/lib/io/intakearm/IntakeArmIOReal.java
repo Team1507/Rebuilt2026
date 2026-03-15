@@ -8,9 +8,15 @@
 
 package frc.lib.io.intakearm;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 
 import frc.lib.core.math.GearRatio;
 import frc.lib.core.util.MotorConfig;
@@ -27,37 +33,86 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
 
     private final GearRatio ratio;
 
-    public IntakeArmIOReal(int bluCanID, MotorConfig bluConfig, int yelCanID, MotorConfig yelConfig, GearRatio ratio) {
+    // -----------------------------
+    // Cached CTRE signals (BLU)
+    // -----------------------------
+    private final StatusSignal<Angle> bluPosSig;
+    private final StatusSignal<ReverseLimitValue> bluRevLimitSig;
+    private final StatusSignal<Current> bluCurrentSig;
+    private final StatusSignal<Temperature> bluTempSig;
+
+    // -----------------------------
+    // Cached CTRE signals (YEL)
+    // -----------------------------
+    private final StatusSignal<Angle> yelPosSig;
+    private final StatusSignal<ReverseLimitValue> yelRevLimitSig;
+    private final StatusSignal<Current> yelCurrentSig;
+    private final StatusSignal<Temperature> yelTempSig;
+
+    public IntakeArmIOReal(
+            int bluCanID, MotorConfig bluConfig,
+            int yelCanID, MotorConfig yelConfig,
+            GearRatio ratio) {
+
         this.bluConfig = bluConfig;
         this.bluMotor = new TalonFXS(bluCanID);
-
         this.yelMotor = new TalonFXS(yelCanID);
-
         this.ratio = ratio;
 
         configureFXSMotor(bluMotor, bluConfig);
         configureFXSMotor(yelMotor, yelConfig);
+
+        // -----------------------------
+        // Grab BLU signals once
+        // -----------------------------
+        bluPosSig = bluMotor.getPosition();
+        bluRevLimitSig = bluMotor.getReverseLimit();
+        bluCurrentSig = bluMotor.getStatorCurrent();
+        bluTempSig = bluMotor.getDeviceTemp();
+
+        // -----------------------------
+        // Grab YEL signals once
+        // -----------------------------
+        yelPosSig = yelMotor.getPosition();
+        yelRevLimitSig = yelMotor.getReverseLimit();
+        yelCurrentSig = yelMotor.getStatorCurrent();
+        yelTempSig = yelMotor.getDeviceTemp();
+
+        // -----------------------------
+        // Set update frequency (20–50 Hz)
+        // -----------------------------
+        BaseStatusSignal.setUpdateFrequencyForAll(
+            100,
+            bluPosSig, bluRevLimitSig, bluCurrentSig, bluTempSig,
+            yelPosSig, yelRevLimitSig, yelCurrentSig, yelTempSig
+        );
     }
 
     @Override
     public void updateInputs(IntakeArmInputs inputs) {
-        inputs.bluMotorRot = bluMotor.getPosition().getValueAsDouble();
-        inputs.yelMotorRot = yelMotor.getPosition().getValueAsDouble();
+        // Bulk refresh both motors in one CAN transaction
+        BaseStatusSignal.refreshAll(
+            bluPosSig, bluRevLimitSig, bluCurrentSig, bluTempSig,
+            yelPosSig, yelRevLimitSig, yelCurrentSig, yelTempSig
+        );
 
+        // -----------------------------
+        // BLU motor cached values
+        // -----------------------------
+        inputs.bluMotorRot = bluPosSig.getValueAsDouble();
         inputs.bluPositionDeg = ratio.sensorToReal(inputs.bluMotorRot);
+        inputs.bluReverseLimit = bluRevLimitSig.getValue() == ReverseLimitValue.ClosedToGround;
+        inputs.bluCurrentA = bluCurrentSig.getValueAsDouble();
+        inputs.bluTempC = bluTempSig.getValueAsDouble();
+
+        // -----------------------------
+        // YEL motor cached values
+        // -----------------------------
+        inputs.yelMotorRot = yelPosSig.getValueAsDouble();
         inputs.yelPositionDeg = ratio.sensorToReal(inputs.yelMotorRot);
-
-        inputs.bluReverseLimit =
-            bluMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
-
-        inputs.yelReverseLimit =
-            yelMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
-
-        inputs.bluCurrentA = bluMotor.getStatorCurrent().getValueAsDouble();
-        inputs.yelCurrentA = yelMotor.getStatorCurrent().getValueAsDouble();
-
-        inputs.bluTempC = bluMotor.getDeviceTemp().getValueAsDouble();
-        inputs.yelTempC = yelMotor.getDeviceTemp().getValueAsDouble();
+        inputs.yelReverseLimit = yelRevLimitSig.getValue() == ReverseLimitValue.ClosedToGround;
+        inputs.yelCurrentA = yelCurrentSig.getValueAsDouble();
+        inputs.yelTempC = yelTempSig.getValueAsDouble();
     }
 
     // -------------------------
@@ -65,33 +120,35 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
     // -------------------------
     private double computeGravityFF(double armDeg) {
         return switch (bluConfig.gravityType()) {
-            case NONE -> 0.0; 
+            case NONE -> 0.0;
             case CONSTANT -> bluConfig.kG();
             case COSINE -> bluConfig.kG() * Math.cos(Math.toRadians(armDeg));
-            case SINE -> bluConfig.kG() * Math.sin(Math.toRadians(armDeg)); 
-        }; 
+            case SINE -> bluConfig.kG() * Math.sin(Math.toRadians(armDeg));
+        };
     }
 
     @Override
     public void setAngle(double degrees) {
-        boolean bluAtRev = bluMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
-        boolean yelAtRev = yelMotor.getReverseLimit().getValue() == ReverseLimitValue.ClosedToGround;
+        boolean bluAtRev = bluRevLimitSig.getValue() == ReverseLimitValue.ClosedToGround;
+        boolean yelAtRev = yelRevLimitSig.getValue() == ReverseLimitValue.ClosedToGround;
 
-        if((bluAtRev || yelAtRev) && degrees < 0.0) {
+        if ((bluAtRev || yelAtRev) && degrees < 0.0) {
             degrees = 0.0;
         }
+
         double motorRot = ratio.realToSensor(degrees);
-        
         double ffVolts = computeGravityFF(degrees);
-        
-        bluMotor.setControl( new PositionVoltage(motorRot) 
-            .withSlot(0) 
-            .withFeedForward(ffVolts)
+
+        bluMotor.setControl(
+            new PositionVoltage(motorRot)
+                .withSlot(0)
+                .withFeedForward(ffVolts)
         );
 
-        yelMotor.setControl(new PositionVoltage(motorRot) 
-            .withSlot(0) 
-            .withFeedForward(ffVolts)
+        yelMotor.setControl(
+            new PositionVoltage(motorRot)
+                .withSlot(0)
+                .withFeedForward(ffVolts)
         );
     }
 
