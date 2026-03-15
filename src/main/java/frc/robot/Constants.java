@@ -45,7 +45,7 @@ public class Constants {
             MotorConfig.builder()
                 .inverted(true)
                 .withVoltageLimits(3.5, -3.5)
-                .withStatorCurrentLimit(Amps.of(45))
+                .withStatorCurrentLimit(Amps.of(80))
                 .build();
 
 
@@ -104,7 +104,7 @@ public class Constants {
                 .withPID(0.11, 0.0, 0.0)
                 .withFeedforward(0.42, 0.09931, 0.0)
                 .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(45))
+                .withStatorCurrentLimit(Amps.of(80))
                 .build();
 
         public static final MotorConfig YEL_CONFIG =
@@ -113,7 +113,7 @@ public class Constants {
                 .withPID(0.11, 0.0, 0.02)
                 .withFeedforward(0.42, 0.09931, 0.0)
                 .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(45))
+                .withStatorCurrentLimit(Amps.of(80))
                 .build();
     }
 
@@ -159,7 +159,7 @@ public class Constants {
         public static final MotorConfig ROLLER_CONFIG =
             MotorConfig.builder(ControlMode.DUTY_CYCLE)
                 .withVoltageLimits(7.0, -7.0)
-                .withStatorCurrentLimit(Amps.of(35))
+                .withStatorCurrentLimit(Amps.of(40))
                 .build();
 
         public static final class kArm {
@@ -180,7 +180,7 @@ public class Constants {
                     .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .withVoltageLimits(8, -8)
-                    .withStatorCurrentLimit(Amps.of(30))
+                    .withStatorCurrentLimit(Amps.of(50))
                     .withBrake()
                     .build();
 
@@ -193,7 +193,7 @@ public class Constants {
                     .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .withVoltageLimits(8, -8)
-                    .withStatorCurrentLimit(Amps.of(30))
+                    .withStatorCurrentLimit(Amps.of(50))
                     .build();
         }
     }
@@ -228,7 +228,7 @@ public class Constants {
                 .withPID(0.1, 0.0, 0.02)
                 .withFeedforward(0.32, 0.12231, 0.0)
                 .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(70))
+                .withStatorCurrentLimit(Amps.of(110))
                 .build();
 
 
@@ -238,7 +238,7 @@ public class Constants {
                 .withPID(0.1, 0.0, 0.02)
                 .withFeedforward(0.32, 0.12231, 0.0)
                 .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(70))
+                .withStatorCurrentLimit(Amps.of(110))
                 .build();
 
 
