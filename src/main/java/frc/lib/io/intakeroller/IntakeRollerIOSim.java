@@ -77,16 +77,4 @@ public class IntakeRollerIOSim implements IntakeRollerIO {
     public void stop() {
         dutyCycle = 0.0;
     }
-
-    @Override
-    public void increaseSpeed(double rollerSpeed) {
-        dutyCycle += 0.1;
-    }
-
-    @Override
-    public  void resetSpeed(double rollerSpeed) {
-        dutyCycle = 0.3;
-    }
-
-    
 }

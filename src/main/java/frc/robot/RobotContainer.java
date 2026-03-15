@@ -29,6 +29,7 @@ import frc.robot.commands.coordinators.*;
 
 // Subsystems
 import frc.robot.subsystems.*;
+import frc.robot.DashBoardStuff.DashboardManager;
 
 // Localization
 import frc.robot.localization.nodes.Nodes.Hub;
@@ -52,7 +53,6 @@ import frc.lib.hardware.*;
 
 // Core
 import frc.lib.core.logging.Telemetry;
-import frc.lib.core.shooterML.data.*;
 import frc.lib.core.shooterML.model.*;
 
 // Framework
@@ -60,9 +60,6 @@ import frc.robot.framework.*;
 
 // Constants
 import frc.robot.Constants.*;
-import frc.robot.DashBoardStuff.DashboardManager;
-import frc.robot.DashBoardStuff.DashboardManagerManual;
-import frc.robot.DashBoardStuff.DashboardManagerMatch;
 
 public class RobotContainer {
 
@@ -179,22 +176,6 @@ public class RobotContainer {
             "Shooter-YEL"
         );
 
-    // trainers (ShooterSubsystem implements ShooterTelemetryProvider)
-    // ----------------------------
-    public final ShotTrainer shotBLUTrainer =
-        new ShotTrainer(
-            shooterBLUsystem,
-            poseSupplier,
-            Hub.CENTER.getTranslation()
-        );
-
-    public final ShotTrainer shotYELTrainer =
-        new ShotTrainer(
-            shooterYELsystem,
-            poseSupplier,
-            Hub.CENTER.getTranslation()
-        );
-
     // ==========================================================
     // Other subsystems
     // ==========================================================
@@ -305,19 +286,11 @@ public class RobotContainer {
     private final DashboardManager dashboardManager =
         new DashboardManager(subsystemsRecord, localizationRecord, autoChooser);
 
-    private final DashboardManagerMatch dashboardManagerMatch =
-        new DashboardManagerMatch(subsystemsRecord, localizationRecord, autoChooser);
-
-    private final DashboardManagerManual dashboardManagerManual =
-        new DashboardManagerManual(subsystemsRecord);
     // ==========================================================
     // Robot Container Constructor
     // ==========================================================
     public RobotContainer() {
         swerve.setVision(vision);
-
-        shooterBLUsystem.setShotTrainer(shotBLUTrainer);
-        shooterYELsystem.setShotTrainer(shotYELTrainer);
 
         configureTelemetry();
         configureDefaultCommands();
@@ -326,7 +299,6 @@ public class RobotContainer {
 
         // Manager of all NT and Dashboard data
         dashboardManager.initDashboard();
-        dashboardManagerMatch.initDashboard();
     }
 
     // ==========================================================
@@ -405,8 +377,7 @@ public class RobotContainer {
         //             intakeRollerSubsystem));
 
         topDriver.rightTrigger(0.5)
-            .onTrue(IntakeRollerCommands.highRollerSpeed(intakeRollerSubsystem));
-           // .onFalse(IntakeRollerCommands.lowRollerSpeed(intakeRollerSubsystem));
+            .onTrue(IntakeRollerCommands.incrementRollerDC(intakeRollerSubsystem));
 
         topDriver.leftTrigger(0.5)
             .onTrue(IntakeRollerCommands.lowRollerSpeed(intakeRollerSubsystem));
@@ -427,9 +398,9 @@ public class RobotContainer {
             );
 
         bottomDriver.b()
-            .whileTrue (IntakeRollerCommands.outtake(intakeRollerSubsystem))
             .whileTrue(IntakeArmCommands.down(intakeArmSubsystem))
-            .onFalse(IntakeRollerCommands.idleRollerSpeed(intakeRollerSubsystem))
+            .whileTrue(IntakeRollerCommands.outtake(intakeRollerSubsystem))
+            .onFalse(IntakeRollerCommands.runIdleRollerSpeed(intakeRollerSubsystem))
             .onFalse(IntakeArmCommands.up(intakeArmSubsystem));
         
         // ----------------------------
@@ -437,7 +408,7 @@ public class RobotContainer {
         // ----------------------------
 
         // shoot ML
-          bottomDriver.rightTrigger()
+        bottomDriver.rightTrigger()
             .whileTrue(ShooterControllers.shootModelBased(coordinatorRecord, kAgitator.AGITATE_TO_SHOOTER_DUTY, kIntake.INTAKE_ROLLER_DUTY_HIGH));
 
         // Shoot lob
@@ -488,23 +459,20 @@ public class RobotContainer {
         autoChooser.addOption(
             "Auto Subway 6 inch Right",
             AutoSubway6inchRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
-
+        autoChooser.addOption(
+            "Auto Subway 6 inch Right red",
+            AutoSubway6InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        autoChooser.addOption(
+            "Auto Subway 6 inch Left Red",
+            AutoSubway6InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         autoChooser.addOption(
             "Auto Subway 6 inch Left",
-            AutoSubway6inchLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0., kSwerve.MAX_ANGULAR_RATE));
+            AutoSubway6inchLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Subway Footlong Right",
             AutoSubwayFootlongRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 1.0, kSwerve.MAX_ANGULAR_RATE));
-
-        autoChooser.addOption(
-            "Auto Subway Footlong Left",
-            AutoSubwayFootlongLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 1.0, kSwerve.MAX_ANGULAR_RATE));
-
-        autoChooser.addOption(
-            "Auto Shoot Until",
-            AutoShootUntil.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
-
+        
         autoChooser.addOption(
             "Autoah Raymond",
             AutoahRaymond.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
@@ -514,16 +482,20 @@ public class RobotContainer {
             AutoHumanPlayerQuest.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Depot",
-            AutoDepot.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Double Subway",
+            AutoDoubleSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Quest Test",
-            AutoTestQuest.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Subway 18 Inch",
+            AutoSubway18Inch.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        
+            autoChooser.addOption(
+            "Auto Subway 18 Inch Red",
+            AutoSubway18InchRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Move Log",
-            AutoMoveLog.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Subway Around Hub",
+            AutoSubwayAroundTheHub.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
     }
 
     public Command getAutonomousCommand() {
@@ -536,7 +508,5 @@ public class RobotContainer {
     
     public void updateDashboard(){
         dashboardManager.updateInputs();
-        dashboardManagerMatch.updateInputs();
-        dashboardManagerManual.updateInputs();
     }
 }

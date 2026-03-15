@@ -24,8 +24,4 @@ public interface IntakeRollerIO {
 
     /** Stop the roller. */
     void stop();
-
-    void increaseSpeed(double rollerSpeed);
-
-    void resetSpeed(double rollerSpeed);
 }

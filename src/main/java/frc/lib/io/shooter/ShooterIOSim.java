@@ -54,12 +54,12 @@ public class ShooterIOSim implements ShooterIO {
         double wheelRPS = simWheelRPM / 60.0;
         double motorRPS = ratio.toMotor(wheelRPS);
 
+        inputs.currentRPM = inputs.motorRPS * 60.0;
+
         inputs.motorRPS = motorRPS;
-        inputs.appliedVolts = simVoltage;
 
         // Simple current model
-        inputs.statorCurrent = 5.0 + Math.abs(simWheelRPM) / 1000.0;
-        inputs.supplyCurrent = inputs.statorCurrent;
+        inputs.currentA = 5.0 + Math.abs(simWheelRPM) / 1000.0;
     }
 
     @Override

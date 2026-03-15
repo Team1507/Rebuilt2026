@@ -44,7 +44,8 @@ public class Constants {
         public static final MotorConfig CONFIG =
             MotorConfig.builder()
                 .inverted(true)
-                .voltageLimits(3.5, -3.5)
+                .withVoltageLimits(3.5, -3.5)
+                .withStatorCurrentLimit(Amps.of(80))
                 .build();
 
 
@@ -73,18 +74,18 @@ public class Constants {
          */
         public static final MotorConfig CONFIG_SLOT0 =
             MotorConfig.builder(ControlMode.MOTION_MAGIC)
-                .pid(0.11, 0.0, 0.0)
-                .feedforward(0.245, 0.09375, 0.0)
-                .gravity(0.0, GravityType.CONSTANT)
-                .voltageLimits(12.0, -12.0)
+                .withPID(0.11, 0.0, 0.0)
+                .withFeedforward(0.245, 0.09375, 0.0)
+                .withGravity(0.0, GravityType.CONSTANT)
+                .withVoltageLimits(12.0, -12.0)
                 .build();
 
         public static final MotorConfig CONFIG_SLOT1 =
             MotorConfig.builder(ControlMode.MOTION_MAGIC)
                 .slot(1)
-                .pid(0.11, 0.0, 0.0)
-                .feedforward(0.245, 0.09375, 0.0)
-                .gravity(0.8, GravityType.CONSTANT)
+                .withPID(0.11, 0.0, 0.0)
+                .withFeedforward(0.245, 0.09375, 0.0)
+                .withGravity(0.8, GravityType.CONSTANT)
                 .build();
     }
 
@@ -100,17 +101,19 @@ public class Constants {
         public static final MotorConfig BLU_CONFIG =
             MotorConfig.builder(ControlMode.VELOCITY)
                 .inverted(true)
-                .pid(0.11, 0.0, 0.0)
-                .feedforward(0.42, 0.09931, 0.0)
-                .voltageLimits(12.0, -12.0)
+                .withPID(0.11, 0.0, 0.0)
+                .withFeedforward(0.42, 0.09931, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(80))
                 .build();
 
         public static final MotorConfig YEL_CONFIG =
             MotorConfig.builder(ControlMode.VELOCITY)
                 .inverted(false)
-                .pid(0.11, 0.0, 0.02)
-                .feedforward(0.42, 0.09931, 0.0)
-                .voltageLimits(12.0, -12.0)
+                .withPID(0.11, 0.0, 0.02)
+                .withFeedforward(0.42, 0.09931, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(80))
                 .build();
     }
 
@@ -135,8 +138,9 @@ public class Constants {
          */
         public static final MotorConfig CONFIG =
             MotorConfig.builder(ControlMode.POSITION)
-                .pid(0.11, 0.0, 0.02)
-                .voltageLimits(8.0, -8.0)
+                .withPID(0.11, 0.0, 0.02)
+                .withVoltageLimits(8.0, -8.0)
+                .withStatorCurrentLimit(Amps.of(25))
                 .withBrake()
                 .build();
     }
@@ -148,22 +152,21 @@ public class Constants {
     public static final class kIntake {
 
         public static final double INTAKE_ROLLER_DUTY_LOW = 0.3;
-        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.4;
+        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.6;
         public static final double INTAKE_ROLLER_DUTY_IDLE = 0.1;
         public static final double OUTTAKE_ROLLER_DUTY = -0.35;
         
-        
-
         public static final MotorConfig ROLLER_CONFIG =
             MotorConfig.builder(ControlMode.DUTY_CYCLE)
-                .voltageLimits(7.0, -7.0)
+                .withVoltageLimits(7.0, -7.0)
+                .withStatorCurrentLimit(Amps.of(40))
                 .build();
 
         public static final class kArm {
 
-            public static final double MAX_ANGLE_DEGREES = 138.0;
+            public static final double MAX_ANGLE_DEGREES = 140.0;
             public static final double MIN_ANGLE_DEGREES = 0.0;
-            public static final double DEPLOYED_ANGLE_DEGREES = 135.0;
+            public static final double DEPLOYED_ANGLE_DEGREES = 138.0;
             public static final double RETRACTED_ANGLE_DEGREES = 82.0;
 
             public static final double MANUAL_POSITIVE_POWER = 0.4;
@@ -172,11 +175,12 @@ public class Constants {
             public static final MotorConfig BLU_CONFIG =
                 MotorConfig.builder(ControlMode.POSITION)
                     .inverted(false)
-                    .pid(0.5, 0.0, 0.0)
-                    .gravity(0.1, GravityType.COSINE)
-                    .reverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
+                    .withPID(0.5, 0.0, 0.0)
+                    .withGravity(0.1, GravityType.COSINE)
+                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
-                    .voltageLimits(8, -8)
+                    .withVoltageLimits(8, -8)
+                    .withStatorCurrentLimit(Amps.of(50))
                     .withBrake()
                     .build();
 
@@ -184,11 +188,12 @@ public class Constants {
             public static final MotorConfig YEL_CONFIG =
                 MotorConfig.builder(ControlMode.POSITION)
                     .inverted(true)
-                    .pid(0.5, 0.0, 0.0)
-                    .gravity(0.1, GravityType.COSINE)
-                    .reverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
+                    .withPID(0.5, 0.0, 0.0)
+                    .withGravity(0.1, GravityType.COSINE)
+                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
-                    .voltageLimits(8, -8)
+                    .withVoltageLimits(8, -8)
+                    .withStatorCurrentLimit(Amps.of(50))
                     .build();
         }
     }
@@ -220,18 +225,20 @@ public class Constants {
         public static final MotorConfig BLU_CONFIG =
             MotorConfig.builder(ControlMode.VELOCITY)
                 .inverted(true)
-                .pid(0.1, 0.0, 0.02)
-                .feedforward(0.32, 0.12231, 0.0)
-                .voltageLimits(12.0, -12.0)
+                .withPID(0.1, 0.0, 0.02)
+                .withFeedforward(0.32, 0.12231, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(110))
                 .build();
 
 
         public static final MotorConfig YEL_CONFIG =
             MotorConfig.builder(ControlMode.VELOCITY)
                 .inverted(false)
-                .pid(0.1, 0.0, 0.02)
-                .feedforward(0.32, 0.12231, 0.0)
-                .voltageLimits(12.0, -12.0)
+                .withPID(0.1, 0.0, 0.02)
+                .withFeedforward(0.32, 0.12231, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(110))
                 .build();
 
 
@@ -285,7 +292,7 @@ public class Constants {
 
     // ╔═══════════════════════════════════════════════════════════════╗
     // ║                     MOVE‑TO‑POSE CONSTANTS                    ║
-    // ║             (Pathfinding & Guidance Runes)             ║
+    // ║                (Pathfinding & Guidance Runes)                 ║
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kMoveToPose {
 

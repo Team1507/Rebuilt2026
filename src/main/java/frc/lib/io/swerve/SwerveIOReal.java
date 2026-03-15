@@ -17,6 +17,9 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.swerve.SwerveModule;
 
 import frc.robot.Constants.kSwerve;
@@ -74,13 +77,6 @@ public class SwerveIOReal implements SwerveIO {
     }
 
     @Override
-    public void setModuleStates(SwerveModuleState[] states) {
-        // Your CTRE version does NOT support ApplyModuleStates
-        // so we simply idle or ignore this request.
-        drivetrain.setControl(idle);
-    }
-
-    @Override
     public Pose2d getPose() {
         return drivetrain.getState().Pose;
     }
@@ -103,6 +99,11 @@ public class SwerveIOReal implements SwerveIO {
     @Override
     public Rotation2d getHeading() {
         return drivetrain.getPigeon2().getRotation2d();
+    }
+
+    @Override
+    public void setControl(SwerveRequest request) {
+        drivetrain.setControl(request);
     }
 
     @Override

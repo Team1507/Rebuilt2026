@@ -58,8 +58,13 @@ public class IntakeRollerSubsystem extends SubsystemBase {
         return inputs.dutyCycle;
     }
 
-    public double increaseRollerSpeed(double rollerSpeed) {
-        io.increaseSpeed(rollerSpeed);
-        return rollerSpeed;
+    /**
+     * Increments the cmdDutyCycle by 0.1 if the value
+     * is less than 0.8
+     */
+    public void incrementDutyCycle() {
+        if(inputs.cmdDutyCycle < 0.8) {
+            inputs.cmdDutyCycle += 0.1;
+        }
     }
 }

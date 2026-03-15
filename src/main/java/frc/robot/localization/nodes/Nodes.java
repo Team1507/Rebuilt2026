@@ -44,7 +44,9 @@ public final class Nodes {
     public static final class Hub {
         // Center of the Hub (computed from all 8 tags)
         public static final Pose2d CENTER =
-                new Pose2d(4.6, 4.03, Rotation2d.fromDegrees(0.0));
+                new Pose2d(4.8, 4.03, Rotation2d.fromDegrees(0.0));
+        public static final Pose2d RED_CENTER =
+                new Pose2d(12.0, 3.7, Rotation2d.fromDegrees(0.0));
 
         // Faces (approximate, based on tag clusters)
         public static final Pose2d FRONT_LEFT =
@@ -141,7 +143,7 @@ public final class Nodes {
         public static final Pose2d RIGHT_APPROACH_POINT =
                 new Pose2d(0.7, 1.1, Rotation2d.fromDegrees(180.0));
         public static final Pose2d RIGHT_APPROACH_POINT_QUEST =
-                new Pose2d(0.9, 1.1, Rotation2d.fromDegrees(180.0));
+                new Pose2d(1.1, 1.1, Rotation2d.fromDegrees(180.0));
 
         public static final Pose2d APPROACH_LEFT =
                 approach(LEFT_APPROACH_POINT, LEFT);
@@ -184,44 +186,113 @@ public final class Nodes {
         public static final Pose2d TOWER_BYPASS_RIGHT =
                 new Pose2d(1.000, 3.200, Rotation2d.fromDegrees(0.0));
 
-        //Subway Nodes
-        // public static final Pose2d RIGHT_RIGHT_SUBWAY =
-        //         new Pose2d(7.8, 0.85, Rotation2d.fromDegrees(90.0));
-        // public static final Pose2d LEFT_RIGHT_SUBWAY =
-        //         new Pose2d(7.8, 7.4, Rotation2d.fromDegrees(90.0));
-        // public static final Pose2d RIGHT_LEFT_SUBWAY =
-        //         new Pose2d(7.8, 0.85, Rotation2d.fromDegrees(180.0));
-        // public static final Pose2d LEFT_LEFT_SUBWAY =
-        //         new Pose2d(7.8, 7.4, Rotation2d.fromDegrees(180.0)); real
+        //subway nodes
         public static final Pose2d RIGHT_RIGHT_SUBWAY =
-                new Pose2d(8.45, 0.85, Rotation2d.fromDegrees(90.0));
+                new Pose2d(7.95, 0.85, Rotation2d.fromDegrees(90.0));
+        public static final Pose2d LOWER_RIGHT_RIGHT_SUBWAY =
+                new Pose2d(7.0 , 0.85, Rotation2d.fromDegrees(90.0));
         public static final Pose2d LEFT_RIGHT_SUBWAY =
-                new Pose2d(8.45,2.75,Rotation2d.fromDegrees(90.0));
+                new Pose2d(7.95,2.95,Rotation2d.fromDegrees(90.0));
+        public static final Pose2d MIDDLE_RIGHT_SUBWAY =
+                new Pose2d(7.0,4.0,Rotation2d.fromDegrees(90.0));
+        public static final Pose2d MIDDLE_18INCH_SUBWAY =
+                new Pose2d(7.95,4.0,Rotation2d.fromDegrees(90.0));
         public static final Pose2d RIGHT_LEFT_SUBWAY =
-                new Pose2d(7.7, 4.0, Rotation2d.fromDegrees(270.0));
+                new Pose2d(7.95, 5.0, Rotation2d.fromDegrees(270.0));
         public static final Pose2d LEFT_LEFT_SUBWAY =
-                new Pose2d(8.45, 7.4, Rotation2d.fromDegrees(270.0));
+                new Pose2d(7.95, 7.4, Rotation2d.fromDegrees(270.0));
+        public static final Pose2d DOUBLE_LEFT_SUBWAY =
+                new Pose2d(7.95, 7.4, Rotation2d.fromDegrees(90.0));
+        public static final Pose2d LEFT_FOOTLONG_SUBWAY =
+                new Pose2d(7.95, 7.2, Rotation2d.fromDegrees(270.0));
+        public static final Pose2d SUBWAY_AROUND_THE_HUB =
+                new Pose2d(2.0, 5.0, Rotation2d.fromDegrees(270.0));
+
+        //subway red nodes
+        public static final Pose2d RIGHT_RIGHT_SUBWAY_RED =
+                new Pose2d(8.5, 7.35, Rotation2d.fromDegrees(270.0));
+        public static final Pose2d LOWER_RIGHT_RIGHT_SUBWAY_RED =
+                new Pose2d(6.3 , 0.85, Rotation2d.fromDegrees(90.0));
+        public static final Pose2d LEFT_RIGHT_SUBWAY_RED =
+                new Pose2d(8.5,5.0,Rotation2d.fromDegrees(270.0));
+        public static final Pose2d MIDDLE_RIGHT_SUBWAY_RED =
+                new Pose2d(6.3,4.0,Rotation2d.fromDegrees(90.0));
+        public static final Pose2d MIDDLE_18INCH_SUBWAY_RED =
+                new Pose2d(8.5,4.0,Rotation2d.fromDegrees(270.0));
+        public static final Pose2d RIGHT_LEFT_SUBWAY_RED =
+                new Pose2d(8.5, 3.04, Rotation2d.fromDegrees(90.0));
+        public static final Pose2d LEFT_LEFT_SUBWAY_RED =
+                new Pose2d(8.5, 0.5, Rotation2d.fromDegrees(90.0));
+        public static final Pose2d DOUBLE_LEFT_SUBWAY_RED =
+                new Pose2d(7.75, 7.4, Rotation2d.fromDegrees(90.0));
+        public static final Pose2d LEFT_FOOTLONG_SUBWAY_RED =
+                new Pose2d(7.75, 7.2, Rotation2d.fromDegrees(270.0));
+        public static final Pose2d SUBWAY_AROUND_THE_HUB_RED =
+                new Pose2d(2.0, 5.0, Rotation2d.fromDegrees(270.0));
+
 
         //bump nodes
         public static final Pose2d RIGHT_OVER_BUMP =
-                new Pose2d(6.3,2.3, Rotation2d.fromDegrees(135.0));
+                new Pose2d(6.3,2.3, Rotation2d.fromDegrees(55.0));
+        public static final Pose2d RIGHT_OVER_BUMP2 =
+                new Pose2d(6.3,2.3, Rotation2d.fromDegrees(170.0));
         public static final Pose2d LEFT_OVER_BUMP =
-                new Pose2d(6.3,5.4, Rotation2d.fromDegrees(135.0));
+                new Pose2d(6.3,5.6, Rotation2d.fromDegrees(315.0));
+        public static final Pose2d LEFT_OVER_BUMP2 =
+                new Pose2d(6.3,5.6, Rotation2d.fromDegrees(315.0));
         public static final Pose2d RIGHT_BEFORE_BUMP =
-                new Pose2d(7.5,2.0, Rotation2d.fromDegrees(135.0));
+                new Pose2d(7.5,2.0, Rotation2d.fromDegrees(170.0));
+        public static final Pose2d LEFT_BEFORE_BUMP =
+                new Pose2d(7.5,5.6, Rotation2d.fromDegrees(315.0));
+        public static final Pose2d RIGHT_TURN =
+               new Pose2d(1.95,2.6, Rotation2d.fromDegrees(145.0));
+
+               public static final class Red{
+               public static final Pose2d RIGHT_OVER_BUMP =
+                new Pose2d(10.3,5.5, Rotation2d.fromDegrees(225.0));
+        public static final Pose2d RIGHT_BEFORE_BUMP =
+                new Pose2d(9.8,5.5, Rotation2d.fromDegrees(170.0));
+        public static final Pose2d RIGHT_TURN =
+               new Pose2d(11.95,5.6, Rotation2d.fromDegrees(330.0));
+         public static final Pose2d RIGHT_OVER_BUMP2 =
+                new Pose2d(10.2,5.5, Rotation2d.fromDegrees(330.0));
+               }
     }
 
     // ============================
     // STARTING POSITIONS (Blue-side)
     // ============================
     public static final class Start {
-        // 2.0 m from Blue wall, spread across width
-        public static final Pose2d LEFT =
-                 new Pose2d(3.5,5.8,Rotation2d.fromDegrees(315.0));
-        public static final Pose2d CENTER =
-                new Pose2d(2.000, 4.115, Rotation2d.fromDegrees(0.0));
-        public static final Pose2d RIGHT =
-               new Pose2d(3.5,2.5, Rotation2d.fromDegrees(55.0));
+        public static final class Red {
+                // 2.0 m from Blue wall, spread across width
+                public static final Pose2d LEFT =
+                        new Pose2d(3.5,5.6,Rotation2d.fromDegrees(315.0));
+                public static final Pose2d CENTER =
+                        new Pose2d(2.000, 4.115, Rotation2d.fromDegrees(0.0));
+                public static final Pose2d RIGHT =
+                        new Pose2d(12.8,5.5, Rotation2d.fromDegrees(225.0));
+                public static final Pose2d LEFT_OVER_BUMP =
+                        new Pose2d(10.21,2.44, Rotation2d.fromDegrees(115.0));
+                public static final Pose2d LEFT_BEFORE_BUMP =
+                        new Pose2d(9.01,2.44, Rotation2d.fromDegrees(115.0));
+
+                 
+        }
+
+        public static final class Blue {
+                // 2.0 m from Blue wall, spread across width
+                public static final Pose2d LEFT =
+                        new Pose2d(3.5,5.6,Rotation2d.fromDegrees(315.0));
+                public static final Pose2d CENTER =
+                        new Pose2d(2.000, 4.115, Rotation2d.fromDegrees(0.0));
+                public static final Pose2d RIGHT =
+                        new Pose2d(3.5,2.5, Rotation2d.fromDegrees(55.0));
+
+                public static final Pose2d RIGHT_RED =
+                        new Pose2d(11.5,5.7, Rotation2d.fromDegrees(55.0));
+                public static final Pose2d LEFT_RED =
+                        new Pose2d(12.6,2.3,Rotation2d.fromDegrees(115.0));
+        }
     }
     
 

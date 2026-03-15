@@ -36,7 +36,7 @@ public final class IntakeSequences {
                 Commands.waitUntil(hopper::isHopperSafeForIntake)
                     .andThen(
                         IntakeArmCommands.down(arm)
-                            .alongWith(IntakeRollerCommands.intake(roller))//)
+                            .alongWith(IntakeRollerCommands.intake(roller))
                     )
             );
     }

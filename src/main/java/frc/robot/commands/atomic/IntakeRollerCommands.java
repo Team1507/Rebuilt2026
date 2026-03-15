@@ -33,7 +33,6 @@ public final class IntakeRollerCommands {
             .named("IntakeRollerIntake")
             .onInitialize(() -> roller.run())
             .isFinished(true); // one-shot command
-            
     }
 
     /** Run roller backward to eject game pieces. */
@@ -59,29 +58,44 @@ public final class IntakeRollerCommands {
             .onInitialize(roller::stop)
             .isFinished(true);
     }
+
     public static Command idleRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller) 
             .named("IntakeRollerSetIdle")
-            .onInitialize(()->roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_IDLE))
+            .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_IDLE))
+            .onExecute(() -> roller.run())
             .isFinished(true);
     }
+
     public static Command highRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller) 
             .named("IntakeRollerSetDutyHigh")
-            .onInitialize(()->roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_HIGH))
+            .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_HIGH))
+            .onExecute(() -> roller.run())
             .isFinished(true);
     }
+
+    public static Command incrementRollerDC(IntakeRollerSubsystem roller) {
+        return new CommandBuilder(roller) 
+            .named("IntakeRollerSetDutyHigh")
+            .onInitialize(() -> roller.incrementDutyCycle())
+            .onExecute(() -> roller.run())
+            .isFinished(true);
+    }
+
     public static Command lowRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller) 
             .named("IntakeRollerSetDutyLow")
-            .onInitialize(()->roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_LOW))
+            .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_LOW))
+            .onExecute (() -> roller.run())
             .isFinished(true);
     }
+    
     public static Command runIdleRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller)
             .named("IntakeRollerIntake")
-            .onInitialize(() -> roller.run(kIntake.INTAKE_ROLLER_DUTY_IDLE))
-            .isFinished(true); // one-shot command
-            
+            //.onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_IDLE))
+            .onExecute (() -> roller.run(kIntake.INTAKE_ROLLER_DUTY_IDLE))
+            .isFinished(true); // one-shot command  
     }
 }

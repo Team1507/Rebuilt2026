@@ -69,6 +69,11 @@ public class ShooterIOReal extends Subsystems1507 implements ShooterIO {
     @Override
     public void updateInputs(ShooterInputs inputs) {
         inputs.motorRPS = motor.getVelocity().getValueAsDouble();
+        inputs.currentRPM = inputs.motorRPS * 60.0;
+
+        inputs.temperatureC = motor.getDeviceTemp().getValueAsDouble();
+        inputs.currentA = motor.getStatorCurrent().getValueAsDouble();
+
         inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
         inputs.statorCurrent = motor.getStatorCurrent().getValueAsDouble();
         inputs.supplyCurrent = motor.getSupplyCurrent().getValueAsDouble();

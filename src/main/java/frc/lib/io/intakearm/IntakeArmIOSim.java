@@ -17,7 +17,6 @@ public class IntakeArmIOSim implements IntakeArmIO {
 
     // Power mode (optional)
     private double appliedPower = 0.0;
-    private boolean powerMode = false;
 
     @Override
     public void updateInputs(IntakeArmInputs inputs) {
@@ -41,7 +40,6 @@ public class IntakeArmIOSim implements IntakeArmIO {
 
     @Override
     public void setAngle(double degrees) {
-        powerMode = false;
 
         // Instantly move to the target
         double motorRot = ratio.realToSensor(degrees);
@@ -51,7 +49,6 @@ public class IntakeArmIOSim implements IntakeArmIO {
 
     @Override
     public void runPower(double power) {
-        powerMode = true;
         appliedPower = power;
 
         // Optional: nudge position slightly for realism
@@ -61,7 +58,6 @@ public class IntakeArmIOSim implements IntakeArmIO {
 
     @Override
     public void stop() {
-        powerMode = false;
         appliedPower = 0.0;
     }
 }

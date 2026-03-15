@@ -8,8 +8,12 @@
 
 package frc.lib.core.util;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.signals.ForwardLimitTypeValue;
 import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
+
+import edu.wpi.first.units.measure.Current;
 
 public record MotorConfig(
         int slotNumber,
@@ -26,6 +30,8 @@ public record MotorConfig(
         double peakForwardVoltage,
         double peakReverseVoltage,
 
+        Current statorCurrentLimit,
+
         boolean forwardLimitEnable,
         boolean forwardLimitAutosetEnable,
         double forwardLimitAutosetValue,
@@ -36,7 +42,7 @@ public record MotorConfig(
         double reverseLimitAutosetValue,
         ReverseLimitTypeValue reverseLimitType,
 
-        boolean brakeMode   // NEW FIELD
+        boolean brakeMode
 ) {
 
     public static enum ControlMode { DUTY_CYCLE, VELOCITY, POSITION, MOTION_MAGIC }
@@ -66,6 +72,8 @@ public record MotorConfig(
         private double peakForwardVoltage = 12;
         private double peakReverseVoltage = -12;
 
+        private Current statorCurrentLimit = Amps.of(60.0);
+
         private boolean forwardLimitEnable = false;
         private boolean forwardLimitAutosetEnable = false;
         private double forwardLimitAutosetValue = 0.0;
@@ -89,23 +97,28 @@ public record MotorConfig(
             this.slotNumber = slot; return this;
         }
 
-        public Builder pid(double p, double i, double d) {
+        public Builder withPID(double p, double i, double d) {
             this.kP = p; this.kI = i; this.kD = d; return this;
         }
 
-        public Builder feedforward(double kS, double kV, double kA) {
+        public Builder withFeedforward(double kS, double kV, double kA) {
             this.kS = kS; this.kV = kV; this.kA = kA; return this;
         }
 
-        public Builder gravity(double kG, GravityType type) {
+        public Builder withGravity(double kG, GravityType type) {
             this.kG = kG; this.gravityType = type; return this;
         }
 
-        public Builder voltageLimits(double fwd, double rev) {
+        public Builder withVoltageLimits(double fwd, double rev) {
             this.peakForwardVoltage = fwd; this.peakReverseVoltage = rev; return this;
         }
 
-        public Builder forwardLimit(boolean enable, boolean autoset, double autosetValue) {
+        public Builder withStatorCurrentLimit(Current statorCurrentLimit) {
+            this.statorCurrentLimit = statorCurrentLimit;
+            return this;
+        }
+
+        public Builder withForwardLimit(boolean enable, boolean autoset, double autosetValue) {
             this.forwardLimitEnable = enable;
             this.forwardLimitAutosetEnable = autoset;
             this.forwardLimitAutosetValue = autosetValue;
@@ -117,7 +130,7 @@ public record MotorConfig(
             return this;
         }
 
-        public Builder reverseLimit(boolean enable, boolean autoset, double autosetValue) {
+        public Builder withReverseLimit(boolean enable, boolean autoset, double autosetValue) {
             this.reverseLimitEnable = enable;
             this.reverseLimitAutosetEnable = autoset;
             this.reverseLimitAutosetValue = autosetValue;
@@ -154,6 +167,8 @@ public record MotorConfig(
                 kG, gravityType,
                 peakForwardVoltage, peakReverseVoltage,
 
+                statorCurrentLimit,
+
                 forwardLimitEnable,
                 forwardLimitAutosetEnable,
                 forwardLimitAutosetValue,
@@ -164,7 +179,7 @@ public record MotorConfig(
                 reverseLimitAutosetValue,
                 reverseLimitType,
 
-                brakeMode // NEW FIELD
+                brakeMode
             );
         }
     }

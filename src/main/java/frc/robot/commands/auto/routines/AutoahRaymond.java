@@ -8,8 +8,6 @@
 
 package frc.robot.commands.auto.routines;
 
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.kShooter;
 import frc.robot.commands.auto.AutoSequence;
@@ -22,12 +20,9 @@ public class AutoahRaymond{
    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
-            // .resetPose(Nodes.Start.START_SUBWAY_RIGHT)
-            // .startTimer()
-            // .shootRPMUntil(4, kShooter.kRPM.BUMP_RAYMOND)
-            // .build();
-
-            .driveDistance(4)
+            .resetPose(Nodes.Start.Blue.RIGHT)
+            .startTimer()
+            .shootRPMUntil(4, kShooter.kRPM.BUMP_RAYMOND)
             .build();
     }
 

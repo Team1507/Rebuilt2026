@@ -24,13 +24,15 @@ import edu.wpi.first.wpilibj.Timer;
 // Framework
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
-import frc.robot.subsystems.IntakeRollerSubsystem;
+
 // Commands
-import frc.robot.commands.tuning.MoveLog;
 import frc.robot.commands.atomic.*;
 import frc.robot.commands.coordinators.*;
+
+// Core
 import frc.lib.core.math.FieldFlip;
 import frc.lib.core.util.Alliance;
+
 // Constants
 import frc.robot.Constants.kAgitator;
 import frc.robot.Constants.kIntake;
@@ -139,7 +141,7 @@ public class AutoSequence {
      */
     public AutoSequence moveTo(Pose2d target) {
 
-        Pose2d translatedTarget = translate(target);
+       
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
@@ -153,7 +155,7 @@ public class AutoSequence {
 
         steps.add(DriveCommands.moveToPose(
             record.swerve(),
-            translatedTarget,
+            target,
             speedToUse,
             angularToUse
         ));
@@ -182,7 +184,7 @@ public class AutoSequence {
     
     public AutoSequence driveTo(Pose2d target) {
 
-        Pose2d translatedTarget = translate(target);
+       
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
@@ -196,7 +198,7 @@ public class AutoSequence {
 
         steps.add(DriveCommands.driveToPoint(
             record.swerve(),
-            translatedTarget,
+            target,
             speedToUse,
             true
         ));
@@ -227,7 +229,6 @@ public class AutoSequence {
      */
     public AutoSequence moveThrough(Pose2d target, double passRadius) {
 
-        Pose2d translatedTarget = translate(target);
         double speedToUse = (nextSpeedOverride != null)
             ? nextSpeedOverride
             : MaxSpeed;
@@ -242,7 +243,7 @@ public class AutoSequence {
 
         steps.add(DriveCommands.moveThroughPose(
             record.swerve(),
-            translatedTarget,
+            target,
             speedToUse,
             angularToUse,
             passRadius
@@ -342,8 +343,8 @@ public class AutoSequence {
         return this;
     }
 
-    public AutoSequence pointToTarget() {
-        steps.add(DriveCommands.pointToTarget(record.swerve(), record.BLUshooter()::getTargetPose));
+    public AutoSequence changeHeading(Pose2d targetPose) {
+        steps.add(DriveCommands.changeHeading(record.swerve(), targetPose));
         return this;
     }
 
@@ -351,10 +352,24 @@ public class AutoSequence {
         steps.add(DriveCommands.pointToTarget(record.swerve(), record.BLUshooter()::getTargetPose));
         return this;
     }
+    public AutoSequence pointToShootRed() {
+        steps.add(DriveCommands.pointToTarget(record.swerve(), record.BLUshooter()::getTargetPose));
+        return this;
+    }
+
+    public AutoSequence setShooterTarget(Pose2d pose) {
+        steps.add(Commands.runOnce(() -> record.BLUshooter().setShooterTarget(pose)));
+        steps.add(Commands.runOnce(() -> record.YELshooter().setShooterTarget(pose)));
+        return this;
+    }
 
     public AutoSequence headingToTarget(Pose2d targetPose) {
-        Pose2d translatedTarget = translate(targetPose);
-        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> translatedTarget));
+        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> targetPose));
+        return this;
+    }
+
+    public AutoSequence resetPose(Pose2d resetPose) {
+        steps.add(Commands.runOnce(() -> record.swerve().resetPose(resetPose)));
         return this;
     }
     
@@ -378,38 +393,6 @@ public class AutoSequence {
 
     public Command endAtTime(double endTime) {
         return Commands.waitUntil(() -> autoTimer.get() >= endTime);
-    }
-
-    public AutoSequence startLog(Pose2d targetPose) {
-        Pose2d translatedTarget = translate(targetPose);
-        steps.add(MoveLog.startLog(record.swerve(), translatedTarget));
-        return this;
-    }
-
-    public AutoSequence endLog() {
-        steps.add(MoveLog.endLog());
-        return this;
-    }
-
-    public AutoSequence recordLog() {
-        steps.add(MoveLog.record());
-        return this;
-    }
-
-    public AutoSequence analyzeAllLogs() {
-        steps.add(MoveLog.analyzeAllLogs());
-        return this;
-    }
-
-    public AutoSequence logMoveTo(Pose2d target) {
-        Pose2d translatedTarget = translate(target);
-        return this
-        .startLog(translatedTarget)
-        .deadline(
-            seq -> seq.moveTo(translatedTarget),   // deadline
-            seq -> seq.recordLog()       // runs until moveTo finishes
-        )
-        .endLog();
     }
 
     /**

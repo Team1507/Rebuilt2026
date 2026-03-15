@@ -15,11 +15,13 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import frc.lib.core.logging.Telemetry;
+import frc.lib.core.math.FieldFlip;
 import frc.lib.core.math.GearRatio;
 import frc.lib.core.shooterML.ShooterTelemetryProvider;
 import frc.lib.core.shooterML.data.ShotRecord;
 import frc.lib.core.shooterML.data.ShotTrainer;
 import frc.lib.core.shooterML.model.ShooterModel;
+import frc.lib.core.util.Alliance;
 import frc.lib.io.shooter.ShooterIO;
 import frc.lib.io.shooter.ShooterIOSim;
 import frc.lib.io.shooter.ShooterInputs;
@@ -49,6 +51,7 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
 
     private final Supplier<Pose2d> poseSupplier;
     private Pose2d targetPose;
+    private Pose2d targetPoseRed;
     private final ShooterKinematics kinematics;
 
     private double targetMotorRPS = 0.0;
@@ -104,7 +107,7 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
         this.ratio = ratio;
         this.model = model;
         this.poseSupplier = poseSupplier;
-        this.targetPose = targetPose;
+        this.targetPose = translate(targetPose);
 
         this.kinematics = new ShooterKinematics(shooterOffset);
 
@@ -139,6 +142,10 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
     /** @return current target wheel RPM */
     public double getTargetRPM() {
         return ratio.toOutput(targetMotorRPS) * 60.0;
+    }
+
+    public void setShooterTarget(Pose2d target) {
+        targetPose = target;
     }
 
     // ------------------------------------------------------------
@@ -196,6 +203,11 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
         return targetPose;
     }
 
+     /** @return current targetPose */
+    public Pose2d getTargetPoseRed() {
+        return targetPose;
+    }
+
     public ShooterInputs getInputs() {
         return inputs;
     }
@@ -245,6 +257,7 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
             sim.simulate(0.02);
         }
 
+        inputs.targetRPM = targetMotorRPS * 60.0;
         io.setTargetRPS(targetMotorRPS);
 
         // -----------------------------
@@ -298,5 +311,15 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
         Pose2d shooterPose(Pose2d robotPose) {
             return robotPose.transformBy(offset);
         }
+    }
+
+    public Pose2d translate(Pose2d original) {
+        if(Alliance.isRed()){
+            return FieldFlip.overDiagonal(original);
+        }
+        else{
+            return original;
+        }
+
     }
 }
