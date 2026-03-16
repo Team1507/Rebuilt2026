@@ -121,7 +121,7 @@ public final class DriveCommands {
                     omega
                 ));
             })
-            .onEnd(swerve::stop);
+            .onEnd((interrupted, timedOut) -> swerve.stop());
     }
 
     // =========================================================================
@@ -170,7 +170,7 @@ public final class DriveCommands {
 
                 return error < Math.toRadians(5.0);
             })
-            .onEnd(swerve::stop);
+            .onEnd((interrupted, timedOut) -> swerve.stop());
     }
 
     // =========================================================================
@@ -214,7 +214,7 @@ public final class DriveCommands {
 
                 return error < Math.toRadians(20.0);
             })
-            .onEnd(swerve::stop);
+            .onEnd((interrupted, timedOut) -> swerve.stop());
     }
 
     public static Command changeHeading(
@@ -246,7 +246,7 @@ public final class DriveCommands {
 
                 return error < Math.toRadians(5.0);
             })
-            .onEnd(swerve::stop);
+            .onEnd((interrupted, timedOut) -> swerve.stop());
     }
 
     // =========================================================================
@@ -358,7 +358,7 @@ public final class DriveCommands {
 
                 return false;
             })
-            .onEnd(swerve::stop);
+            .onEnd((interrupted, timedOut) -> swerve.stop());
     }
 
     // =========================================================================
@@ -440,7 +440,7 @@ public final class DriveCommands {
                 boolean closeEnough = dist < 0.05; // 5 cm
                 return closeEnough;
             })
-            .onEnd(() -> {
+            .onEnd((interrupted, timedOut) -> {
                 if (stopAtEnd) {
                     swerve.stop();
                 }
@@ -565,7 +565,7 @@ public final class DriveCommands {
             // -----------------------------------------------------
             // Stop if requested
             // -----------------------------------------------------
-            .onEnd(() -> {
+            .onEnd((interrupted, timedOut) -> {
                 if (stopAtEnd) {
                     swerve.stop();
                 }
@@ -596,6 +596,6 @@ public final class DriveCommands {
         return new CommandBuilder(swerve)
             .named("SwerveLock")
             .onExecute(() -> swerve.lock())   // apply every loop
-            .onEnd(swerve::stop);             // stop when released
+            .onEnd((interrupted, timedOut) -> swerve.stop());             // stop when released
     }
 }

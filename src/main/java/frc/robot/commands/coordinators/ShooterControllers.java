@@ -85,7 +85,7 @@ public final class ShooterControllers {
                 record.YELfeeder().runRPM(yelFeederRPM);
             }
         })
-        .onEnd(interrupted -> {
+        .onEnd((interrupted, timedOut) -> {
             // Stop Blue side
             record.BLUshooter().stop(); record.BLUfeeder().stop();
             // Stop Yellow Side
@@ -138,7 +138,7 @@ public final class ShooterControllers {
                 record.YELfeeder().runRPM(yelFeederRPM);
             }
         })
-        .onEnd(interrupted -> {
+        .onEnd((interrupted, timedOut) -> {
             // Stop Blue side
             record.BLUshooter().stop(); record.BLUfeeder().stop();
             // Stop Yellow Side

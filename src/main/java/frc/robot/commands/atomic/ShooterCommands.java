@@ -35,7 +35,7 @@ public final class ShooterCommands {
         return new CommandBuilder(shooter)
             .named("ShooterManual")
             .onExecute(() -> shooter.setTargetRPM(rpmSupplier.get()))
-            .onEnd(shooter::stop);
+            .onEnd((interrupted, timedOut) -> shooter.stop());
     }
 
     // ------------------------------------------------------------

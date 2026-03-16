@@ -24,7 +24,7 @@ public final class HopperCommands {
         return new CommandBuilder(hopper)
             .named("HopperMoveTo(" + degrees + ")")
             .onExecute(() -> hopper.setPosition(degrees))
-            .onEnd(hopper::stop);
+            .onEnd((interrupted, timedOut) -> hopper.stop());
     }
 
     /** Fully extend hopper (use your chosen angle). */
@@ -33,7 +33,7 @@ public final class HopperCommands {
             .named("HopperExtend")
             .onExecute(() -> hopper.setPosition(kHopper.EXTENDED_POS))
             .isFinished(hopper::isHopperFullyExtended)
-            .onEnd(hopper::stop);
+            .onEnd((interrupted, timedOut) -> hopper.stop());
     }
 
     /** Fully retract hopper (use your chosen angle). */
@@ -41,7 +41,7 @@ public final class HopperCommands {
         return new CommandBuilder(hopper)
             .named("HopperRetract")
             .onExecute(() -> hopper.setPosition(kHopper.RETRACTED_POS))
-            .onEnd(() -> hopper.stop());
+            .onEnd((interrupted, timedOut) -> hopper.stop());
 
     }
 
@@ -50,7 +50,7 @@ public final class HopperCommands {
         return new CommandBuilder(hopper)
             .named("HopperManual")
             .onExecute(() -> hopper.setPosition(position.get()))
-            .onEnd(hopper::stop);
+            .onEnd((interrupted, timedOut) -> hopper.stop());
     }
 
     /** Manual hopper control (Joystick). */
@@ -58,7 +58,7 @@ public final class HopperCommands {
         return new CommandBuilder(hopper)
             .named("HopperManual")
             .onExecute(() -> hopper.runPower(power.get()))
-            .onEnd(hopper::stop);
+            .onEnd((interrupted, timedOut) -> hopper.stop());
     }
 
     /** Immediately stop hopper motion. */

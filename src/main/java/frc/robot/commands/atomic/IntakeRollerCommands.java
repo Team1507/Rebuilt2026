@@ -48,7 +48,7 @@ public final class IntakeRollerCommands {
         return new CommandBuilder(roller)
             .named("IntakeRollerManual")
             .onExecute(() -> roller.run(dutySupplier.get()))
-            .onEnd(roller::stop);
+            .onEnd((interrupted, timedOut) -> roller.stop());
     }
 
     /** Immediately stop the roller. */

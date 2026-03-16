@@ -26,7 +26,7 @@ public final class ClimberCommands {
         return new CommandBuilder(climber)
             .named("ClimberManual")
             .onExecute(() -> climber.setPosition(positionSupplier.get()))
-            .onEnd(() -> climber.setPosition(climber.getPosition()));
+            .onEnd((interrupted, timedOut) -> climber.setPosition(climber.getPosition()));
     }
 
     // ------------------------------------------------------------

@@ -27,7 +27,7 @@ public final class FeederCommands {
         return new CommandBuilder(feeder)
             .named("FeederFeed")
             .onExecute(() -> feeder.runRPM(kFeeder.FEED_RPM))
-            .onEnd(feeder::stop);
+            .onEnd((interrupted, timedOut) -> feeder.stop());
     }
 
     /** Run feeder backward at VOMIT_RPM. */
@@ -35,7 +35,7 @@ public final class FeederCommands {
         return new CommandBuilder(feeder)
             .named("FeederVomit")
             .onExecute(() -> feeder.runRPM(kFeeder.VOMIT_RPM))
-            .onEnd(feeder::stop);
+            .onEnd((interrupted, timedOut) -> feeder.stop());
     }
 
     /** Manual feeder control using a supplier (RPM from dashboard or joystick). */
@@ -43,6 +43,6 @@ public final class FeederCommands {
         return new CommandBuilder(feeder)
             .named("FeederManual")
             .onExecute(() -> feeder.runRPM(rpmSupplier.get()))
-            .onEnd(feeder::stop);
+            .onEnd((interrupted, timedOut) -> feeder.stop());
     }
 }

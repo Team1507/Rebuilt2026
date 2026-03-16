@@ -31,7 +31,7 @@ AgitatorCommands {
         return new CommandBuilder(agitator)
             .named("AgitateToIntake")
             .onExecute(() -> agitator.run(kAgitator.AGITATE_TO_INTAKE_DUTY))
-            .onEnd(agitator::stop);
+            .onEnd((interrupted, timedOut) -> agitator.stop());
     }
 
     /** Run agitator toward shooter direction. */
@@ -39,7 +39,7 @@ AgitatorCommands {
         return new CommandBuilder(agitator)
             .named("AgitateToShooter")
             .onExecute(() -> agitator.run(kAgitator.AGITATE_TO_SHOOTER_DUTY))
-            .onEnd(agitator::stop);
+            .onEnd((interrupted, timedOut) -> agitator.stop());
     }
 
     /** Manual control of agitator using a duty-cycle supplier. */
@@ -47,6 +47,6 @@ AgitatorCommands {
         return new CommandBuilder(agitator)
             .named("AgitatorManual")
             .onExecute(() -> agitator.run(dutySupplier.get()))
-            .onEnd(agitator::stop);
+            .onEnd((interrupted, timedOut) -> agitator.stop());
     }
 }

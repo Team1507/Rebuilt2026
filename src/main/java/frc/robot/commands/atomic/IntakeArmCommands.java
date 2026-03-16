@@ -21,21 +21,32 @@ public final class IntakeArmCommands {
     private IntakeArmCommands() {}
 
     /** Move arm to the RETRACTED angle. */
-    public static Command up(IntakeArmSubsystem arm) {   
+    public static Command up(IntakeArmSubsystem arm) {
         return new CommandBuilder(arm)
             .named("IntakeArmUp")
             .onExecute(() -> arm.setAngle(RETRACTED_ANGLE_DEGREES))
-            .isFinished(() ->arm.isAtPosition(RETRACTED_ANGLE_DEGREES, 2)) 
-            .onEnd(arm::stop);
+            .isFinished(() -> arm.isAtPosition(RETRACTED_ANGLE_DEGREES, 2))
+            .timeout(1.0)
+            .onEnd((interrupted, timedOut) -> {
+                if (timedOut) {
+                    // Mechanical fault → back off
+                    arm.setAngle(DEPLOYED_ANGLE_DEGREES);
+                }
+                else {
+                    // Driver release → do nothing
+                    arm.stop();
+                }
+            });
     }
+
     /** Move arm to the DEPLOYED angle. */
     public static Command down(IntakeArmSubsystem arm) {
-        
         return new CommandBuilder(arm)
             .named("IntakeArmDown")
             .onExecute(() -> arm.setAngle(DEPLOYED_ANGLE_DEGREES))
-            .isFinished(() ->(arm.isAtPosition(DEPLOYED_ANGLE_DEGREES, 2)))
-            .onEnd(arm::stop);
+            .isFinished(() -> arm.isAtPosition(DEPLOYED_ANGLE_DEGREES, 2.0))
+            .timeout(2.0)
+            .onEnd((interrupted, timedOut) -> arm.stop());
     }
 
     /** Move arm to an arbitrary angle. */
@@ -44,23 +55,23 @@ public final class IntakeArmCommands {
             .named("IntakeArmMoveTo(" + degrees + ")")
             .onExecute(() -> arm.setAngle(degrees))
             .isFinished(() -> arm.isAtPosition(degrees, 5.0))
-            .onEnd(arm::stop);
+            .onEnd((interrupted, timedOut) -> arm.stop());
     }
 
     /** Manual control (Elastic UI / SmartDashboard). */
     public static Command manualAngle(IntakeArmSubsystem arm, Supplier<Double> angleSupplier) {
         return new CommandBuilder(arm)
-            .named("IntakeArmManual")
+            .named("IntakeArmManualAngle")
             .onExecute(() -> arm.setAngle(angleSupplier.get()))
-            .onEnd(arm::stop);
+            .onEnd((interrupted, timedOut) -> arm.stop());
     }
 
     /** Manual control (Joystick)). */
     public static Command manualPower(IntakeArmSubsystem arm, Supplier<Double> angleSupplier) {
         return new CommandBuilder(arm)
-            .named("IntakeArmManual")
+            .named("IntakeArmManualPower")
             .onExecute(() -> arm.runPower(angleSupplier.get()))
-            .onEnd(arm::stop);
+            .onEnd((interrupted, timedOut) -> arm.stop());
     }
 
     /** Immediately stop the arm. */
