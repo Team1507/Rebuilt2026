@@ -249,7 +249,7 @@ public class AutoSequence {
     }
 
     public AutoSequence intakeHigh(){
-        steps.add(IntakeRollerCommands.highRollerSpeed(record.intakeRoller()));
+        steps.add(IntakeRollerCommands.autoRollerSpeed(record.intakeRoller()));
         return this;
     }
 

@@ -20,7 +20,7 @@ public class DashboardManager {
 
     private static final boolean ENABLE_MATCH   = true;
     private static final boolean ENABLE_MANUAL  = false;
-    private static final boolean ENABLE_MONITOR = false;
+    private static final boolean ENABLE_MONITOR = true;
 
     private final SubsystemsRecord   subsystems;
     private final LocalizationRecord localization;

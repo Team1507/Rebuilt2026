@@ -75,6 +75,14 @@ public final class IntakeRollerCommands {
             .isFinished(true);
     }
 
+    public static Command autoRollerSpeed(IntakeRollerSubsystem roller) {
+        return new CommandBuilder(roller) 
+            .named("SetAutoIntakeRollerDutyHigh")
+            .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_AUTO_ROLLER_DUTY))
+            .onExecute(() -> roller.run())
+            .isFinished(true);
+    }
+
     public static Command incrementRollerDC(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller) 
             .named("IntakeRollerSetDutyHigh")

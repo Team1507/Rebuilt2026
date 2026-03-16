@@ -297,7 +297,7 @@ public final class Nodes {
                         new Pose2d(3.5,2.5, Rotation2d.fromDegrees(55.0));
 
                 public static final Pose2d SHOOTING_SPOT_RIGHT =
-                        new Pose2d(3.4,2.8, Rotation2d.fromDegrees(44.12));
+                        new Pose2d(3.3,2.8, Rotation2d.fromDegrees(49.52));
 
                 public static final Pose2d SHOOTING_SPOT_LEFT =
                         new Pose2d(3.4,5.3 , Rotation2d.fromDegrees(320.3));
