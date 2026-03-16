@@ -32,9 +32,11 @@ public class AutoDoubleSubway {
             .parallel(
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5))
-                .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)  
+                .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2) 
             .driveTo(Nodes.Start.Blue.RIGHT)
             .waitSeconds(0.5)
+            .withSpeed( MaxSpeed * 0.5).driveTo(Nodes.Start.Blue.SHOOTING_SPOT_RIGHT)
+            .headingToTarget(Nodes.Hub.CENTER)
             .pointToShoot()
             .shootUntil(10)
            .changeHeading(Nodes.Midfield.RIGHT_TURN)      

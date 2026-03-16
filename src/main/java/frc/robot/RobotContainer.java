@@ -474,8 +474,14 @@ public class RobotContainer {
             AutoSubway18Inch.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         
         autoChooser.addOption(
-            "Auto Subway 18 Inch Red",
-            AutoSubway18InchRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Subway 18 Inch Right Red",
+            AutoSubway18InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        autoChooser.addOption(
+            "Auto Subway 18 Inch left Blue",
+            AutoSubway18InchLeftBlue.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        autoChooser.addOption(
+            "Auto Subway 18 Inch Left Red",
+            AutoSubway18InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Subway Around Hub",

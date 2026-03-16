@@ -85,6 +85,8 @@ public final class Nodes {
                 new Pose2d(CENTER.getX() - 0.50, CENTER.getY(), Rotation2d.fromDegrees(270.0));
         private static final Pose2d LEFT_POINT =
                 new Pose2d(CENTER.getX(), CENTER.getY() + 0.50, Rotation2d.fromDegrees(270.0));
+        private static final Pose2d RIGHT_POINT =
+                new Pose2d(CENTER.getX(), CENTER.getY() - 0.50, Rotation2d.fromDegrees(270.0));
 
         public static final Pose2d APPROACH_FRONT =
                 approach(FRONT_POINT, CENTER);
@@ -195,6 +197,8 @@ public final class Nodes {
                 new Pose2d(7.0,4.0,Rotation2d.fromDegrees(90.0));
         public static final Pose2d MIDDLE_18INCH_SUBWAY =
                 new Pose2d(7.95,4.0,Rotation2d.fromDegrees(90.0));
+        public static final Pose2d MIDDLE_18INCH_SUBWAY_LEFT =
+                new Pose2d(7.95,4.0,Rotation2d.fromDegrees(270.0));
         public static final Pose2d RIGHT_LEFT_SUBWAY =
                 new Pose2d(7.95, 5.0, Rotation2d.fromDegrees(270.0));
         public static final Pose2d LEFT_LEFT_SUBWAY =
@@ -218,9 +222,9 @@ public final class Nodes {
         public static final Pose2d MIDDLE_18INCH_SUBWAY_RED =
                 new Pose2d(8.5,4.0,Rotation2d.fromDegrees(270.0));
         public static final Pose2d RIGHT_LEFT_SUBWAY_RED =
-                new Pose2d(8.5, 3.04, Rotation2d.fromDegrees(90.0));
+                new Pose2d(8.35, 3.04, Rotation2d.fromDegrees(90.0));
         public static final Pose2d LEFT_LEFT_SUBWAY_RED =
-                new Pose2d(8.5, 0.5, Rotation2d.fromDegrees(90.0));
+                new Pose2d(8.35, 0.5, Rotation2d.fromDegrees(90.0));
         public static final Pose2d DOUBLE_LEFT_SUBWAY_RED =
                 new Pose2d(7.75, 7.4, Rotation2d.fromDegrees(90.0));
         public static final Pose2d LEFT_FOOTLONG_SUBWAY_RED =
@@ -234,16 +238,18 @@ public final class Nodes {
                 new Pose2d(6.3,2.3, Rotation2d.fromDegrees(55.0));
         public static final Pose2d RIGHT_OVER_BUMP2 =
                 new Pose2d(6.3,2.3, Rotation2d.fromDegrees(170.0));
-        public static final Pose2d LEFT_OVER_BUMP =
-                new Pose2d(6.3,5.6, Rotation2d.fromDegrees(315.0));
         public static final Pose2d LEFT_OVER_BUMP2 =
+                new Pose2d(6.3,5.3, Rotation2d.fromDegrees(200.0));
+        public static final Pose2d LEFT_OVER_BUMP =
                 new Pose2d(6.3,5.6, Rotation2d.fromDegrees(315.0));
         public static final Pose2d RIGHT_BEFORE_BUMP =
                 new Pose2d(7.5,2.0, Rotation2d.fromDegrees(170.0));
         public static final Pose2d LEFT_BEFORE_BUMP =
                 new Pose2d(7.5,5.6, Rotation2d.fromDegrees(315.0));
         public static final Pose2d RIGHT_TURN =
-               new Pose2d(1.95,2.6, Rotation2d.fromDegrees(145.0));
+               new Pose2d(3.5,2.5, Rotation2d.fromDegrees(140.0));
+        public static final Pose2d LEFT_TURN =
+               new Pose2d(1.5,4.5, Rotation2d.fromDegrees(145.0));
 
                public static final class Red{
                public static final Pose2d RIGHT_OVER_BUMP =
@@ -252,8 +258,12 @@ public final class Nodes {
                 new Pose2d(9.8,5.5, Rotation2d.fromDegrees(170.0));
         public static final Pose2d RIGHT_TURN =
                new Pose2d(11.95,5.6, Rotation2d.fromDegrees(330.0));
+        public static final Pose2d LEFT_TURN =
+               new Pose2d(12.5,4.0, Rotation2d.fromDegrees(330.0));
          public static final Pose2d RIGHT_OVER_BUMP2 =
                 new Pose2d(10.2,5.5, Rotation2d.fromDegrees(330.0));
+        public static final Pose2d LEFT_OVER_BUMP2 =
+                new Pose2d(10.2,2.5, Rotation2d.fromDegrees(330.0));
                }
     }
 
@@ -285,6 +295,12 @@ public final class Nodes {
                         new Pose2d(2.000, 4.115, Rotation2d.fromDegrees(0.0));
                 public static final Pose2d RIGHT =
                         new Pose2d(3.5,2.5, Rotation2d.fromDegrees(55.0));
+
+                public static final Pose2d SHOOTING_SPOT_RIGHT =
+                        new Pose2d(3.4,2.8, Rotation2d.fromDegrees(44.12));
+
+                public static final Pose2d SHOOTING_SPOT_LEFT =
+                        new Pose2d(3.4,5.3 , Rotation2d.fromDegrees(320.3));
 
                 public static final Pose2d RIGHT_RED =
                         new Pose2d(11.5,5.7, Rotation2d.fromDegrees(55.0));

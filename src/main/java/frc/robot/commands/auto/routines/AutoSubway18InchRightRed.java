@@ -8,13 +8,18 @@
 
 package frc.robot.commands.auto.routines;
 
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.commands.auto.AutoSequence;
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
+import frc.robot.localization.nodes.Nodes.Hub;
+import frc.robot.Constants.kShooter;
 
-public class AutoSubway18InchRed {
+
+public class AutoSubway18InchRightRed {
     public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
@@ -34,6 +39,7 @@ public class AutoSubway18InchRed {
                 .moveThrough(Nodes.Midfield.Red.RIGHT_OVER_BUMP, 0.2)  
             .driveTo(Nodes.Start.Red.RIGHT)
             .waitSeconds(0.5)
+            .withSpeed( MaxSpeed * 0.5).driveTo(Nodes.Start.Blue.SHOOTING_SPOT_RIGHT)
             .headingToTarget(Nodes.Hub.RED_CENTER)
             .shootUntil(10)
             .changeHeading(Nodes.Midfield.Red.RIGHT_TURN)
