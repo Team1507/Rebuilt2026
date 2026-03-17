@@ -27,11 +27,9 @@ import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.commands.atomic.*;
 import frc.robot.commands.auto.routines.*;
 import frc.robot.commands.coordinators.*;
-
+import frc.robot.dashboard.DashboardManager;
 // Subsystems
 import frc.robot.subsystems.*;
-import frc.robot.DashBoardStuff.DashboardManager;
-
 // Localization
 import frc.robot.localization.nodes.Nodes.Hub;
 import frc.robot.localization.QuestNavController;

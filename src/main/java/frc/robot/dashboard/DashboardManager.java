@@ -6,7 +6,7 @@
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
 
-package frc.robot.DashBoardStuff;
+package frc.robot.dashboard;
 
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
