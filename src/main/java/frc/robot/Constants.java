@@ -153,17 +153,20 @@ public class Constants {
     // ╚═══════════════════════════════════════════════════════════════╝
     public static final class kIntake {
 
-        public static final double INTAKE_ROLLER_DUTY_LOW = 0.3;
-        public static final double INTAKE_ROLLER_DUTY_HIGH = 0.6;
-        public static final double INTAKE_ROLLER_DUTY_IDLE = 0.1;
-        public static final double OUTTAKE_ROLLER_DUTY = -0.35;
-        public static final double INTAKE_AUTO_ROLLER_DUTY = 0.8;
-        
-        public static final MotorConfig ROLLER_CONFIG =
-            MotorConfig.builder(ControlMode.DUTY_CYCLE)
-                .withVoltageLimits(7.0, -7.0)
-                .withStatorCurrentLimit(Amps.of(40))
-                .build();
+        public static final class kRoller {
+            
+            public static final double DUTY_LOW = 0.3;
+            public static final double DUTY_HIGH = 0.6;
+            public static final double DUTY_IDLE = 0.1;
+            public static final double OUTTAKE_DUTY = -0.35;
+            public static final double AUTO_DUTY = 0.8;
+            
+            public static final MotorConfig CONFIG =
+                MotorConfig.builder(ControlMode.DUTY_CYCLE)
+                    .withVoltageLimits(7.0, -7.0)
+                    .withStatorCurrentLimit(Amps.of(40))
+                    .build();
+        }
 
         public static final class kArm {
 

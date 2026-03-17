@@ -249,7 +249,7 @@ public class RobotContainer {
                 RobotBase.isReal()
                     ? new IntakeRollerIOReal(
                         IntakeRollerHardware.ROLLER_ID,
-                        kIntake.ROLLER_CONFIG)
+                        kIntake.kRoller.CONFIG)
                     : new IntakeRollerIOSim());
 
         // -------------------------
@@ -377,14 +377,14 @@ public class RobotContainer {
             .whileTrue(ShooterControllers.shootModelBased(
                 coordinatorRecord,
                 kAgitator.AGITATE_TO_SHOOTER_DUTY,
-                kIntake.INTAKE_ROLLER_DUTY_HIGH));
+                kIntake.kRoller.DUTY_HIGH));
 
         bottomDriver.rightBumper()
             .whileTrue(ShooterControllers.shootFixedRPM(
                 coordinatorRecord,
                 kShooter.kRPM.LOB,
                 kAgitator.AGITATE_TO_SHOOTER_DUTY,
-                kIntake.INTAKE_ROLLER_DUTY_HIGH));
+                kIntake.kRoller.DUTY_HIGH));
 
         // ----------------------------
         // Agitator

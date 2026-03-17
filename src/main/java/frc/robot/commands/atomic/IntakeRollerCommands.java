@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.lib.core.util.CommandBuilder;
 import frc.robot.subsystems.IntakeRollerSubsystem;
-import frc.robot.Constants.kIntake;
+import frc.robot.Constants.kIntake.kRoller;
 
 
 /**
@@ -39,7 +39,7 @@ public final class IntakeRollerCommands {
     public static Command outtake(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller)
             .named("IntakeRollerOuttake")
-            .onInitialize(() -> roller.run(kIntake.OUTTAKE_ROLLER_DUTY))
+            .onInitialize(() -> roller.run(kRoller.OUTTAKE_DUTY))
             .isFinished(true);
     }
 
@@ -62,7 +62,7 @@ public final class IntakeRollerCommands {
     public static Command idleRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller) 
             .named("IntakeRollerSetIdle")
-            .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_IDLE))
+            .onInitialize(() -> roller.setDutyCycle(kRoller.DUTY_IDLE))
             .onExecute(() -> roller.run())
             .isFinished(true);
     }
@@ -70,7 +70,7 @@ public final class IntakeRollerCommands {
     public static Command highRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller) 
             .named("IntakeRollerSetDutyHigh")
-            .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_HIGH))
+            .onInitialize(() -> roller.setDutyCycle(kRoller.DUTY_HIGH))
             .onExecute(() -> roller.run())
             .isFinished(true);
     }
@@ -78,7 +78,7 @@ public final class IntakeRollerCommands {
     public static Command autoRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller) 
             .named("SetAutoIntakeRollerDutyHigh")
-            .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_AUTO_ROLLER_DUTY))
+            .onInitialize(() -> roller.setDutyCycle(kRoller.AUTO_DUTY))
             .onExecute(() -> roller.run())
             .isFinished(true);
     }
@@ -94,7 +94,7 @@ public final class IntakeRollerCommands {
     public static Command lowRollerSpeed(IntakeRollerSubsystem roller) {
         return new CommandBuilder(roller) 
             .named("IntakeRollerSetDutyLow")
-            .onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_LOW))
+            .onInitialize(() -> roller.setDutyCycle(kRoller.DUTY_LOW))
             .onExecute (() -> roller.run())
             .isFinished(true);
     }
@@ -103,7 +103,7 @@ public final class IntakeRollerCommands {
         return new CommandBuilder(roller)
             .named("IntakeRollerIntake")
             //.onInitialize(() -> roller.setDutyCycle(kIntake.INTAKE_ROLLER_DUTY_IDLE))
-            .onExecute (() -> roller.run(kIntake.INTAKE_ROLLER_DUTY_IDLE))
+            .onExecute (() -> roller.run(kRoller.DUTY_IDLE))
             .isFinished(true); // one-shot command  
     }
 }

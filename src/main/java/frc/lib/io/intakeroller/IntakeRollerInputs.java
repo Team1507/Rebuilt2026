@@ -8,7 +8,7 @@
 
 package frc.lib.io.intakeroller;
 
-import frc.robot.Constants.kIntake;
+import frc.robot.Constants.kIntake.kRoller;
 
 /**
  * Container for intake roller motor sensor inputs.
@@ -23,6 +23,6 @@ public class IntakeRollerInputs {
     /** Motor temperature (Celsius). */
     public double temperatureC = 0.0;
 
-    public double cmdDutyCycle = kIntake.INTAKE_ROLLER_DUTY_LOW;
+    public double cmdDutyCycle = kRoller.DUTY_LOW;
     
 }
