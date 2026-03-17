@@ -8,16 +8,11 @@
 
 package frc.robot.commands.auto.routines;
 
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.commands.auto.AutoSequence;
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
-import frc.robot.localization.nodes.Nodes.Hub;
-import frc.robot.Constants.kShooter;
-
 
 public class AutoSubway18InchLeftRed {
     public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
@@ -36,7 +31,7 @@ public class AutoSubway18InchLeftRed {
             .parallel(
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Start.Red.LEFT_BEFORE_BUMP, 0.5))
-                .moveThrough(Nodes.Start.Red.LEFT_OVER_BUMP, 0.2)  
+            .moveThrough(Nodes.Start.Red.LEFT_OVER_BUMP, 0.2)  
             .moveThrough(Nodes.Start.Red.LEFT, 0.2)
             .driveTo(Nodes.Start.Blue.SHOOTING_SPOT_LEFT)
             .withSpeed( MaxSpeed * 0.5).driveTo(Nodes.Start.Blue.SHOOTING_SPOT_RIGHT)
@@ -51,12 +46,12 @@ public class AutoSubway18InchLeftRed {
             .parallel(
                 seq -> seq.withSpeed(MaxSpeed *0.5).moveThrough(Nodes.Midfield.MIDDLE_18INCH_SUBWAY_RED, 0.1),
                 seq -> seq.intakeDeploy())
-                .moveThrough(Nodes.Start.Red.LEFT_BEFORE_BUMP, 0.2)
-                .moveThrough(Nodes.Start.Red.LEFT_OVER_BUMP, 0.2)
-                .driveTo(Nodes.Start.Red.LEFT)
+            .moveThrough(Nodes.Start.Red.LEFT_BEFORE_BUMP, 0.2)
+            .moveThrough(Nodes.Start.Red.LEFT_OVER_BUMP, 0.2)
+            .driveTo(Nodes.Start.Red.LEFT)
             .waitSeconds(0.5)
             .headingToTarget(Nodes.Hub.RED_CENTER)
-             .waitSeconds(0.5)
+            .waitSeconds(0.5)
             .shootUntil(19.99)
             .build();
     }
