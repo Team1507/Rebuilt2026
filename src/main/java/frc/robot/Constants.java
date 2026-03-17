@@ -197,6 +197,46 @@ public class Constants {
                     .withVoltageLimits(8, -8)
                     .withStatorCurrentLimit(Amps.of(30.0))
                     .build();
+
+            public static final class kStall {
+                /**
+                 * Stall detection tuning parameters for the Intake Arm.
+                 *
+                 * These values determine how the subsystem decides that the arm has
+                 * mechanically stalled (i.e., the motors are applying effort but the
+                 * mechanism is not moving). Adjusting these values changes how sensitive
+                 * stall detection is.
+                 *
+                 * VELOCITY_THRESHOLD:
+                 *   - Minimum mechanism velocity (in deg/sec) considered "moving".
+                 *   - If the arm's measured velocity stays BELOW this value while effort
+                 *     is being applied, it is considered "not moving".
+                 *   - Increase this value → stall is detected MORE easily (more sensitive).
+                 *   - Decrease this value → stall is detected LESS easily (less sensitive).
+                 *
+                 * EFFORT_THRESHOLD:
+                 *   - Minimum applied motor voltage (in volts) considered "trying".
+                 *   - If the motors are applying MORE than this voltage but velocity is low,
+                 *     the subsystem considers the arm to be pushing against resistance.
+                 *   - Increase this value → stall requires MORE effort to trigger (less sensitive).
+                 *   - Decrease this value → stall triggers with LESS effort (more sensitive).
+                 *
+                 * TIME_SEC:
+                 *   - Minimum duration (in seconds) that the stall condition must persist
+                 *     before being considered a true stall.
+                 *   - This prevents false positives from brief slowdowns, backlash, or noise.
+                 *   - Increase this value → stall must last LONGER to trigger (less sensitive).
+                 *   - Decrease this value → stall triggers FASTER (more sensitive).
+                 *
+                 * Together, these three values define the mechanical "signature" of a stall.
+                 * Tune them based on real‑world behavior: heavier arms, higher friction, or
+                 * slower gearboxes may require different thresholds.
+                 */
+                public static final double VELOCITY_THRESHOLD = 1.0;   // deg/sec
+                public static final double EFFORT_THRESHOLD   = 2.0;   // volts
+                public static final double TIME_SEC           = 0.10;  // seconds
+            }
+
         }
     }
 

@@ -31,10 +31,11 @@ import frc.robot.framework.base.Subsystems1507;
 public class SwerveSubsystem extends Subsystems1507 {
 
     private final SwerveIO io;
-    private final SwerveInputs inputs = new SwerveInputs();
+    private final SwerveInputs inputs;
 
     public SwerveSubsystem(SwerveIO io) {
         this.io = io;
+        this.inputs = new SwerveInputs();
     }
 
     @Override

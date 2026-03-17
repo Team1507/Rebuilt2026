@@ -19,10 +19,11 @@ import frc.lib.io.agitator.AgitatorInputs;
 public class AgitatorSubsystem extends SubsystemBase {
 
     private final AgitatorIO io;
-    private final AgitatorInputs inputs = new AgitatorInputs();
+    private final AgitatorInputs inputs;
 
     public AgitatorSubsystem(AgitatorIO io) {
         this.io = io;
+        this.inputs = new AgitatorInputs();
     }
 
     @Override

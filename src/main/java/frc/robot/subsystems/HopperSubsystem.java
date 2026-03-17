@@ -20,10 +20,11 @@ import frc.robot.Constants.kHopper;
 public class HopperSubsystem extends SubsystemBase {
 
     private final HopperIO io;
-    private final HopperInputs inputs = new HopperInputs();
+    private final HopperInputs inputs;
 
     public HopperSubsystem(HopperIO io) {
         this.io = io;
+        this.inputs = new HopperInputs();
     }
 
     @Override

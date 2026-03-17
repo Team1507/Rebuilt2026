@@ -21,7 +21,7 @@ import frc.lib.io.questnav.*;
 public class QuestNavSubsystem extends Subsystems1507 {
 
     private final QuestNavIO io;
-    private final QuestNavInputs inputs = new QuestNavInputs();
+    private final QuestNavInputs inputs;
 
     private Pose2d latestPose = new Pose2d();
     private double latestTimestamp = 0.0;
@@ -32,6 +32,7 @@ public class QuestNavSubsystem extends Subsystems1507 {
 
     public QuestNavSubsystem(QuestNavIO io) {
         this.io = io;
+        this.inputs = new QuestNavInputs();
     }
 
     @Override

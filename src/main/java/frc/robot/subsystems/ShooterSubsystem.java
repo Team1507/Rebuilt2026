@@ -44,7 +44,7 @@ import frc.robot.framework.base.Subsystems1507;
 public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetryProvider {
 
     private final ShooterIO io;
-    private final ShooterInputs inputs = new ShooterInputs();
+    private final ShooterInputs inputs;
 
     private final GearRatio ratio;
     private final ShooterModel model;
@@ -107,6 +107,8 @@ public class ShooterSubsystem extends Subsystems1507 implements ShooterTelemetry
         this.model = model;
         this.poseSupplier = poseSupplier;
         this.targetPose = translate(targetPose);
+
+        this.inputs = new ShooterInputs();
 
         this.kinematics = new ShooterKinematics(shooterOffset);
 

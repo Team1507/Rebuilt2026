@@ -19,10 +19,11 @@ import frc.lib.io.intakeroller.IntakeRollerInputs;
 public class IntakeRollerSubsystem extends SubsystemBase {
 
     private final IntakeRollerIO io;
-    private final IntakeRollerInputs inputs = new IntakeRollerInputs();
+    private final IntakeRollerInputs inputs;
 
     public IntakeRollerSubsystem(IntakeRollerIO io) {
         this.io = io;
+        this.inputs = new IntakeRollerInputs();
     }
 
     @Override

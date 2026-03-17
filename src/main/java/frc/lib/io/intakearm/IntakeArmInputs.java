@@ -19,6 +19,14 @@ public class IntakeArmInputs {
     /** YEL arm position in mechanism degrees. */
     public double yelPositionDeg = 0.0;
 
+    /** Velocity in deg/sec */
+    public double bluVelocityDegPerSec = 0.0;
+    public double yelVelocityDegPerSec = 0.0;
+
+    /** applied voltages */
+    public double bluAppliedVolts = 0.0;
+    public double yelAppliedVolts = 0.0;
+
     /** Arm limit switches */
     public boolean bluReverseLimit = false;
     public boolean yelReverseLimit = false;

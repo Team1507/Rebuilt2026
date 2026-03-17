@@ -19,10 +19,11 @@ import frc.lib.io.feeder.FeederInputs;
 public class FeederSubsystem extends SubsystemBase {
 
     private final FeederIO io;
-    private final FeederInputs inputs = new FeederInputs();
+    private final FeederInputs inputs;
 
     public FeederSubsystem(FeederIO io) {
         this.io = io;
+        this.inputs = new FeederInputs();
     }
 
     @Override

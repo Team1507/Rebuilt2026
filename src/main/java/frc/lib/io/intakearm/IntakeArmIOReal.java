@@ -15,16 +15,15 @@ import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 
 import frc.lib.core.math.GearRatio;
 import frc.lib.core.util.MotorConfig;
 import frc.robot.framework.base.Subsystems1507;
 
-/**
- * Real hardware implementation of IntakeArmIO.
- */
 public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
 
     private final MotorConfig bluConfig;
@@ -37,6 +36,8 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
     // Cached CTRE signals (BLU)
     // -----------------------------
     private final StatusSignal<Angle> bluPosSig;
+    private final StatusSignal<AngularVelocity> bluVelSig;
+    private final StatusSignal<Voltage> bluVoltSig;
     private final StatusSignal<ReverseLimitValue> bluRevLimitSig;
     private final StatusSignal<Current> bluCurrentSig;
     private final StatusSignal<Temperature> bluTempSig;
@@ -45,6 +46,8 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
     // Cached CTRE signals (YEL)
     // -----------------------------
     private final StatusSignal<Angle> yelPosSig;
+    private final StatusSignal<AngularVelocity> yelVelSig;
+    private final StatusSignal<Voltage> yelVoltSig;
     private final StatusSignal<ReverseLimitValue> yelRevLimitSig;
     private final StatusSignal<Current> yelCurrentSig;
     private final StatusSignal<Temperature> yelTempSig;
@@ -63,53 +66,60 @@ public class IntakeArmIOReal extends Subsystems1507 implements IntakeArmIO {
         configureFXSMotor(yelMotor, yelConfig);
 
         // -----------------------------
-        // Grab BLU signals once
+        // BLU signals
         // -----------------------------
         bluPosSig = bluMotor.getPosition();
+        bluVelSig = bluMotor.getVelocity();
+        bluVoltSig = bluMotor.getMotorVoltage();
         bluRevLimitSig = bluMotor.getReverseLimit();
         bluCurrentSig = bluMotor.getStatorCurrent();
         bluTempSig = bluMotor.getDeviceTemp();
 
         // -----------------------------
-        // Grab YEL signals once
+        // YEL signals
         // -----------------------------
         yelPosSig = yelMotor.getPosition();
+        yelVelSig = yelMotor.getVelocity();
+        yelVoltSig = yelMotor.getMotorVoltage();
         yelRevLimitSig = yelMotor.getReverseLimit();
         yelCurrentSig = yelMotor.getStatorCurrent();
         yelTempSig = yelMotor.getDeviceTemp();
 
         // -----------------------------
-        // Set update frequency (20–50 Hz)
+        // Set update frequency
         // -----------------------------
         BaseStatusSignal.setUpdateFrequencyForAll(
             100,
-            bluPosSig, bluRevLimitSig, bluCurrentSig, bluTempSig,
-            yelPosSig, yelRevLimitSig, yelCurrentSig, yelTempSig
+            bluPosSig, bluVelSig, bluVoltSig, bluRevLimitSig, bluCurrentSig, bluTempSig,
+            yelPosSig, yelVelSig, yelVoltSig, yelRevLimitSig, yelCurrentSig, yelTempSig
         );
     }
 
     @Override
     public void updateInputs(IntakeArmInputs inputs) {
-        // Bulk refresh both motors in one CAN transaction
         BaseStatusSignal.refreshAll(
-            bluPosSig, bluRevLimitSig, bluCurrentSig, bluTempSig,
-            yelPosSig, yelRevLimitSig, yelCurrentSig, yelTempSig
+            bluPosSig, bluVelSig, bluVoltSig, bluRevLimitSig, bluCurrentSig, bluTempSig,
+            yelPosSig, yelVelSig, yelVoltSig, yelRevLimitSig, yelCurrentSig, yelTempSig
         );
 
         // -----------------------------
-        // BLU motor cached values
+        // BLU motor
         // -----------------------------
         inputs.bluMotorRot = bluPosSig.getValueAsDouble();
         inputs.bluPositionDeg = ratio.sensorToReal(inputs.bluMotorRot);
+        inputs.bluVelocityDegPerSec = ratio.sensorToReal(bluVelSig.getValueAsDouble());
+        inputs.bluAppliedVolts = bluVoltSig.getValueAsDouble();
         inputs.bluReverseLimit = bluRevLimitSig.getValue() == ReverseLimitValue.ClosedToGround;
         inputs.bluCurrentA = bluCurrentSig.getValueAsDouble();
         inputs.bluTempC = bluTempSig.getValueAsDouble();
 
         // -----------------------------
-        // YEL motor cached values
+        // YEL motor
         // -----------------------------
         inputs.yelMotorRot = yelPosSig.getValueAsDouble();
         inputs.yelPositionDeg = ratio.sensorToReal(inputs.yelMotorRot);
+        inputs.yelVelocityDegPerSec = ratio.sensorToReal(yelVelSig.getValueAsDouble());
+        inputs.yelAppliedVolts = yelVoltSig.getValueAsDouble();
         inputs.yelReverseLimit = yelRevLimitSig.getValue() == ReverseLimitValue.ClosedToGround;
         inputs.yelCurrentA = yelCurrentSig.getValueAsDouble();
         inputs.yelTempC = yelTempSig.getValueAsDouble();
