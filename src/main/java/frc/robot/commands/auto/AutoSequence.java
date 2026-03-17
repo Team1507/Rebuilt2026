@@ -323,7 +323,7 @@ public class AutoSequence {
     }
 
     public AutoSequence resetPose(Pose2d resetPose) {
-        steps.add(Commands.runOnce(() -> record.swerve().resetPose(resetPose)));
+        steps.add(Commands.runOnce(() -> record.questNavController().resetPose(resetPose)));
         return this;
     }
     

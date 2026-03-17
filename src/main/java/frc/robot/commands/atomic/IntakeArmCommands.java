@@ -45,8 +45,17 @@ public final class IntakeArmCommands {
             .named("IntakeArmDown")
             .onExecute(() -> arm.setAngle(DEPLOYED_ANGLE_DEGREES))
             .isFinished(() -> arm.isAtPosition(DEPLOYED_ANGLE_DEGREES, 2.0))
-            .timeout(2.0)
-            .onEnd((interrupted, timedOut) -> arm.stop());
+            .timeout(1.0)
+            .onEnd((interrupted, timedOut) -> {
+                if (timedOut) {
+                    // Mechanical fault → back off
+                    arm.setAngle(RETRACTED_ANGLE_DEGREES);
+                }
+                else {
+                    // Driver release → do nothing
+                    arm.stop();
+                }
+            });
     }
 
     /** Move arm to an arbitrary angle. */

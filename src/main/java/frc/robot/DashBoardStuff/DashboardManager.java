@@ -41,7 +41,6 @@ public class DashboardManager {
 
     /* ---------------- Manul ---------------- */
     private DoubleSubscriber subAgitatorDuty;
-    private DoubleSubscriber subClimberPos;
     private DoubleSubscriber subBLUFeederRPM;
     private DoubleSubscriber subYELFeederRPM;
     private DoubleSubscriber subHopperAngle;
@@ -51,7 +50,6 @@ public class DashboardManager {
     private DoubleSubscriber subYELShooterRPM;
 
     private BooleanSubscriber subAgitatorRun;
-    private BooleanSubscriber subClimberRun;
     private BooleanSubscriber subBLUFeederRun;
     private BooleanSubscriber subYELFeederRun;
     private BooleanSubscriber subHopperRun;
@@ -60,7 +58,7 @@ public class DashboardManager {
     private BooleanSubscriber subBLUShooterRun;
     private BooleanSubscriber subYELShooterRun;
 
-    private boolean prevAgitator, prevClimber, prevBLUFeeder, prevYELFeeder;
+    private boolean prevAgitator, prevBLUFeeder, prevYELFeeder;
     private boolean prevHopper, prevIntakeArm, prevIntakeRoller;
     private boolean prevBLUShooter, prevYELShooter;
 
@@ -92,12 +90,6 @@ public class DashboardManager {
     private DoublePublisher pubMonAgitatorTemp;
     private DoublePublisher pubMonAgitatorCurrent;
     private BooleanPublisher pubMonAgitatorFeeding;
-
-    // Climber
-    private DoublePublisher pubMonClimberPosition;
-    private DoublePublisher pubMonClimberMotorPosition;
-    private DoublePublisher pubMonClimberTemp;
-    private DoublePublisher pubMonClimberCurrent;
 
     // Blue Feeder
     private DoublePublisher pubMonBlueFeederRPM;
@@ -220,7 +212,6 @@ public class DashboardManager {
 
             /* ---------- Seed Publishers (Layout Only) ---------- */
             manualNT.getDoubleTopic("Agitator/Target DC").publish().set(0.0);
-            manualNT.getDoubleTopic("Climber/Target Position").publish().set(0.0);
             manualNT.getDoubleTopic("Feeder/BLU/Target RPM").publish().set(0.0);
             manualNT.getDoubleTopic("Feeder/YEL/Target RPM").publish().set(0.0);
             manualNT.getDoubleTopic("Hopper/Target Position").publish().set(0.0);
@@ -230,7 +221,6 @@ public class DashboardManager {
             manualNT.getDoubleTopic("Shooter/YEL/Target RPM").publish().set(0.0);
 
             manualNT.getBooleanTopic("Agitator/Run").publish().set(false);
-            manualNT.getBooleanTopic("Climber/Run").publish().set(false);
             manualNT.getBooleanTopic("Feeder/BLU/Run").publish().set(false);
             manualNT.getBooleanTopic("Feeder/YEL/Run").publish().set(false);
             manualNT.getBooleanTopic("Hopper/Run").publish().set(false);
@@ -242,8 +232,6 @@ public class DashboardManager {
             /* ---------- Subscribers (Actual Control Path) ---------- */
             subAgitatorDuty =
                 manualNT.getDoubleTopic("Agitator/Target DC").subscribe(0.0);
-            subClimberPos =
-                manualNT.getDoubleTopic("Climber/Target Position").subscribe(0.0);
             subBLUFeederRPM =
                 manualNT.getDoubleTopic("Feeder/BLU/Target RPM").subscribe(0.0);
             subYELFeederRPM =
@@ -261,8 +249,6 @@ public class DashboardManager {
 
             subAgitatorRun =
                 manualNT.getBooleanTopic("Agitator/Run").subscribe(false);
-            subClimberRun =
-                manualNT.getBooleanTopic("Climber/Run").subscribe(false);
             subBLUFeederRun =
                 manualNT.getBooleanTopic("Feeder/BLU/Run").subscribe(false);
             subYELFeederRun =
@@ -295,16 +281,6 @@ public class DashboardManager {
                 monitorNT.getDoubleTopic("Agitator/CurrentA").publish();
             pubMonAgitatorFeeding =
                 monitorNT.getBooleanTopic("Agitator/FeedingEnabled").publish();
-
-            // Climber
-            pubMonClimberPosition =
-                monitorNT.getDoubleTopic("Climber/Position").publish();
-            pubMonClimberMotorPosition =
-                monitorNT.getDoubleTopic("Climber/MotorPosition").publish();
-            pubMonClimberTemp =
-                monitorNT.getDoubleTopic("Climber/TemperatureC").publish();
-            pubMonClimberCurrent =
-                monitorNT.getDoubleTopic("Climber/CurrentA").publish();
 
             // Feeder Blue
             pubMonBlueFeederRPM =
@@ -427,7 +403,6 @@ public class DashboardManager {
 
         if (ENABLE_MONITOR) {
             updateMonitorAgitator();
-            updateMonitorClimber();
             updateMonitorFeederBlue();
             updateMonitorFeederYellow();
             updateMonitorHopper();
@@ -465,7 +440,6 @@ public class DashboardManager {
 
     private void updateManual() {
         boolean agitator = subAgitatorRun.get();
-        boolean climberRun = subClimberRun.get();
         boolean bluFeeder = subBLUFeederRun.get();
         boolean yelFeeder = subYELFeederRun.get();
         boolean hopperRun = subHopperRun.get();
@@ -479,12 +453,6 @@ public class DashboardManager {
                 AgitatorCommands.manual(
                     subsystems.agitator(),
                     () -> round(subAgitatorDuty.get(), 2)));
-
-        if (climberRun && !prevClimber)
-            CommandScheduler.getInstance().schedule(
-                ClimberCommands.manual(
-                    subsystems.climber(),
-                    () -> round(subClimberPos.get(), 1)));
 
         if (bluFeeder && !prevBLUFeeder)
             CommandScheduler.getInstance().schedule(
@@ -529,7 +497,6 @@ public class DashboardManager {
                     () -> whole(subYELShooterRPM.get())));
 
         if (!agitator && prevAgitator) subsystems.agitator().getCurrentCommand().cancel();
-        if (!climberRun && prevClimber) subsystems.climber().getCurrentCommand().cancel();
         if (!bluFeeder && prevBLUFeeder) subsystems.BLUfeeder().getCurrentCommand().cancel();
         if (!yelFeeder && prevYELFeeder) subsystems.YELfeeder().getCurrentCommand().cancel();
         if (!hopperRun && prevHopper) subsystems.hopper().getCurrentCommand().cancel();
@@ -539,7 +506,6 @@ public class DashboardManager {
         if (!yelShooterRun && prevYELShooter) subsystems.YELshooter().getCurrentCommand().cancel();
 
         prevAgitator = agitator;
-        prevClimber = climberRun;
         prevBLUFeeder = bluFeeder;
         prevYELFeeder = yelFeeder;
         prevHopper = hopperRun;
@@ -557,15 +523,6 @@ public class DashboardManager {
         pubMonAgitatorTemp.set(round(inputs.temperatureC, 1));
         pubMonAgitatorCurrent.set(round(inputs.currentA, 1));
         pubMonAgitatorFeeding.set(inputs.feedingEnabled);
-    }
-
-    private void updateMonitorClimber() {
-        var inputs = subsystems.climber().getInputs();
-
-        pubMonClimberPosition.set(round(inputs.position, 1));
-        pubMonClimberMotorPosition.set(round(inputs.motorPosition, 1));
-        pubMonClimberTemp.set(round(inputs.temperatureC, 1));
-        pubMonClimberCurrent.set(round(inputs.currentA, 1));
     }
 
     private void updateMonitorFeederBlue() {

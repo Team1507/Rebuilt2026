@@ -10,9 +10,11 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 
 import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
 
@@ -181,10 +183,9 @@ public class Constants {
                     .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .withVoltageLimits(8, -8)
-                    .withStatorCurrentLimit(Amps.of(50))
+                    .withStatorCurrentLimit(Amps.of(30.0))
                     .withBrake()
                     .build();
-
 
             public static final MotorConfig YEL_CONFIG =
                 MotorConfig.builder(ControlMode.POSITION)
@@ -194,7 +195,7 @@ public class Constants {
                     .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .withVoltageLimits(8, -8)
-                    .withStatorCurrentLimit(Amps.of(50))
+                    .withStatorCurrentLimit(Amps.of(30.0))
                     .build();
         }
     }
@@ -313,55 +314,22 @@ public class Constants {
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
-    // ║                       VISION CONSTANTS                        ║
+    // ║                           QuestNav                            ║
     // ║                (Warlocks Arcane Optics Suite)                 ║
     // ╚═══════════════════════════════════════════════════════════════╝
-    public static final class kVision {
+    public static final class kQuest {
 
-        /** AprilTag field layout for the current game */
-        public static AprilTagFieldLayout APRILTAG_LAYOUT =
-            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+        public static final Matrix<N3, N1> STD_DEVS = VecBuilder.fill(0.02, 0.02, 0.05);
 
-        // Rejection thresholds
-        public static double maxAmbiguity = 0.3; 
-        public static double maxZError = 0.75;
-        public static double maxTagDistance = 6.0; // meters — tags beyond this are rejected
-
-        // Standard deviation bases (multiplied by average tag distance in Vision.java).
-        // Multi-tag observations get a sqrt(tagCount) discount on top of this.
-        // Trig solve is very accurate for XY (uses gyro heading directly).
-        // Constrained PnP is less precise but also estimates heading.
-        public static double trigXyStdBase = 0.3;
-        public static double constrainedPnpXyStdBase = 0.6;
-        public static double constrainedPnpAngStdBase = 0.25;
-
-        // Per-camera trust multipliers (applied to std devs)
-        public static double[] cameraStdDevFactors = {
-            1.0, // Camera 0 (BLU)
-            1.0  // Camera 1 (YEL)
-        };
-
-        /** Blue-side camera configuration */
-        public static final class BLU {
-            public static final String NAME = "Bluecam";
-            public static final Transform3d ROBOT_TO_CAMERA =
-                new Transform3d(
-                    new Translation3d(-0.201775, 0.246126, 0.69125),
-                    new Rotation3d(0, Math.toRadians(10), Math.toRadians(3.5))
-                );
-        }
-
-        /** Yellow-side camera configuration */
-        public static final class YEL {
-            public static final String NAME = "Yellowcam";
-            public static final Transform3d ROBOT_TO_CAMERA =
-                new Transform3d(
-                    new Translation3d(-0.25, -0.25, 0.21),
-                    new Rotation3d(0, Math.toRadians(10), Math.toRadians(234))
-                );
-        }
+        public static final double ACCEPTABLE_DISTANCE_TOLERANCE = 0.1;
+        
+        // Mount transform: robot origin -> QuestNav sensor
+        public static final Transform3d ROBOT_TO_QUEST =
+            new Transform3d(
+                -0.20226, 0.304165, 0.39,
+                new Rotation3d(0.0, 0.0, Math.toRadians(90.0))
+            );
     }
-
 }
    
         

@@ -10,21 +10,16 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 
-import frc.lib.core.math.geometry.VisionMeasurement;
 import frc.lib.io.swerve.SwerveIO;
 import frc.lib.io.swerve.SwerveInputs;
-import frc.robot.localization.vision.Vision;
-
+import frc.robot.framework.base.Subsystems1507;
 /**
  * Thin, IO-based swerve subsystem.
  *
@@ -33,36 +28,18 @@ import frc.robot.localization.vision.Vision;
  * SwerveIOSim). This keeps the subsystem clean, testable, and
  * consistent with the architecture used for the shooter.
  */
-public class SwerveSubsystem extends SubsystemBase {
+public class SwerveSubsystem extends Subsystems1507 {
 
     private final SwerveIO io;
     private final SwerveInputs inputs = new SwerveInputs();
-
-    private Vision vision;
 
     public SwerveSubsystem(SwerveIO io) {
         this.io = io;
     }
 
-    public void setVision(Vision vision) {
-        this.vision = vision;
-    }
-
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-
-        if (vision != null) {
-            vision.addHeadingData(Timer.getFPGATimestamp(), io.getHeading());
-
-            VisionMeasurement[] measurements = vision.getUnreadResults();
-            Pose3d[] photonPoses = new Pose3d[measurements.length];
-            for (int i = 0; i < measurements.length; i++) {
-                VisionMeasurement m = measurements[i];
-                io.addVisionMeasurement(m.pose(), m.timestamp(), m.stdDevs());
-                photonPoses[i] = new Pose3d(m.pose());
-            }
-        }
     }
 
     // ==========================================================
@@ -110,9 +87,6 @@ public class SwerveSubsystem extends SubsystemBase {
     /** Resets the pose estimator and vision heading history. */
     public void resetLocalization(Pose2d pose) {
         io.resetPose(pose);
-        if (vision != null) {
-            vision.resetHeadingData(Timer.getFPGATimestamp(), pose.getRotation());
-        }
     }
 
     public void setTemporaryTargetPose(Pose2d tempPose) {
@@ -128,12 +102,12 @@ public class SwerveSubsystem extends SubsystemBase {
         io.addVisionMeasurement(pose, timestamp, stdDevs);
     }
 
-    public void setPoseFromVision(Pose2d visionPose) {
-        // Align gyro to match the vision heading
-        io.alignGyro(visionPose.getRotation());
-
+    public void setPose(Pose2d pose) {
         // Reset pose estimator
-        io.resetPose(visionPose);
+        io.resetPose(pose);
+
+        // Align gyro to match the vision heading
+        io.alignGyro(pose.getRotation());
     }
 
     // ==========================================================

@@ -34,15 +34,15 @@ import frc.robot.DashBoardStuff.DashboardManager;
 
 // Localization
 import frc.robot.localization.nodes.Nodes.Hub;
-import frc.robot.localization.vision.Vision;
+import frc.robot.localization.QuestNavController;
 
 // IO Layer (Hardware Abstractions)
 import frc.lib.io.agitator.*;
-import frc.lib.io.climber.*;
 import frc.lib.io.feeder.*;
 import frc.lib.io.hopper.*;
 import frc.lib.io.intakearm.*;
 import frc.lib.io.intakeroller.*;
+import frc.lib.io.questnav.*;
 import frc.lib.io.shooter.*;
 import frc.lib.io.swerve.*;
 
@@ -111,7 +111,6 @@ public class RobotContainer {
 
     // Mechanisms
     public final AgitatorSubsystem agitatorSubsystem;
-    public final ClimberSubsystem climberSubsystem;
     public final FeederSubsystem feederBLUsystem;
     public final FeederSubsystem feederYELsystem;
     public final HopperSubsystem hopperSubsystem;
@@ -119,7 +118,7 @@ public class RobotContainer {
     public final IntakeRollerSubsystem intakeRollerSubsystem;
 
     // Vision system (PhotonVision)
-    public final Vision vision;
+    public final QuestNavController questNav;
 
     // ==========================================================
     // Records (group subsystems for autos, coordinators, dashboard)
@@ -214,15 +213,6 @@ public class RobotContainer {
                     AgitatorHardware.AGITATOR_ID, 
                     kAgitator.CONFIG));
 
-        climberSubsystem =
-            new ClimberSubsystem(
-                new ClimberIOReal(
-                    ClimberHardware.CLIMBER_MOTOR_ID,
-                    kClimber.CONFIG_SLOT0, kClimber.CONFIG_SLOT1,
-                    ClimberHardware.RATIO,
-                    ClimberHardware.SERVO_PORT,
-                    ClimberHardware.LIMIT_SWITCH_PORT));
-
         feederBLUsystem =
             new FeederSubsystem(
                 new FeederIOReal(
@@ -265,10 +255,7 @@ public class RobotContainer {
         // -------------------------
         // Vision
         // -------------------------
-        // PhotonVision cameras used for fused odometry and target tracking.
-        vision = new Vision(new Vision.CameraConfig[] {
-            new Vision.CameraConfig(kVision.BLU.NAME, kVision.BLU.ROBOT_TO_CAMERA)
-        });
+        questNav = new QuestNavController(swerve, new QuestNavSubsystem(new QuestNavIOReal()));
 
         // -------------------------
         // Records
@@ -278,14 +265,14 @@ public class RobotContainer {
             new SubsystemsRecord(
                 swerve,
                 agitatorSubsystem,
-                climberSubsystem,
                 feederBLUsystem,
                 feederYELsystem,
                 hopperSubsystem,
                 intakeArmSubsystem,
                 intakeRollerSubsystem,
                 shooterBLUsystem,
-                shooterYELsystem);
+                shooterYELsystem,
+                questNav);
 
         coordinatorRecord =
             new CoordinatorRecord(
@@ -294,15 +281,12 @@ public class RobotContainer {
                 agitatorSubsystem, intakeRollerSubsystem);
 
         localizationRecord =
-            new LocalizationRecord(swerve, vision);
+            new LocalizationRecord(swerve, questNav);
 
         autoChooser = new SendableChooser<>();
 
         dashboardManager =
             new DashboardManager(subsystemsRecord, localizationRecord, autoChooser);
-
-        // Attach vision to swerve for fused odometry.
-        swerve.setVision(vision);
 
         // Configure robot behavior.
         configureTelemetry();
@@ -403,11 +387,6 @@ public class RobotContainer {
                 kIntake.INTAKE_ROLLER_DUTY_HIGH));
 
         // ----------------------------
-        // Climber
-        // ----------------------------
-        topDriver.y().whileTrue(ClimberCommands.robotUp(climberSubsystem));
-
-        // ----------------------------
         // Agitator
         // ----------------------------
         topDriver.povUp().whileTrue(AgitatorCommands.toShooter(agitatorSubsystem));
@@ -417,7 +396,7 @@ public class RobotContainer {
         // Reset Gyro
         // ----------------------------
         bottomDriver.start().whileTrue(
-            Commands.run(() -> swerve.resetLocalization(
+            Commands.run(() -> questNav.resetPose(
                 new Pose2d(swerve.getPose().getTranslation(), new Rotation2d()))));
     }
     
