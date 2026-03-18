@@ -40,14 +40,14 @@ public class DashboardManager {
     private static final double PERIOD = 0.20;   // 5 Hz
 
     /* ---------------- Manul ---------------- */
-    private DoubleSubscriber subAgitatorDuty;
-    private DoubleSubscriber subBLUFeederRPM;
-    private DoubleSubscriber subYELFeederRPM;
-    private DoubleSubscriber subHopperAngle;
-    private DoubleSubscriber subIntakeArmAngle;
-    private DoubleSubscriber subIntakeRollerDuty;
-    private DoubleSubscriber subBLUShooterRPM;
-    private DoubleSubscriber subYELShooterRPM;
+    private DoubleSubscriber  subAgitatorDuty;
+    private DoubleSubscriber  subBLUFeederRPM;
+    private DoubleSubscriber  subYELFeederRPM;
+    private DoubleSubscriber  subHopperAngle;
+    private DoubleSubscriber  subIntakeArmAngle;
+    private DoubleSubscriber  subIntakeRollerDuty;
+    private DoubleSubscriber  subBLUShooterRPM;
+    private DoubleSubscriber  subYELShooterRPM;
 
     private BooleanSubscriber subAgitatorRun;
     private BooleanSubscriber subBLUFeederRun;
@@ -64,44 +64,46 @@ public class DashboardManager {
 
     /* ---------------- Match ---------------- */
     // Blue shooter
-    private DoublePublisher pubBLUShooterRPM;
-    private DoublePublisher pubBLUShooterTargetRPM;
+    private DoublePublisher  pubBLUShooterRPM;
+    private DoublePublisher  pubBLUShooterTargetRPM;
 
     // Yellow shooter
-    private DoublePublisher pubYELShooterRPM;
-    private DoublePublisher pubYELShooterTargetRPM;
+    private DoublePublisher  pubYELShooterRPM;
+    private DoublePublisher  pubYELShooterTargetRPM;
 
     // Hopper
-    private DoublePublisher pubHopperPos;
+    private DoublePublisher  pubHopperPos;
     private BooleanPublisher pubHopperExtended;
 
     // Intake
-    private DoublePublisher pubIntakeBLUPos;
-    private DoublePublisher pubIntakeYELPos;
-    private DoublePublisher pubIntakeRollerCurrentDC;
-    private DoublePublisher pubIntakeRollerCmdDC;
+    private DoublePublisher  pubIntakeBLUPos;
+    private DoublePublisher  pubIntakeYELPos;
+    private DoublePublisher  pubIntakeRollerCurrentDC;
+    private DoublePublisher  pubIntakeRollerCmdDC;
 
     // Vision
-    private BooleanPublisher pubHasGoodVision;
+    private BooleanPublisher pubQuestNavConnected;
+    private BooleanPublisher pubQuestNavIsTracking;
+    private IntegerPublisher pubQuestNavBattery;
 
     /* ---------------- Monitor ---------------- */
     // Agitator
-    private DoublePublisher pubMonAgitatorDuty;
-    private DoublePublisher pubMonAgitatorTemp;
-    private DoublePublisher pubMonAgitatorCurrent;
+    private DoublePublisher  pubMonAgitatorDuty;
+    private DoublePublisher  pubMonAgitatorTemp;
+    private DoublePublisher  pubMonAgitatorCurrent;
     private BooleanPublisher pubMonAgitatorFeeding;
 
     // Blue Feeder
-    private DoublePublisher pubMonBlueFeederRPM;
-    private DoublePublisher pubMonBlueFeederRPS;
-    private DoublePublisher pubMonBlueFeederTemp;
-    private DoublePublisher pubMonBlueFeederCurrent;
+    private DoublePublisher  pubMonBlueFeederRPM;
+    private DoublePublisher  pubMonBlueFeederRPS;
+    private DoublePublisher  pubMonBlueFeederTemp;
+    private DoublePublisher  pubMonBlueFeederCurrent;
 
     // Yellow Feeder
-    private DoublePublisher pubMonYellowFeederRPM;
-    private DoublePublisher pubMonYellowFeederRPS;
-    private DoublePublisher pubMonYellowFeederTemp;
-    private DoublePublisher pubMonYellowFeederCurrent;
+    private DoublePublisher  pubMonYellowFeederRPM;
+    private DoublePublisher  pubMonYellowFeederRPS;
+    private DoublePublisher  pubMonYellowFeederTemp;
+    private DoublePublisher  pubMonYellowFeederCurrent;
 
     // Hopper
     private DoublePublisher  pubMonHopperPosition;
@@ -118,8 +120,8 @@ public class DashboardManager {
     private DoublePublisher  pubMonBlueIntakeArmMotorPosition;
     private DoublePublisher  pubMonBlueIntakeArmTemp;
     private DoublePublisher  pubMonBlueIntakeArmCurrent;
-    private DoublePublisher pubMonBlueVelocityDegPerSec;
-    private DoublePublisher pubMonBlueAppliedVolts;
+    private DoublePublisher  pubMonBlueIntakeArmVelocityDegPerSec;
+    private DoublePublisher  pubMonBlueIntakeArmAppliedVolts;
 
     // Yellow Intake Arm
     private DoublePublisher  pubMonYellowIntakeArmPosition;
@@ -127,30 +129,30 @@ public class DashboardManager {
     private DoublePublisher  pubMonYellowIntakeArmMotorPosition;
     private DoublePublisher  pubMonYellowIntakeArmTemp;
     private DoublePublisher  pubMonYellowIntakeArmCurrent;
-    private DoublePublisher pubMonYellowVelocityDegPerSec;
-    private DoublePublisher pubMonYellowAppliedVolts;
+    private DoublePublisher  pubMonYellowIntakeArmVelocityDegPerSec;
+    private DoublePublisher  pubMonYellowIntakeArmAppliedVolts;
     
     // Intake Roller
-    private DoublePublisher pubMonIntakeRollerDutyCycle;
-    private DoublePublisher pubMonIntakeRollerTemp;
-    private DoublePublisher pubMonIntakeRollerCurrent;
-    private DoublePublisher pubMonIntakeRollerCmdDutyCycle;
+    private DoublePublisher  pubMonIntakeRollerDutyCycle;
+    private DoublePublisher  pubMonIntakeRollerTemp;
+    private DoublePublisher  pubMonIntakeRollerCurrent;
+    private DoublePublisher  pubMonIntakeRollerCmdDutyCycle;
 
     // Blue Shooter
-    private DoublePublisher pubMonBlueShooterMotorRPS;
-    private DoublePublisher pubMonBlueShooterCurrentRPM;
-    private DoublePublisher pubMonBlueShooterTargetRPM;
-    private DoublePublisher pubMonBlueShooterDistanceToTarget;
-    private DoublePublisher pubMonBlueShooterTemp;
-    private DoublePublisher pubMonBlueShooterCurrent;
+    private DoublePublisher  pubMonBlueShooterMotorRPS;
+    private DoublePublisher  pubMonBlueShooterCurrentRPM;
+    private DoublePublisher  pubMonBlueShooterTargetRPM;
+    private DoublePublisher  pubMonBlueShooterDistanceToTarget;
+    private DoublePublisher  pubMonBlueShooterTemp;
+    private DoublePublisher  pubMonBlueShooterCurrent;
 
     // Yellow Shooter
-    private DoublePublisher pubMonYellowShooterMotorRPS;
-    private DoublePublisher pubMonYellowShooterCurrentRPM;
-    private DoublePublisher pubMonYellowShooterTargetRPM;
-    private DoublePublisher pubMonYellowShooterDistanceToTarget;
-    private DoublePublisher pubMonYellowShooterTemp;
-    private DoublePublisher pubMonYellowShooterCurrent;
+    private DoublePublisher  pubMonYellowShooterMotorRPS;
+    private DoublePublisher  pubMonYellowShooterCurrentRPM;
+    private DoublePublisher  pubMonYellowShooterTargetRPM;
+    private DoublePublisher  pubMonYellowShooterDistanceToTarget;
+    private DoublePublisher  pubMonYellowShooterTemp;
+    private DoublePublisher  pubMonYellowShooterCurrent;
 
     private static double round(double value, int decimals) {
         double scale = Math.pow(10, decimals);
@@ -202,8 +204,12 @@ public class DashboardManager {
             pubIntakeRollerCmdDC =
                 matchNT.getDoubleTopic("Intake/Roller/Roller Cmd DC").publish();
 
-            pubHasGoodVision =
-                matchNT.getBooleanTopic("Localization/PhotonVision/HasTargets").publish();
+            pubQuestNavConnected =
+                matchNT.getBooleanTopic("Localization/QuestNav/Connected").publish();
+            pubQuestNavIsTracking =
+                matchNT.getBooleanTopic("Localization/QuestNav/Is Tracking").publish();
+            pubQuestNavBattery =
+                matchNT.getIntegerTopic("Localization/QuestNav/Battery Percent").publish();
         }
 
         if (ENABLE_MANUAL) {
@@ -333,9 +339,9 @@ public class DashboardManager {
                 monitorNT.getDoubleTopic("IntakeArm/BLU/CurrentA").publish();
             pubMonBlueIntakeArmReverseLimit =
                 monitorNT.getBooleanTopic("IntakeArm/BLU/ReverseLimit").publish();
-            pubMonBlueVelocityDegPerSec =
+            pubMonBlueIntakeArmVelocityDegPerSec =
                 monitorNT.getDoubleTopic("IntakeArm/BLU/VelocityDegPerSec").publish();
-            pubMonBlueAppliedVolts =
+            pubMonBlueIntakeArmAppliedVolts =
                 monitorNT.getDoubleTopic("IntakeArm/BLU/AppliedVolts").publish();
 
             // Intake Arm Yellow
@@ -349,9 +355,9 @@ public class DashboardManager {
                 monitorNT.getDoubleTopic("IntakeArm/YEL/CurrentA").publish();
             pubMonYellowIntakeArmReverseLimit =
                 monitorNT.getBooleanTopic("IntakeArm/YEL/ReverseLimit").publish();
-            pubMonYellowVelocityDegPerSec =
+            pubMonYellowIntakeArmVelocityDegPerSec =
                 monitorNT.getDoubleTopic("IntakeArm/YEL/VelocityDegPerSec").publish();
-            pubMonYellowAppliedVolts =
+            pubMonYellowIntakeArmAppliedVolts =
                 monitorNT.getDoubleTopic("IntakeArm/YEL/AppliedVolts").publish();
 
             // Intake Roller
@@ -447,7 +453,10 @@ public class DashboardManager {
         pubIntakeRollerCurrentDC.set(round(roller.dutyCycle, 1));
         pubIntakeRollerCmdDC.set(round(roller.cmdDutyCycle, 1));
 
-        pubHasGoodVision.set(localization.vision() != null);
+        var quest = localization.vision().getInputs();
+        pubQuestNavConnected.set(quest.connected);
+        pubQuestNavIsTracking.set(quest.isTracking);
+        pubQuestNavBattery.set(quest.batteryPercent);
     }
 
     private void updateManual() {
@@ -575,16 +584,16 @@ public class DashboardManager {
         pubMonBlueIntakeArmMotorPosition.set(round(inputs.bluMotorRot, 1));
         pubMonBlueIntakeArmTemp.set(round(inputs.bluTempC, 1));
         pubMonBlueIntakeArmCurrent.set(round(inputs.bluCurrentA, 1));
-        pubMonBlueAppliedVolts.set(round(inputs.bluAppliedVolts, 2));
-        pubMonBlueVelocityDegPerSec.set(round(inputs.bluVelocityDegPerSec, 2));
+        pubMonBlueIntakeArmAppliedVolts.set(round(inputs.bluAppliedVolts, 2));
+        pubMonBlueIntakeArmVelocityDegPerSec.set(round(inputs.bluVelocityDegPerSec, 2));
         
         pubMonYellowIntakeArmPosition.set(whole(inputs.yelPositionDeg));
         pubMonYellowIntakeArmReverseLimit.set(inputs.yelReverseLimit);
         pubMonYellowIntakeArmMotorPosition.set(round(inputs.yelMotorRot, 1));
         pubMonYellowIntakeArmTemp.set(round(inputs.yelTempC, 1));
         pubMonYellowIntakeArmCurrent.set(round(inputs.yelCurrentA, 1));
-        pubMonYellowAppliedVolts.set(round(inputs.yelAppliedVolts, 2));
-        pubMonYellowVelocityDegPerSec.set(round(inputs.yelVelocityDegPerSec, 2));
+        pubMonYellowIntakeArmAppliedVolts.set(round(inputs.yelAppliedVolts, 2));
+        pubMonYellowIntakeArmVelocityDegPerSec.set(round(inputs.yelVelocityDegPerSec, 2));
     }
 
     private void updateMonitorIntakeRoller() {

@@ -21,7 +21,8 @@ public class QuestNavIOReal implements QuestNavIO {
 
         inputs.frames = quest.getAllUnreadPoseFrames();
         inputs.connected = quest.isConnected();
-        inputs.batteryPercent = quest.getBatteryPercent();
+        inputs.batteryPercent = quest.getBatteryPercent().orElse(-1);
+        inputs.isTracking = quest.isTracking();
         inputs.appTimestamp = quest.getAppTimestamp();
     }
 

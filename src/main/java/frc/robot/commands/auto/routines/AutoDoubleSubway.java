@@ -36,7 +36,7 @@ public class AutoDoubleSubway {
             .driveTo(Nodes.Start.Blue.RIGHT)
             .waitSeconds(0.5)
             .withSpeed( MaxSpeed * 0.5).driveTo(Nodes.Start.Blue.SHOOTING_SPOT_RIGHT)
-            .headingToTarget(Nodes.Hub.CENTER)
+            .pointToTarget(Nodes.Hub.CENTER)
             .pointToShoot()
             .shootUntil(10)
            .changeHeading(Nodes.Midfield.RIGHT_TURN)      

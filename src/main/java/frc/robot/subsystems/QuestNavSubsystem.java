@@ -70,6 +70,10 @@ public class QuestNavSubsystem extends Subsystems1507 {
     public Pose2d getPose() { return latestPose; }
     public double getTimestamp() { return latestTimestamp; }
 
+    public QuestNavInputs getInputs() {
+        return inputs;
+    }
+
     public void setPose(Pose3d pose) {
         io.setPose(pose.transformBy(kQuest.ROBOT_TO_QUEST));
     }

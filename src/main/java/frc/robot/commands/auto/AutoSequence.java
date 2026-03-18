@@ -40,17 +40,26 @@ import frc.robot.Constants.kIntake.*;
 /**
  * AutoSequence
  *
- * Mentor-provided base class for building autonomous routines using a fluent API.
- * Students will extend this by adding new high-level actions (score, intake, etc.)
- * that internally add Commands to the 'steps' list.
+ * Fluent builder for constructing autonomous routines.
+ * Each method appends a Command to an internal list, and {@link #build()}
+ * assembles them into a sequential command.
+ *
+ * This class is intentionally readable and teachable — students can build
+ * autos by chaining high-level actions like:
+ *
+ *   new AutoSequence(...).resetPose(...).driveTo(...).shoot().build();
  */
 public class AutoSequence {
 
-    // Internal list of steps that will be executed in order
+    // ------------------------------------------------------------
+    // Core Fields
+    // ------------------------------------------------------------
+
     private final List<Command> steps = new ArrayList<>();
 
     private final SubsystemsRecord record;
     private final CoordinatorRecord coordinator;
+
     private final double MaxSpeed;
     private final double MaxAngularRate;
 
@@ -59,205 +68,175 @@ public class AutoSequence {
 
     private final Timer autoTimer = new Timer();
 
+
+    // ------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------
+
     /**
      * Creates a new AutoSequence builder.
      *
-     * @param drivetrain        The drivetrain subsystem used for all movement commands.
-     * @param MaxSpeed          The default translational speed used for move actions.
-     * @param MaxAngularRate    The default rotational rate used for move actions.
-     *
-     * <p>This constructor defines the baseline speed profile for the entire
-     * autonomous routine. Individual steps may override these values using
-     * {@link #withSpeed(double)} or {@link #withSpeed(double, double)}.</p>
+     * @param record         SubsystemsRecord containing all robot subsystems.
+     * @param coordinator    CoordinatorRecord for shooter/agitator control.
+     * @param MaxSpeed       Default translational speed for movement.
+     * @param MaxAngularRate Default rotational speed for movement.
      */
-    public AutoSequence(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
+    public AutoSequence(SubsystemsRecord record, CoordinatorRecord coordinator,
+                        double MaxSpeed, double MaxAngularRate) {
         this.record = record;
         this.coordinator = coordinator;
         this.MaxSpeed = MaxSpeed;
         this.MaxAngularRate = MaxAngularRate;
     }
 
-    /**
-     * Applies a temporary translational speed override for the next movement
-     * command only. The angular speed remains unchanged.
-     *
-     * @param speed  The translational speed to use for the next move.
-     * @return       This AutoSequence for fluent chaining.
-     *
-     * <p>This override is consumed by the next call to {@code moveTo()} and
-     * automatically resets afterward.</p>
-     */
+
+    // ------------------------------------------------------------
+    // Speed Override Utilities
+    // ------------------------------------------------------------
+
+    /** Applies a temporary translational speed override for the next movement step. */
     public AutoSequence withSpeed(double speed) {
         return withSpeed(speed, MaxAngularRate);
     }
 
-    /**
-     * Applies a temporary translational and angular speed override for the next
-     * movement command only.
-     *
-     * @param speed         The translational speed to use for the next move.
-     * @param angularRate   The rotational rate to use for the next move.
-     * @return              This AutoSequence for fluent chaining.
-     *
-     * <p>Overrides apply to a single movement step and then clear automatically,
-     * ensuring later steps return to the default speed profile unless explicitly
-     * overridden again.</p>
-     */
+    /** Applies a temporary translational + angular speed override for the next movement step. */
     public AutoSequence withSpeed(double speed, double angularRate) {
         this.nextSpeedOverride = speed;
         this.nextAngularOverride = angularRate;
         return this;
     }
 
-    public AutoSequence creep(){
+    /** Convenience: slow, precise movement. */
+    public AutoSequence creep() {
         this.nextSpeedOverride = 0.3 * MaxSpeed;
         this.nextAngularOverride = RotationsPerSecond.of(0.50).in(RadiansPerSecond);
         return this;
     }
 
-    public AutoSequence slow(){
+    /** Convenience: moderately slow movement. */
+    public AutoSequence slow() {
         this.nextSpeedOverride = 0.5 * MaxSpeed;
         this.nextAngularOverride = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
         return this;
     }
 
-     public AutoSequence driveDistance(double target) {
 
-        double speedToUse = (nextSpeedOverride != null)
-            ? nextSpeedOverride
-            : MaxSpeed;
+    // ------------------------------------------------------------
+    // Movement Commands
+    // ------------------------------------------------------------
+
+    /** Drives forward a fixed distance. */
+    public AutoSequence driveDistance(double meters) {
+        double speed = (nextSpeedOverride != null) ? nextSpeedOverride : MaxSpeed;
 
         nextSpeedOverride = null;
         nextAngularOverride = null;
 
         steps.add(DriveCommands.driveForwardMeters(
-            record.swerve(),
-            target,
-            speedToUse,
-            true
+            record.swerve(), meters, speed, true
         ));
-
         return this;
     }
-    
-    public AutoSequence driveTo(Pose2d target) {
 
-       
-        double speedToUse = (nextSpeedOverride != null)
-            ? nextSpeedOverride
-            : MaxSpeed;
+    /** Drives to a specific pose and stops on it. */
+    public AutoSequence driveTo(Pose2d target) {
+        double speed = (nextSpeedOverride != null) ? nextSpeedOverride : MaxSpeed;
 
         nextSpeedOverride = null;
         nextAngularOverride = null;
 
         steps.add(DriveCommands.driveToPoint(
-            record.swerve(),
-            target,
-            speedToUse,
-            true
+            record.swerve(), target, speed, true
         ));
-
         return this;
     }
 
-    /**
-     * Adds a movement step that drives the robot *through* the specified pose
-     * without slowing down or attempting to stop precisely on the point.
-     *
-     * <p>This is useful for path shaping, waypoint passing, and smooth motion
-     * through intermediate nodes where stopping is not desired.</p>
-     *
-     * <p>The command ends when the robot comes within the configured pass-through
-     * radius of the target pose, or when stall detection triggers.</p>
-     *
-     * <p><strong>Speed Overrides:</strong><br>
-     * If {@link #withSpeed(double)} or {@link #withSpeed(double, double)} was
-     * called immediately before this method, the override applies only to this
-     * movement step. After the command is added, the override is cleared and the
-     * default speed profile resumes.</p>
-     *
-     * @param target The pose the robot should pass near.
-     * @param passRadius The distance (in meters) at which the robot is considered
-     *                   to have passed the target.
-     * @return This AutoSequence instance for fluent chaining.
-     */
+    /** Drives through a pose without stopping — useful for smooth path shaping. */
     public AutoSequence moveThrough(Pose2d target, double passRadius) {
+        double speed = (nextSpeedOverride != null) ? nextSpeedOverride : MaxSpeed;
+        double angular = (nextAngularOverride != null) ? nextAngularOverride : MaxAngularRate;
 
-        double speedToUse = (nextSpeedOverride != null)
-            ? nextSpeedOverride
-            : MaxSpeed;
-
-        double angularToUse = (nextAngularOverride != null)
-            ? nextAngularOverride
-            : MaxAngularRate;
-
-        // Angular rate is irrelevant for moveThrough, but we clear it anyway
         nextSpeedOverride = null;
         nextAngularOverride = null;
 
         steps.add(DriveCommands.moveThroughPose(
-            record.swerve(),
-            target,
-            speedToUse,
-            angularToUse,
-            passRadius
+            record.swerve(), target, speed, angular, passRadius
         ));
-
         return this;
     }
 
+    /** Rotates the robot to match the heading of a target pose. */
+    public AutoSequence changeHeading(Pose2d targetPose) {
+        steps.add(DriveCommands.changeHeading(record.swerve(), targetPose));
+        return this;
+    }
+
+    /** Points the robot toward a specific target pose. */
+    public AutoSequence pointToTarget(Pose2d targetPose) {
+        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> targetPose));
+        return this;
+    }
+
+
+    // ------------------------------------------------------------
+    // Hopper Commands
+    // ------------------------------------------------------------
+
+    /** Extends the hopper. */
     public AutoSequence hopperExtend() {
         steps.add(HopperCommands.extend(record.hopper()));
         return this;
     }
 
+    /** Retracts the hopper. */
     public AutoSequence hopperRetract() {
         steps.add(HopperCommands.retract(record.hopper()));
         return this;
     }
 
-    /**
-     * This adds a Command that runs the intake to collect a game piece.
-     */
+    // ------------------------------------------------------------
+    // Intake Commands
+    // ------------------------------------------------------------
+
+    /** Deploys the intake and runs it to collect a note. */
     public AutoSequence intakeDeploy() {
-        steps.add(
-            IntakeSequences.deployAndRun(
-                record.hopper(),
-                record.intakeArm(),
-                record.intakeRoller()
-            )
-        );
+        steps.add(IntakeSequences.deployAndRun(
+            record.hopper(), record.intakeArm(), record.intakeRoller()
+        ));
         return this;
     }
 
-    /**
-     * This adds a Command that retracts the intake arm.
-     */
+    /** Stows the intake arm. */
     public AutoSequence intakeRetract() {
-        steps.add(
-            IntakeSequences.stow(
-                record.intakeArm(),
-                record.intakeRoller()
-            )
-        );
+        steps.add(IntakeSequences.stow(
+            record.intakeArm(), record.intakeRoller()
+        ));
         return this;
     }
 
-    public AutoSequence intakeLow(){
+    /** Runs intake roller at low speed. */
+    public AutoSequence intakeLow() {
         steps.add(IntakeRollerCommands.lowRollerSpeed(record.intakeRoller()));
         return this;
     }
 
-    public AutoSequence intakeHigh(){
+    /** Runs intake roller at auto speed. */
+    public AutoSequence intakeHigh() {
         steps.add(IntakeRollerCommands.autoRollerSpeed(record.intakeRoller()));
         return this;
     }
 
-    /**
-     * This should add a Command that performs the robot's scoring routine.
-     * Example:
-     * steps.add(new ScoreCommand(shooterSubsystem));
-     */
+    /** Runs intake roller at idle speed. */
+    public AutoSequence intakeIdle() {
+        steps.add(IntakeRollerCommands.idleRollerSpeed(record.intakeRoller()));
+        return this;
+    }
+
+    // ------------------------------------------------------------
+    // Shooter Commands
+    // ------------------------------------------------------------
+
+    /** Fires a note using the model-based shooter controller. */
     public AutoSequence shoot() {
         steps.add(ShooterControllers.shootModelBased(
             coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY, kRoller.DUTY_HIGH
@@ -265,117 +244,71 @@ public class AutoSequence {
         return this;
     }
 
-    /**
-     * This will start shooting until an elapsed time has happened.
-     * Auto runs for 15 seconds. So at the start of auto a timer
-     * will begin counting. When the timer has reached endTime then
-     * the shooting sequence will stop.
-     * 
-     * @param endTime the elapsed time to stop shooting
-     */
+    /** Shoots until the auto timer reaches a given time. */
     public AutoSequence shootUntil(double endTime) {
-        steps.add(
-            Commands.race(
-                ShooterControllers.shootModelBased(
-                    coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY, kRoller.DUTY_HIGH
-                ),
-                Commands.waitUntil(() -> autoTimer.get() >= endTime)
-            )
-        );
+        steps.add(Commands.race(
+            ShooterControllers.shootModelBased(
+                coordinator, kAgitator.AGITATE_TO_SHOOTER_DUTY, kRoller.DUTY_HIGH
+            ),
+            Commands.waitUntil(() -> autoTimer.get() >= endTime)
+        ));
         return this;
     }
 
+    /** Shoots at a fixed RPM until the auto timer reaches a given time. */
     public AutoSequence shootRPMUntil(double endTime, double RPM) {
-        steps.add(
-            Commands.race(
-                ShooterControllers.shootFixedRPM(
-                    coordinator, RPM, kAgitator.AGITATE_TO_SHOOTER_DUTY, kRoller.DUTY_HIGH
-                ),
-                Commands.waitUntil(() -> autoTimer.get() >= endTime)
-            )
-        );
+        steps.add(Commands.race(
+            ShooterControllers.shootFixedRPM(
+                coordinator, RPM, kAgitator.AGITATE_TO_SHOOTER_DUTY, kRoller.DUTY_HIGH
+            ),
+            Commands.waitUntil(() -> autoTimer.get() >= endTime)
+        ));
         return this;
     }
 
-    public AutoSequence changeHeading(Pose2d targetPose) {
-        steps.add(DriveCommands.changeHeading(record.swerve(), targetPose));
-        return this;
-    }
-
-    public AutoSequence pointToShoot() {
-        steps.add(DriveCommands.pointToTarget(record.swerve(), record.BLUshooter()::getTargetPose));
-        return this;
-    }
-    public AutoSequence pointToShootRed() {
-        steps.add(DriveCommands.pointToTarget(record.swerve(), record.BLUshooter()::getTargetPose));
-        return this;
-    }
-
+    /** Sets shooter target pose for both shooter subsystems. */
     public AutoSequence setShooterTarget(Pose2d pose) {
         steps.add(Commands.runOnce(() -> record.BLUshooter().setShooterTarget(pose)));
         steps.add(Commands.runOnce(() -> record.YELshooter().setShooterTarget(pose)));
         return this;
     }
 
-    public AutoSequence headingToTarget(Pose2d targetPose) {
-        steps.add(DriveCommands.pointToTarget(record.swerve(), () -> targetPose));
+    /** Points the robot at the same target that the shooter is targeting. */
+    public AutoSequence pointToShoot() {
+        steps.add(DriveCommands.pointToTarget(
+            record.swerve(), record.BLUshooter()::getTargetPose
+        ));
         return this;
     }
 
+    // ------------------------------------------------------------
+    // Pose Reset (QuestNav + Swerve)
+    // ------------------------------------------------------------
+
+    /**
+     * Requests a pose reset and waits for QuestNavController to confirm it.
+     *
+     * @param resetPose Field pose to reset to.
+     */
     public AutoSequence resetPose(Pose2d resetPose) {
-        steps.add(Commands.runOnce(() -> record.questNavController().resetPose(resetPose)));
-        return this;
-    }
-    
-    // may add more actions here:
-    // - shoot()
-    // - moveThrough(Pose2d...)
-    // - parallel(Command...)
-    // - race(Command...)
-    // - outtake()
-    // - align()
-    // - moveRRT()
-    // etc.
+        steps.add(Commands.runOnce(() ->
+            record.questNavController().requestPoseReset(resetPose)
+        ));
 
-    public AutoSequence startTimer() {
-        steps.add(Commands.runOnce(() -> {
-            autoTimer.reset();
-            autoTimer.start();
-        }));
+        steps.add(
+            Commands.waitUntil(() -> record.questNavController().isResetComplete())
+                    .withTimeout(0.5)
+        );
+
         return this;
     }
 
-    public Command endAtTime(double endTime) {
-        return Commands.waitUntil(() -> autoTimer.get() >= endTime);
-    }
 
-    /**
-     * Wait for a number of seconds before continuing.
-     * This is already implemented for students.
-     */
-    public AutoSequence waitSeconds(double seconds) {
-        steps.add(Commands.waitSeconds(seconds));
-        return this;
-    }
+    // ------------------------------------------------------------
+    // Parallel / Race / Deadline Groups
+    // ------------------------------------------------------------
 
-    /**
-     * Adds a parallel race group to the autonomous sequence.
-     *
-     * <p>Each provided {@link AutoSequenceBuilder} creates its own temporary
-     * {@link AutoSequence}. All resulting commands are run in parallel, and the
-     * entire group ends as soon as any command finishes. All other commands in the
-     * group are interrupted.</p>
-     *
-     * <p>This is useful for behaviors such as "drive until intake detects a note,"
-     * where one command acts as the terminating condition for the others.</p>
-     *
-     * @param builders  One or more builders that define the commands to run in
-     *                  parallel as part of the race group.
-     * @return          This AutoSequence for fluent chaining.
-     *
-     * <p><strong>Note:</strong> Each builder receives a fresh AutoSequence instance,
-     * ensuring its steps are isolated from the parent sequence.</p>
-     */
+    /** Runs multiple AutoSequences in parallel, ending when ANY finishes. */
     public AutoSequence race(AutoSequenceBuilder... builders) {
         List<Command> commands = new ArrayList<>();
 
@@ -384,28 +317,12 @@ public class AutoSequence {
             builder.build(sub);
             commands.add(sub.build());
         }
+
         steps.add(Commands.race(commands.toArray(Command[]::new)));
         return this;
     }
 
-    /**
-     * Adds a parallel command group to the autonomous sequence.
-     *
-     * <p>Each provided {@link AutoSequenceBuilder} constructs a temporary
-     * {@link AutoSequence}. All resulting commands run simultaneously, and the
-     * group completes only when all commands have finished.</p>
-     *
-     * <p>This is useful for actions such as "drive while running intake," where
-     * multiple robot subsystems operate concurrently until each completes its
-     * task.</p>
-     *
-     * @param builders  One or more builders that define the commands to run in
-     *                  parallel.
-     * @return          This AutoSequence for fluent chaining.
-     *
-     * <p><strong>Note:</strong> Each builder receives its own isolated AutoSequence
-     * instance, preventing interference with the parent sequence.</p>
-     */
+    /** Runs multiple AutoSequences in parallel, ending when ALL finish. */
     public AutoSequence parallel(AutoSequenceBuilder... builders) {
         List<Command> commands = new ArrayList<>();
 
@@ -414,79 +331,89 @@ public class AutoSequence {
             builder.build(sub);
             commands.add(sub.build());
         }
+
         steps.add(Commands.parallel(commands.toArray(Command[]::new)));
         return this;
     }
 
-    /**
-     * Adds a deadline command group to the autonomous sequence.
-     *
-     * <p>The deadlineBuilder defines the "deadline" command -- the command that
-     * controls when the group ends. All other builders define commands that run in
-     * parallel alongside the deadline. The group finishes when the deadline command
-     * completes, and all other commands are interrupted.</p>
-     *
-     * <p>This is useful for behaviors such as "run intake and agitator until the
-     * drive command reaches its target," where one command dictates the duration
-     * of the others.</p>
-     *
-     * @param deadlineBuilder  The builder that defines the deadline command.
-     * @param others           Additional builders whose commands run in parallel
-     *                         but do not control group termination.
-     * @return                 This AutoSequence for fluent chaining.
-     *
-     * <p><strong>Note:</strong> Each builder receives a fresh AutoSequence instance,
-     * ensuring its steps remain isolated from the parent sequence.</p>
-     */
-    public AutoSequence deadline(AutoSequenceBuilder deadlineBuilder, AutoSequenceBuilder... others) {
-        AutoSequence deadlineSeq = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
+    /** Runs a deadline AutoSequence with additional parallel sequences. */
+    public AutoSequence deadline(AutoSequenceBuilder deadlineBuilder,
+                                 AutoSequenceBuilder... others) {
+
+        AutoSequence deadlineSeq =
+            new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
         deadlineBuilder.build(deadlineSeq);
 
         List<Command> otherCMD = new ArrayList<>();
         for (AutoSequenceBuilder builder : others) {
-            AutoSequence sub = new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
+            AutoSequence sub =
+                new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate);
             builder.build(sub);
             otherCMD.add(sub.build());
         }
-        steps.add(Commands.deadline(deadlineSeq.build(), otherCMD.toArray(Command[]::new)));
+
+        steps.add(Commands.deadline(
+            deadlineSeq.build(),
+            otherCMD.toArray(Command[]::new)
+        ));
+
         return this;
     }
 
-    /**
-     * Finalizes the autonomous routine by assembling all queued steps into a
-     * single sequential command.
-     *
-     * <p>Each step added through the fluent API (such as {@code moveTo()},
-     * {@code waitSeconds()}, or future high-level actions) is executed in the
-     * order it was added. The resulting command is ready to be scheduled by the
-     * robot during the autonomous period.</p>
-     *
-     * @return A fully constructed {@link Command} representing the autonomous
-     *         sequence.
-     *
-     * <p><strong>Note:</strong> Students should not modify this method. It defines
-     * the execution model for all autonomous routines built with this class.</p>
-     */
+
+    // ------------------------------------------------------------
+    // Timer Utilities
+    // ------------------------------------------------------------
+
+    /** Starts the autonomous timer. */
+    public AutoSequence startTimer() {
+        steps.add(Commands.runOnce(() -> {
+            autoTimer.reset();
+            autoTimer.start();
+        }));
+        return this;
+    }
+
+    /** Returns a command that ends when the timer reaches a given time. */
+    public Command endAtTime(double endTime) {
+        return Commands.waitUntil(() -> autoTimer.get() >= endTime);
+    }
+
+    /** Waits a fixed number of seconds. */
+    public AutoSequence waitSeconds(double seconds) {
+        steps.add(Commands.waitSeconds(seconds));
+        return this;
+    }
+
+
+    // ------------------------------------------------------------
+    // Build Final Command
+    // ------------------------------------------------------------
+
+    /** Builds the final sequential autonomous command. */
     public Command build() {
         return Commands.sequence(steps.toArray(Command[]::new));
     }
 
-    @ FunctionalInterface
+
+    // ------------------------------------------------------------
+    // Builder Interface
+    // ------------------------------------------------------------
+
+    @FunctionalInterface
     public interface AutoSequenceBuilder {
         void build(AutoSequence sequence);
-
-        //private static fieldFlip(Fiel) {
-
-
-      //  }
     }
-    public Pose2d translate(Pose2d original) {
-        if(Alliance.isRed()){
-            return FieldFlip.overDiagonal(original);
-        }
-        else{
-            return original;
-        }
 
+
+    // ------------------------------------------------------------
+    // Utility
+    // ------------------------------------------------------------
+
+    /** Applies field flip for RED alliance. */
+    public Pose2d translate(Pose2d original) {
+        return Alliance.isRed()
+            ? FieldFlip.overDiagonal(original)
+            : original;
     }
 }

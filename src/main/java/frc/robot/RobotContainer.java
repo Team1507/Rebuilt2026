@@ -394,12 +394,12 @@ public class RobotContainer {
         // Reset Gyro
         // ----------------------------
         bottomDriver.start().whileTrue(
-            Commands.run(() -> questNav.resetPose(
+            Commands.run(() -> questNav.requestPoseReset(
                 new Pose2d(swerve.getPose().getTranslation(), new Rotation2d()))));
 
         //
         bottomDriver.back().whileTrue(
-            Commands.run(() -> questNav.resetPose(
+            Commands.run(() -> questNav.requestPoseReset(
                 driverPoses.Blue.HUB)));
     }
     

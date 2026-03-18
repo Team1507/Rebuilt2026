@@ -35,7 +35,7 @@ public class AutoSubway18InchRightRed {
             .driveTo(Nodes.Start.Red.RIGHT)
             .waitSeconds(0.5)
             .driveTo(Nodes.Start.Blue.SHOOTING_SPOT_RIGHT)
-            .headingToTarget(Nodes.Hub.RED_CENTER)
+            .pointToTarget(Nodes.Hub.RED_CENTER)
             .shootUntil(10)
             .changeHeading(Nodes.Midfield.Red.RIGHT_TURN)
             .moveThrough(Nodes.Midfield.Red.RIGHT_OVER_BUMP2, 0.2)
@@ -48,7 +48,7 @@ public class AutoSubway18InchRightRed {
             .moveThrough(Nodes.Midfield.Red.RIGHT_OVER_BUMP, 0.2)
             .driveTo(Nodes.Start.Red.RIGHT)
             .waitSeconds(0.5)
-            .headingToTarget(Nodes.Hub.RED_CENTER)
+            .pointToTarget(Nodes.Hub.RED_CENTER)
             .waitSeconds(0.5)
             .shootUntil(19.99)
             .build();
