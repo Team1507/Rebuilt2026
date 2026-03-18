@@ -8,6 +8,8 @@
 
 package frc.robot.dashboard;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -15,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.atomic.*;
 import frc.robot.framework.*;
+import frc.robot.localization.nodes.Nodes;
 
 public class DashboardManager {
 
@@ -64,95 +67,106 @@ public class DashboardManager {
 
     /* ---------------- Match ---------------- */
     // Blue shooter
-    private DoublePublisher  pubBLUShooterRPM;
-    private DoublePublisher  pubBLUShooterTargetRPM;
+    private DoublePublisher   pubBLUShooterRPM;
+    private DoublePublisher   pubBLUShooterTargetRPM;
 
     // Yellow shooter
-    private DoublePublisher  pubYELShooterRPM;
-    private DoublePublisher  pubYELShooterTargetRPM;
+    private DoublePublisher   pubYELShooterRPM;
+    private DoublePublisher   pubYELShooterTargetRPM;
 
     // Hopper
-    private DoublePublisher  pubHopperPos;
-    private BooleanPublisher pubHopperExtended;
+    private DoublePublisher   pubHopperPos;
+    private BooleanPublisher  pubHopperExtended;
 
     // Intake
-    private DoublePublisher  pubIntakeBLUPos;
-    private DoublePublisher  pubIntakeYELPos;
-    private DoublePublisher  pubIntakeRollerCurrentDC;
-    private DoublePublisher  pubIntakeRollerCmdDC;
+    private DoublePublisher   pubIntakeBLUPos;
+    private DoublePublisher   pubIntakeYELPos;
+    private DoublePublisher   pubIntakeRollerCurrentDC;
+    private DoublePublisher   pubIntakeRollerCmdDC;
 
     // Vision
-    private BooleanPublisher pubQuestNavConnected;
-    private BooleanPublisher pubQuestNavIsTracking;
-    private IntegerPublisher pubQuestNavBattery;
+    private BooleanPublisher  pubQuestNavConnected;
+    private BooleanPublisher  pubQuestNavIsTracking;
+    private IntegerPublisher  pubQuestNavBattery;
+
+    private BooleanPublisher  pubSeedLeft;
+    private BooleanPublisher  pubSeedCenter;
+    private BooleanPublisher  pubSeedRight;
+
+    private DoublePublisher   pubManualX;
+    private DoublePublisher   pubManualY;
+    private DoublePublisher   pubManualTheta;
+    private BooleanPublisher  pubManualSeedPose;
+
+    private BooleanPublisher  pubQuestNavIsResetComplete;
 
     /* ---------------- Monitor ---------------- */
     // Agitator
-    private DoublePublisher  pubMonAgitatorDuty;
-    private DoublePublisher  pubMonAgitatorTemp;
-    private DoublePublisher  pubMonAgitatorCurrent;
-    private BooleanPublisher pubMonAgitatorFeeding;
+    private DoublePublisher   pubMonAgitatorDuty;
+    private DoublePublisher   pubMonAgitatorTemp;
+    private DoublePublisher   pubMonAgitatorCurrent;
+    private BooleanPublisher  pubMonAgitatorFeeding;
 
     // Blue Feeder
-    private DoublePublisher  pubMonBlueFeederRPM;
-    private DoublePublisher  pubMonBlueFeederRPS;
-    private DoublePublisher  pubMonBlueFeederTemp;
-    private DoublePublisher  pubMonBlueFeederCurrent;
+    private DoublePublisher   pubMonBlueFeederRPM;
+    private DoublePublisher   pubMonBlueFeederRPS;
+    private DoublePublisher   pubMonBlueFeederTemp;
+    private DoublePublisher   pubMonBlueFeederCurrent;
 
     // Yellow Feeder
-    private DoublePublisher  pubMonYellowFeederRPM;
-    private DoublePublisher  pubMonYellowFeederRPS;
-    private DoublePublisher  pubMonYellowFeederTemp;
-    private DoublePublisher  pubMonYellowFeederCurrent;
+    private DoublePublisher   pubMonYellowFeederRPM;
+    private DoublePublisher   pubMonYellowFeederRPS;
+    private DoublePublisher   pubMonYellowFeederTemp;
+    private DoublePublisher   pubMonYellowFeederCurrent;
 
     // Hopper
-    private DoublePublisher  pubMonHopperPosition;
-    private BooleanPublisher pubMonHopperMagSensor;
-    private DoublePublisher  pubMonHopperTemp;
-    private DoublePublisher  pubMonHopperCurrent;
-    private BooleanPublisher pubMonHopperRetracted;
-    private BooleanPublisher pubMonHopperExtended;
-    private BooleanPublisher pubMonHopperReverseLimit;
+    private DoublePublisher   pubMonHopperPosition;
+    private BooleanPublisher  pubMonHopperMagSensor;
+    private DoublePublisher   pubMonHopperTemp;
+    private DoublePublisher   pubMonHopperCurrent;
+    private BooleanPublisher  pubMonHopperRetracted;
+    private BooleanPublisher  pubMonHopperExtended;
+    private BooleanPublisher  pubMonHopperReverseLimit;
     
     // Blue Intake Arm
-    private DoublePublisher  pubMonBlueIntakeArmPosition;
-    private BooleanPublisher pubMonBlueIntakeArmReverseLimit;
-    private DoublePublisher  pubMonBlueIntakeArmMotorPosition;
-    private DoublePublisher  pubMonBlueIntakeArmTemp;
-    private DoublePublisher  pubMonBlueIntakeArmCurrent;
-    private DoublePublisher  pubMonBlueIntakeArmVelocityDegPerSec;
-    private DoublePublisher  pubMonBlueIntakeArmAppliedVolts;
+    private DoublePublisher   pubMonBlueIntakeArmPosition;
+    private BooleanPublisher  pubMonBlueIntakeArmReverseLimit;
+    private DoublePublisher   pubMonBlueIntakeArmMotorPosition;
+    private DoublePublisher   pubMonBlueIntakeArmTemp;
+    private DoublePublisher   pubMonBlueIntakeArmCurrent;
+    private DoublePublisher   pubMonBlueIntakeArmVelocityDegPerSec;
+    private DoublePublisher   pubMonBlueIntakeArmAppliedVolts;
 
     // Yellow Intake Arm
-    private DoublePublisher  pubMonYellowIntakeArmPosition;
-    private BooleanPublisher pubMonYellowIntakeArmReverseLimit;
-    private DoublePublisher  pubMonYellowIntakeArmMotorPosition;
-    private DoublePublisher  pubMonYellowIntakeArmTemp;
-    private DoublePublisher  pubMonYellowIntakeArmCurrent;
-    private DoublePublisher  pubMonYellowIntakeArmVelocityDegPerSec;
-    private DoublePublisher  pubMonYellowIntakeArmAppliedVolts;
+    private DoublePublisher   pubMonYellowIntakeArmPosition;
+    private BooleanPublisher  pubMonYellowIntakeArmReverseLimit;
+    private DoublePublisher   pubMonYellowIntakeArmMotorPosition;
+    private DoublePublisher   pubMonYellowIntakeArmTemp;
+    private DoublePublisher   pubMonYellowIntakeArmCurrent;
+    private DoublePublisher   pubMonYellowIntakeArmVelocityDegPerSec;
+    private DoublePublisher   pubMonYellowIntakeArmAppliedVolts;
     
     // Intake Roller
-    private DoublePublisher  pubMonIntakeRollerDutyCycle;
-    private DoublePublisher  pubMonIntakeRollerTemp;
-    private DoublePublisher  pubMonIntakeRollerCurrent;
-    private DoublePublisher  pubMonIntakeRollerCmdDutyCycle;
+    private DoublePublisher   pubMonIntakeRollerDutyCycle;
+    private DoublePublisher   pubMonIntakeRollerTemp;
+    private DoublePublisher   pubMonIntakeRollerCurrent;
+    private DoublePublisher   pubMonIntakeRollerCmdDutyCycle;
 
     // Blue Shooter
-    private DoublePublisher  pubMonBlueShooterMotorRPS;
-    private DoublePublisher  pubMonBlueShooterCurrentRPM;
-    private DoublePublisher  pubMonBlueShooterTargetRPM;
-    private DoublePublisher  pubMonBlueShooterDistanceToTarget;
-    private DoublePublisher  pubMonBlueShooterTemp;
-    private DoublePublisher  pubMonBlueShooterCurrent;
+    private DoublePublisher   pubMonBlueShooterMotorRPS;
+    private DoublePublisher   pubMonBlueShooterCurrentRPM;
+    private DoublePublisher   pubMonBlueShooterTargetRPM;
+    private DoublePublisher   pubMonBlueShooterDistanceToTarget;
+    private DoublePublisher   pubMonBlueShooterTemp;
+    private DoublePublisher   pubMonBlueShooterCurrent;
 
     // Yellow Shooter
-    private DoublePublisher  pubMonYellowShooterMotorRPS;
-    private DoublePublisher  pubMonYellowShooterCurrentRPM;
-    private DoublePublisher  pubMonYellowShooterTargetRPM;
-    private DoublePublisher  pubMonYellowShooterDistanceToTarget;
-    private DoublePublisher  pubMonYellowShooterTemp;
-    private DoublePublisher  pubMonYellowShooterCurrent;
+    private DoublePublisher   pubMonYellowShooterMotorRPS;
+    private DoublePublisher   pubMonYellowShooterCurrentRPM;
+    private DoublePublisher   pubMonYellowShooterTargetRPM;
+    private DoublePublisher   pubMonYellowShooterDistanceToTarget;
+    private DoublePublisher   pubMonYellowShooterTemp;
+    private DoublePublisher   pubMonYellowShooterCurrent;
 
     private static double round(double value, int decimals) {
         double scale = Math.pow(10, decimals);
@@ -210,6 +224,24 @@ public class DashboardManager {
                 matchNT.getBooleanTopic("Localization/QuestNav/Is Tracking").publish();
             pubQuestNavBattery =
                 matchNT.getIntegerTopic("Localization/QuestNav/Battery Percent").publish();
+            pubQuestNavIsResetComplete =
+                matchNT.getBooleanTopic("Localization/QuestNav/Is Reset Complete").publish();
+
+            pubSeedLeft = 
+                matchNT.getBooleanTopic("Localization/QuestNav/SeedLeft").publish();
+            pubSeedCenter = 
+                matchNT.getBooleanTopic("Localization/QuestNav/SeedCenter").publish();
+            pubSeedRight = 
+                matchNT.getBooleanTopic("Localization/QuestNav/SeedRight").publish();
+
+            pubManualX = 
+                matchNT.getDoubleTopic("Localization/QuestNav/ManualX").publish();
+            pubManualY = 
+                matchNT.getDoubleTopic("Localization/QuestNav/ManualY").publish();
+            pubManualTheta = 
+                matchNT.getDoubleTopic("Localization/QuestNav/ManualThetaDeg").publish();
+            pubManualSeedPose = 
+                matchNT.getBooleanTopic("Localization/QuestNav/ManualSeedPose").publish();
         }
 
         if (ENABLE_MANUAL) {
@@ -457,6 +489,46 @@ public class DashboardManager {
         pubQuestNavConnected.set(quest.connected);
         pubQuestNavIsTracking.set(quest.isTracking);
         pubQuestNavBattery.set(quest.batteryPercent);
+        pubQuestNavIsResetComplete.set(localization.vision().isResetComplete());
+
+        // --- Pose Seeding via Elastic ---
+        boolean seedLeft =
+            matchNT.getEntry("Localization/QuestNav/SeedRight").getBoolean(false);
+        if (seedLeft) {
+            localization.vision().requestPoseReset(Nodes.Start.Blue.LEFT);
+            matchNT.getEntry("Localization/QuestNav/SeedRight").setBoolean(false);
+        }
+
+        boolean seedCenter =
+            matchNT.getEntry("Localization/QuestNav/SeedCenter").getBoolean(false);
+        if (seedCenter) {
+            localization.vision().requestPoseReset(Nodes.Start.Blue.CENTER);
+            matchNT.getEntry("Localization/QuestNav/SeedCenter").setBoolean(false);
+        }
+
+        boolean seedRight =
+            matchNT.getEntry("Localization/QuestNav/SeedLeft").getBoolean(false);
+        if (seedRight) {
+            localization.vision().requestPoseReset(Nodes.Start.Blue.RIGHT);
+            matchNT.getEntry("Localization/QuestNav/SeedLeft").setBoolean(false);
+        }
+
+        // --- Manual Pose Seeding ---
+        double poseX = matchNT.getEntry("Localization/QuestNav/ManualX").getDouble(0.0);
+        double poseY = matchNT.getEntry("Localization/QuestNav/ManualY").getDouble(0.0);
+        double poseTheta = matchNT.getEntry("Localization/QuestNav/ManualThetaDeg").getDouble(0.0);
+
+        boolean resetPose =
+            matchNT.getEntry("Localization/QuestNav/ManualSeedPose").getBoolean(false);
+
+        if (resetPose) {
+            localization.vision().requestPoseReset(new Pose2d(
+                poseX,
+                poseY,
+                new Rotation2d(Math.toRadians(poseTheta))
+            ));
+            matchNT.getEntry("Localization/QuestNav/ManualSeedPose").setBoolean(false);
+        }
     }
 
     private void updateManual() {

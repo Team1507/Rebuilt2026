@@ -89,9 +89,14 @@ public class QuestNavController extends Subsystems1507 {
         // This guarantees the reset command will NOT be stale and will be
         // accepted by QuestNav's internal command processor.
         //
-        if (pendingReset != null && tracking && hasSeenFreshFrame) {
-            performReset(pendingReset);
-            pendingReset = null;
+        if (pendingReset != null) {
+            if (tracking && hasSeenFreshFrame) {
+                // Normal case: QuestNav is ready
+                performReset(pendingReset);
+            } else if (!quest.isConnected()) {
+                // Fallback case: QuestNav is dead/unplugged
+                performSwerveOnlyReset(pendingReset);
+            }
         }
 
         // ------------------------------------------------------------
@@ -152,6 +157,11 @@ public class QuestNavController extends Subsystems1507 {
             "[QuestNavController] Pose reset performed at: " + pose,
             false
         );
+    }
+
+    private void performSwerveOnlyReset(Pose2d pose) {
+        swerve.setPose(pose);
+        lastResetComplete = true;
     }
 
     /** @return The current drivetrain pose estimate. */

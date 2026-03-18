@@ -67,6 +67,7 @@ public class QuestNavSubsystem extends Subsystems1507 {
 
     // Public API
     public boolean isTracking() { return latestTracking; }
+    public boolean isConnected() { return inputs.connected; }
     public Pose2d getPose() { return latestPose; }
     public double getTimestamp() { return latestTimestamp; }
 
