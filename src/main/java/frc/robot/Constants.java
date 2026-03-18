@@ -47,48 +47,13 @@ public class Constants {
             MotorConfig.builder()
                 .inverted(true)
                 .withVoltageLimits(3.5, -3.5)
-                .withStatorCurrentLimit(Amps.of(80))
+                .withStatorCurrentLimit(Amps.of(100))
                 .build();
 
 
         /** Duty cycles for agitator behavior. */
         public static final double AGITATE_TO_SHOOTER_DUTY = 0.7;
         public static final double AGITATE_TO_INTAKE_DUTY = -0.3;
-    }
-
-    // ╔═══════════════════════════════════════════════════════════════╗
-    // ║                       CLIMBER CONSTANTS                       ║
-    // ║                (Ether‑Lift Ascension Mechanism)               ║
-    // ╚═══════════════════════════════════════════════════════════════╝
-    public static final class kClimber {
-
-        /** Mechanism setpoints (in mechanism units, not motor rotations). */
-        public static final double UP = 0.0; //if climber is zero wile down set 1.6
-        public static final double DOWN = -1.6;
- 
-        /** Robot-relative aliases for convenience. */
-        public static final double ROBOT_UP = DOWN;
-        public static final double ROBOT_DOWN = UP;
-
-        /**
-         * MotorConfig now contains ONLY tuning values.
-         * Hardware (CAN ID, servo port, gear ratio) lives in ClimberHardware.
-         */
-        public static final MotorConfig CONFIG_SLOT0 =
-            MotorConfig.builder(ControlMode.MOTION_MAGIC)
-                .withPID(0.11, 0.0, 0.0)
-                .withFeedforward(0.245, 0.09375, 0.0)
-                .withGravity(0.0, GravityType.CONSTANT)
-                .withVoltageLimits(12.0, -12.0)
-                .build();
-
-        public static final MotorConfig CONFIG_SLOT1 =
-            MotorConfig.builder(ControlMode.MOTION_MAGIC)
-                .slot(1)
-                .withPID(0.11, 0.0, 0.0)
-                .withFeedforward(0.245, 0.09375, 0.0)
-                .withGravity(0.8, GravityType.CONSTANT)
-                .build();
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -106,7 +71,7 @@ public class Constants {
                 .withPID(0.11, 0.0, 0.0)
                 .withFeedforward(0.42, 0.09931, 0.0)
                 .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(80))
+                .withStatorCurrentLimit(Amps.of(100))
                 .build();
 
         public static final MotorConfig YEL_CONFIG =
@@ -115,7 +80,7 @@ public class Constants {
                 .withPID(0.11, 0.0, 0.02)
                 .withFeedforward(0.42, 0.09931, 0.0)
                 .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(80))
+                .withStatorCurrentLimit(Amps.of(100))
                 .build();
     }
 
@@ -142,7 +107,7 @@ public class Constants {
             MotorConfig.builder(ControlMode.POSITION)
                 .withPID(0.11, 0.0, 0.02)
                 .withVoltageLimits(8.0, -8.0)
-                .withStatorCurrentLimit(Amps.of(25))
+                .withStatorCurrentLimit(Amps.of(100))
                 .withBrake()
                 .build();
     }
@@ -155,16 +120,17 @@ public class Constants {
 
         public static final class kRoller {
             
-            public static final double DUTY_LOW = 0.3;
+            public static final double DUTY_LOW = 0.5;
             public static final double DUTY_HIGH = 0.6;
-            public static final double DUTY_IDLE = 0.1;
+            public static final double DUTY_IDLE = 0.05;
             public static final double OUTTAKE_DUTY = -0.35;
-            public static final double AUTO_DUTY = 0.8;
+            public static final double AUTO_DUTY = 1.0;
             
             public static final MotorConfig CONFIG =
                 MotorConfig.builder(ControlMode.DUTY_CYCLE)
-                    .withVoltageLimits(7.0, -7.0)
-                    .withStatorCurrentLimit(Amps.of(40))
+                    .withVoltageLimits(12.0, -12.0)
+                    .withStatorCurrentLimit(Amps.of(100))
+                    .withBrake()
                     .build();
         }
 
@@ -186,7 +152,7 @@ public class Constants {
                     .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .withVoltageLimits(8, -8)
-                    .withStatorCurrentLimit(Amps.of(30.0))
+                    .withStatorCurrentLimit(Amps.of(100.0))
                     .withBrake()
                     .build();
 
@@ -198,7 +164,7 @@ public class Constants {
                     .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .withVoltageLimits(8, -8)
-                    .withStatorCurrentLimit(Amps.of(30.0))
+                    .withStatorCurrentLimit(Amps.of(100.0))
                     .build();
 
             public static final class kStall {
@@ -237,7 +203,7 @@ public class Constants {
                  */
                 public static final double VELOCITY_THRESHOLD = 1.0;   // deg/sec
                 public static final double EFFORT_THRESHOLD   = 2.0;   // volts
-                public static final double TIME_SEC           = 0.10;  // seconds
+                public static final double TIME_SEC           = 0.015;  // seconds
             }
 
         }

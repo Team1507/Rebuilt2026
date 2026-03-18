@@ -18,6 +18,7 @@ import frc.robot.localization.nodes.Nodes;
 public class AutoSubway18InchLeftBlue {
     public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
+
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
             .startTimer()
             .resetPose(Nodes.Start.Blue.LEFT)
@@ -31,23 +32,24 @@ public class AutoSubway18InchLeftBlue {
             .parallel(
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.5))  
-            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
+                .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
             .moveThrough(Nodes.Start.Blue.LEFT, 0.2)
             .driveTo(Nodes.Start.Blue.SHOOTING_SPOT_LEFT)
             .headingToTarget(Nodes.Hub.CENTER)
-            .shootUntil(11.0)
-            .headingToTarget(Nodes.Midfield.LEFT_TURN)
-            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP2, 0.2)
+            .shootUntil(10.0)
+            .moveThrough(Nodes.Start.Blue.LEFT, 0.1)
+             .headingToTarget(Nodes.Midfield.LEFT_TURN)
+             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP2, 0.2)
             .moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY,0.2)
             .intakeHigh()
             .parallel(
                 seq -> seq.moveThrough(Nodes.Midfield.MIDDLE_18INCH_SUBWAY_LEFT, 0.1),
                 seq -> seq.intakeDeploy())
-            .moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.2)
-            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .driveTo(Nodes.Start.Red.LEFT)
-            .waitSeconds(0.5)
-            .pointToShoot()
+                .moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.2)
+                .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
+            .moveThrough(Nodes.Start.Blue.LEFT, 0.2)
+            .driveTo(Nodes.Start.Blue.SHOOTING_SPOT_LEFT)
+            .headingToTarget(Nodes.Hub.CENTER)
             .shootUntil(19.99)
             .build();
     }

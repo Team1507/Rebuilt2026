@@ -31,7 +31,7 @@ import frc.robot.dashboard.DashboardManager;
 // Subsystems
 import frc.robot.subsystems.*;
 // Localization
-import frc.robot.localization.nodes.Nodes.Hub;
+import frc.robot.localization.nodes.Nodes.*;
 import frc.robot.localization.QuestNavController;
 
 // IO Layer (Hardware Abstractions)
@@ -365,7 +365,7 @@ public class RobotContainer {
         bottomDriver.b()
             .whileTrue(IntakeArmCommands.down(intakeArmSubsystem))
             .whileTrue(IntakeRollerCommands.outtake(intakeRollerSubsystem))
-            .onFalse(IntakeRollerCommands.runIdleRollerSpeed(intakeRollerSubsystem))
+            .onFalse(IntakeRollerCommands.stop(intakeRollerSubsystem))
             .onFalse(IntakeArmCommands.up(intakeArmSubsystem));
 
         // ----------------------------
@@ -396,6 +396,11 @@ public class RobotContainer {
         bottomDriver.start().whileTrue(
             Commands.run(() -> questNav.resetPose(
                 new Pose2d(swerve.getPose().getTranslation(), new Rotation2d()))));
+
+        //
+        bottomDriver.back().whileTrue(
+            Commands.run(() -> questNav.resetPose(
+                driverPoses.Blue.HUB)));
     }
     
     // ==========================================================
@@ -446,9 +451,9 @@ public class RobotContainer {
             "Auto Double Subway",
             AutoDoubleSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
-        // autoChooser.addOption(
-        //     "Auto Subway 18 Inch Right Blue",
-        //     AutoSubway18InchRightBlue.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        autoChooser.addOption(
+            "Auto Subway 18 Inch Right Blue",
+            AutoSubway18Inch.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         
         autoChooser.addOption(
             "Auto Subway 18 Inch Right Red",
@@ -456,9 +461,9 @@ public class RobotContainer {
         autoChooser.addOption(
             "Auto Subway 18 Inch left Blue",
             AutoSubway18InchLeftBlue.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
-        // autoChooser.addOption(
-        //     "Auto Subway 18 Inch Left Red",
-        //     AutoSubway18InchRightBlue.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        autoChooser.addOption(
+            "Auto Subway 18 Inch Left Red",
+            AutoSubway18InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Subway Around Hub",

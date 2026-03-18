@@ -95,7 +95,7 @@ public final class ShooterControllers {
             // Resetting feedingEnabled for the agitator
             record.agitator().resetFeeding();
 
-            record.roller().run(DUTY_IDLE);
+            record.roller().stop();
         });
     }
 
@@ -148,7 +148,7 @@ public final class ShooterControllers {
             // Resetting feedingEnabled for the agitator
             record.agitator().resetFeeding();
 
-            record.roller().run(DUTY_IDLE);
+            record.roller().stop();
         });
     }
 }

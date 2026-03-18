@@ -111,13 +111,15 @@ public class DashboardManager {
     private BooleanPublisher pubMonHopperRetracted;
     private BooleanPublisher pubMonHopperExtended;
     private BooleanPublisher pubMonHopperReverseLimit;
-
+    
     // Blue Intake Arm
     private DoublePublisher  pubMonBlueIntakeArmPosition;
     private BooleanPublisher pubMonBlueIntakeArmReverseLimit;
     private DoublePublisher  pubMonBlueIntakeArmMotorPosition;
     private DoublePublisher  pubMonBlueIntakeArmTemp;
     private DoublePublisher  pubMonBlueIntakeArmCurrent;
+    private DoublePublisher pubMonBlueVelocityDegPerSec;
+    private DoublePublisher pubMonBlueAppliedVolts;
 
     // Yellow Intake Arm
     private DoublePublisher  pubMonYellowIntakeArmPosition;
@@ -125,6 +127,8 @@ public class DashboardManager {
     private DoublePublisher  pubMonYellowIntakeArmMotorPosition;
     private DoublePublisher  pubMonYellowIntakeArmTemp;
     private DoublePublisher  pubMonYellowIntakeArmCurrent;
+    private DoublePublisher pubMonYellowVelocityDegPerSec;
+    private DoublePublisher pubMonYellowAppliedVolts;
     
     // Intake Roller
     private DoublePublisher pubMonIntakeRollerDutyCycle;
@@ -329,6 +333,10 @@ public class DashboardManager {
                 monitorNT.getDoubleTopic("IntakeArm/BLU/CurrentA").publish();
             pubMonBlueIntakeArmReverseLimit =
                 monitorNT.getBooleanTopic("IntakeArm/BLU/ReverseLimit").publish();
+            pubMonBlueVelocityDegPerSec =
+                monitorNT.getDoubleTopic("IntakeArm/BLU/VelocityDegPerSec").publish();
+            pubMonBlueAppliedVolts =
+                monitorNT.getDoubleTopic("IntakeArm/BLU/AppliedVolts").publish();
 
             // Intake Arm Yellow
             pubMonYellowIntakeArmPosition =
@@ -341,6 +349,10 @@ public class DashboardManager {
                 monitorNT.getDoubleTopic("IntakeArm/YEL/CurrentA").publish();
             pubMonYellowIntakeArmReverseLimit =
                 monitorNT.getBooleanTopic("IntakeArm/YEL/ReverseLimit").publish();
+            pubMonYellowVelocityDegPerSec =
+                monitorNT.getDoubleTopic("IntakeArm/YEL/VelocityDegPerSec").publish();
+            pubMonYellowAppliedVolts =
+                monitorNT.getDoubleTopic("IntakeArm/YEL/AppliedVolts").publish();
 
             // Intake Roller
             pubMonIntakeRollerDutyCycle =
@@ -563,12 +575,16 @@ public class DashboardManager {
         pubMonBlueIntakeArmMotorPosition.set(round(inputs.bluMotorRot, 1));
         pubMonBlueIntakeArmTemp.set(round(inputs.bluTempC, 1));
         pubMonBlueIntakeArmCurrent.set(round(inputs.bluCurrentA, 1));
-
+        pubMonBlueAppliedVolts.set(round(inputs.bluAppliedVolts, 2));
+        pubMonBlueVelocityDegPerSec.set(round(inputs.bluVelocityDegPerSec, 2));
+        
         pubMonYellowIntakeArmPosition.set(whole(inputs.yelPositionDeg));
         pubMonYellowIntakeArmReverseLimit.set(inputs.yelReverseLimit);
         pubMonYellowIntakeArmMotorPosition.set(round(inputs.yelMotorRot, 1));
         pubMonYellowIntakeArmTemp.set(round(inputs.yelTempC, 1));
         pubMonYellowIntakeArmCurrent.set(round(inputs.yelCurrentA, 1));
+        pubMonYellowAppliedVolts.set(round(inputs.yelAppliedVolts, 2));
+        pubMonYellowVelocityDegPerSec.set(round(inputs.yelVelocityDegPerSec, 2));
     }
 
     private void updateMonitorIntakeRoller() {

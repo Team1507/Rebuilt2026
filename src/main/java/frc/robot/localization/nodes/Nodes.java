@@ -306,6 +306,18 @@ public final class Nodes {
                         new Pose2d(12.6,2.3,Rotation2d.fromDegrees(115.0));
         }
     }
+
+    public static final class driverPoses {
+
+        public static final class Blue {
+                public static final Pose2d HUB =
+                        new Pose2d(3.65, 4.3, Rotation2d.fromDegrees(180.0));
+        }
+        public static final class Red {
+                public static final Pose2d HUB =
+                        new Pose2d(12.0, 3.7, Rotation2d.fromDegrees(0.0));
+        }
+    }
     
 
     // ============================

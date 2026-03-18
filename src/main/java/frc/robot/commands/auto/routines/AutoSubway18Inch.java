@@ -26,7 +26,7 @@ public class AutoSubway18Inch {
             .parallel(
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.1),
                 seq -> seq.intakeDeploy())
-            .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
+            .withSpeed(MaxSpeed * 0.8).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
             .intakeHigh()
             .parallel(
                 seq -> seq.intakeRetract(),
@@ -35,15 +35,17 @@ public class AutoSubway18Inch {
             .moveThrough(Nodes.Start.Blue.RIGHT, 0.2)
             .waitSeconds(0.5)
             .moveThrough(Nodes.Start.Blue.RIGHT, 0.2)
-            .withSpeed( MaxSpeed * 0.5).driveTo(Nodes.Start.Blue.SHOOTING_SPOT_RIGHT)
+            .withSpeed( MaxSpeed * 0.7).driveTo(Nodes.Start.Blue.SHOOTING_SPOT_RIGHT)
             .headingToTarget(Nodes.Hub.CENTER)
             .shootUntil(10)
+            .moveThrough(Nodes.Start.Blue.RIGHT, 0.1)
+            .changeHeading(Nodes.Midfield.RIGHT_TURN)
             .moveThrough(Nodes.Midfield.RIGHT_TURN, 0.2)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP2, 0.2)
             .moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY,0.2)
             .intakeHigh()
             .parallel(
-                seq -> seq.withSpeed(MaxSpeed *0.5).moveThrough(Nodes.Midfield.MIDDLE_18INCH_SUBWAY, 0.1),
+                seq -> seq.withSpeed(MaxSpeed *0.8).moveThrough(Nodes.Midfield.MIDDLE_18INCH_SUBWAY, 0.1),
                 seq -> seq.intakeDeploy())            .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
                 .moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2)
                 .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
