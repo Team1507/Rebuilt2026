@@ -13,7 +13,6 @@ import frc.lib.core.util.CommandBuilder;
 import frc.robot.framework.CoordinatorRecord;
 import frc.robot.subsystems.ShooterSubsystem;
 
-import static frc.robot.Constants.kIntake.kRoller.DUTY_IDLE;
 import static frc.robot.Constants.kShooter.TARGET_TOLERANCE;
 
 /**

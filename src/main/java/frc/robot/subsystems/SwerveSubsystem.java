@@ -111,6 +111,19 @@ public class SwerveSubsystem extends Subsystems1507 {
         io.alignGyro(pose.getRotation());
     }
 
+    /** Returns the current robot-relative chassis speeds. */
+    public ChassisSpeeds getRobotRelativeSpeeds() {
+        return inputs.speeds;
+    }
+
+    /** Returns the current field-relative chassis speeds. */
+    public ChassisSpeeds getFieldRelativeSpeeds() {
+        return ChassisSpeeds.fromRobotRelativeSpeeds(
+            inputs.speeds,
+            getHeading()
+        );
+    }
+
     // ==========================================================
     // Access to raw inputs (optional)
     // ==========================================================

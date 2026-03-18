@@ -12,6 +12,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -100,21 +101,42 @@ public final class DriveCommands {
         Supplier<Double> xSupplier,
         Supplier<Double> ySupplier
     ) {
-
         return new CommandBuilder(swerve)
             .named("MaintainHeadingToTarget")
             .onExecute(() -> {
 
-                Pose2d current = swerve.getPose();
-                Pose2d target = targetPoseSupplier.get();
+                // === Tuning knob ===
+                // Increase if shots lag behind while moving
+                // Decrease if shots lead too far
+                double kLeadTime = 0.25; // seconds
 
-                // Compute desired facing direction
-                Rotation2d desiredHeading = computeHeadingToTarget(current, target);
+                // Current robot pose
+                Pose2d currentPose = swerve.getPose();
 
-                // Simple proportional heading correction
-                double omega = computeOmega(current.getRotation(), desiredHeading);
+                // Base target pose (hub, speaker, etc.)
+                Pose2d targetPose = targetPoseSupplier.get();
 
-                // Drive with driver translation + auto rotation
+                // Get measured field-relative robot velocity
+                ChassisSpeeds fieldSpeeds = swerve.getFieldRelativeSpeeds();
+
+                // Shift target forward in time based on robot velocity
+                Translation2d compensatedTarget =
+                    targetPose.getTranslation().minus(
+                        new Translation2d(
+                            fieldSpeeds.vxMetersPerSecond * kLeadTime,
+                            fieldSpeeds.vyMetersPerSecond * kLeadTime
+                        )
+                    );
+
+                // Aim normally at the compensated target
+                Rotation2d desiredHeading =
+                    compensatedTarget.minus(currentPose.getTranslation()).getAngle();
+
+                // Heading control (your existing method)
+                double omega =
+                    computeOmega(currentPose.getRotation(), desiredHeading);
+
+                // Drive with driver translation + automatic rotation
                 swerve.drive(new ChassisSpeeds(
                     xSupplier.get(),
                     ySupplier.get(),
