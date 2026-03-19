@@ -152,6 +152,7 @@ public class QuestNavController extends Subsystems1507 {
         swerve.setPose(pose);
 
         lastResetComplete = true;
+        pendingReset = null;
 
         DriverStation.reportWarning(
             "[QuestNavController] Pose reset performed at: " + pose,
