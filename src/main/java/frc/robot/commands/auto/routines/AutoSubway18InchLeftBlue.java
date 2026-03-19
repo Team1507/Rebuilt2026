@@ -21,7 +21,7 @@ public class AutoSubway18InchLeftBlue {
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
             .startTimer()
-            .resetPose(Nodes.Start.Blue.LEFT)
+            .resetPose(Nodes.Start.LEFT)
             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
@@ -33,11 +33,11 @@ public class AutoSubway18InchLeftBlue {
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.5))  
                 .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .moveThrough(Nodes.Start.Blue.LEFT, 0.2)
-            .driveTo(Nodes.Start.Blue.SHOOTING_SPOT_LEFT)
+            .moveThrough(Nodes.Start.LEFT, 0.2)
+            .driveTo(Nodes.Start.SHOOTING_SPOT_LEFT)
             .pointToTarget(Nodes.Hub.CENTER)
             .shootUntil(10.0)
-            .moveThrough(Nodes.Start.Blue.LEFT, 0.1)
+            .moveThrough(Nodes.Start.LEFT, 0.1)
              .pointToTarget(Nodes.Midfield.LEFT_TURN)
              .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP2, 0.2)
             .moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY,0.2)
@@ -47,8 +47,8 @@ public class AutoSubway18InchLeftBlue {
                 seq -> seq.intakeDeploy())
                 .moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.2)
                 .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .moveThrough(Nodes.Start.Blue.LEFT, 0.2)
-            .driveTo(Nodes.Start.Blue.SHOOTING_SPOT_LEFT)
+            .moveThrough(Nodes.Start.LEFT, 0.2)
+            .driveTo(Nodes.Start.SHOOTING_SPOT_LEFT)
             .pointToTarget(Nodes.Hub.CENTER)
             .shootUntil(19.99)
             .build();

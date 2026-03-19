@@ -20,7 +20,7 @@ public class AutoahRaymond{
    public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
-            .resetPose(Nodes.Start.Blue.RIGHT)
+            .resetPose(Nodes.Start.RIGHT)
             .startTimer()
             .shootRPMUntil(4, kShooter.kRPM.BUMP_RAYMOND)
             .build();
