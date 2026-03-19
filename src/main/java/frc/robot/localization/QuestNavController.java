@@ -93,9 +93,11 @@ public class QuestNavController extends Subsystems1507 {
             if (tracking && hasSeenFreshFrame) {
                 // Normal case: QuestNav is ready
                 performReset(pendingReset);
+                pendingReset = null;
             } else if (!quest.isConnected()) {
                 // Fallback case: QuestNav is dead/unplugged
                 performSwerveOnlyReset(pendingReset);
+                pendingReset = null;
             }
         }
 
@@ -152,7 +154,6 @@ public class QuestNavController extends Subsystems1507 {
         swerve.setPose(pose);
 
         lastResetComplete = true;
-        pendingReset = null;
 
         DriverStation.reportWarning(
             "[QuestNavController] Pose reset performed at: " + pose,
