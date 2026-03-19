@@ -20,7 +20,7 @@ public class AutoSubwayAroundTheHub {
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
 
             .startTimer()
-            .resetPose(Nodes.Start.Blue.RIGHT)
+            .resetPose(Nodes.Start.RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
@@ -32,12 +32,12 @@ public class AutoSubwayAroundTheHub {
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5))
                 .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)  
-            .driveTo(Nodes.Start.Blue.RIGHT)
+            .driveTo(Nodes.Start.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
             .shootUntil(9)
             .moveThrough (Nodes.Midfield.SUBWAY_AROUND_THE_HUB, 0.2)
-            .moveThrough(Nodes.Start.Blue.LEFT, 0.2)
+            .moveThrough(Nodes.Start.LEFT, 0.2)
             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
@@ -51,7 +51,7 @@ public class AutoSubwayAroundTheHub {
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.5))  
             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .driveTo(Nodes.Start.Blue.LEFT)
+            .driveTo(Nodes.Start.LEFT)
             .waitSeconds(0.5)
             .pointToShoot()
             .shootUntil(19.99)

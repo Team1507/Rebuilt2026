@@ -19,7 +19,8 @@ public class AutoSubwayFootlongRight {
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
             .startTimer()
-            .driveTo(Nodes.Start.Blue.RIGHT)
+            .resetPose(Nodes.Start.RIGHT)
+            .driveTo(Nodes.Start.RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
@@ -33,8 +34,9 @@ public class AutoSubwayFootlongRight {
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2))
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
-            .driveTo(Nodes.Start.Blue.RIGHT)
+            .driveTo(Nodes.Start.RIGHT)
             .shootUntil(19.5)
             .build();
     }
 }
+

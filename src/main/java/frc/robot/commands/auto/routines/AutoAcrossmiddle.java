@@ -20,7 +20,7 @@ public class AutoAcrossmiddle{
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
 
             .startTimer()
-            .resetPose(Nodes.Start.Blue.RIGHT)
+            .resetPose(Nodes.Start.RIGHT)
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
@@ -32,7 +32,7 @@ public class AutoAcrossmiddle{
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5))
                 .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)  
-            .driveTo(Nodes.Start.Blue.RIGHT)
+            .driveTo(Nodes.Start.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
             .shootUntil(9)
@@ -46,7 +46,7 @@ public class AutoAcrossmiddle{
                 seq -> seq.intakeDeploy())            .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
                 .moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2)
                 .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
-                .driveTo(Nodes.Start.Blue.RIGHT)
+                .driveTo(Nodes.Start.RIGHT)
             .waitSeconds(0.5)
             .pointToShoot()
             .shootUntil(19.99)

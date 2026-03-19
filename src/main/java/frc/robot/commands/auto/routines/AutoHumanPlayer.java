@@ -21,6 +21,7 @@ public class AutoHumanPlayer{
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
             .startTimer()
+            .resetPose(Nodes.Start.RIGHT)
             .shootRPMUntil(3.5, kShooter.kRPM.BUMP_RAYMOND)
             .driveTo(Nodes.Outpost.RIGHT_APPROACH_POINT)
             .intakeDeploy()
@@ -29,7 +30,7 @@ public class AutoHumanPlayer{
             .withSpeed(MaxSpeed * .7).moveThrough(Nodes.Outpost.RIGHT_APPROACH_POINT, 0.1)
             .parallel(  
               seq -> seq.intakeRetract(),
-              seq -> seq.driveTo(Nodes.Start.Blue.RIGHT))
+              seq -> seq.driveTo(Nodes.Start.RIGHT))
             .shootRPMUntil(19.5, kShooter.kRPM.BUMP_RAYMOND)
             .build();
     }

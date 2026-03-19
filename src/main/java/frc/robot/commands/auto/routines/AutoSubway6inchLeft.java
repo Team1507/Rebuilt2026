@@ -21,21 +21,19 @@ public class AutoSubway6inchLeft {
 
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
             .startTimer()
-            .resetPose(Nodes.Start.Blue.LEFT)
+            .resetPose(Nodes.Start.LEFT)
             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
                 seq -> seq.withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY, 0.1),
                 seq -> seq.intakeDeploy())
             .withSpeed(MaxSpeed * 0.5).moveThrough(Nodes.Midfield.RIGHT_LEFT_SUBWAY, 0.5)
-
-
             .intakeHigh()
             .parallel(
                 seq -> seq.intakeRetract(),
                 seq -> seq.moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.5))  
             .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .driveTo(Nodes.Start.Blue.LEFT)
+            .driveTo(Nodes.Start.LEFT)
             .waitSeconds(0.5)
             
             .pointToShoot()

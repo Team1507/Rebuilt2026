@@ -495,21 +495,21 @@ public class DashboardManager {
         boolean seedLeft =
             matchNT.getEntry("Localization/QuestNav/SeedRight").getBoolean(false);
         if (seedLeft) {
-            localization.vision().requestPoseReset(Nodes.Start.Blue.LEFT);
+            localization.vision().requestPoseReset(Nodes.Start.LEFT);
             matchNT.getEntry("Localization/QuestNav/SeedRight").setBoolean(false);
         }
 
         boolean seedCenter =
             matchNT.getEntry("Localization/QuestNav/SeedCenter").getBoolean(false);
         if (seedCenter) {
-            localization.vision().requestPoseReset(Nodes.Start.Blue.CENTER);
+            localization.vision().requestPoseReset(Nodes.Start.CENTER);
             matchNT.getEntry("Localization/QuestNav/SeedCenter").setBoolean(false);
         }
 
         boolean seedRight =
             matchNT.getEntry("Localization/QuestNav/SeedLeft").getBoolean(false);
         if (seedRight) {
-            localization.vision().requestPoseReset(Nodes.Start.Blue.RIGHT);
+            localization.vision().requestPoseReset(Nodes.Start.RIGHT);
             matchNT.getEntry("Localization/QuestNav/SeedLeft").setBoolean(false);
         }
 

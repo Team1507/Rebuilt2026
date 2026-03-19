@@ -423,13 +423,13 @@ public class RobotContainer {
             "Auto Subway 6 inch Right",
             AutoSubway6inchRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
-        autoChooser.addOption(
-            "Auto Subway 6 inch Right red",
-            AutoSubway6InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        // autoChooser.addOption(
+        //     "Auto Subway 6 inch Right red",
+        //     AutoSubway6InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
-        autoChooser.addOption(
-            "Auto Subway 6 inch Left Red",
-            AutoSubway6InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        // autoChooser.addOption(
+        //     "Auto Subway 6 inch Left Red",
+        //     AutoSubway6InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Subway 6 inch Left",
@@ -455,15 +455,15 @@ public class RobotContainer {
             "Auto Subway 18 Inch Right Blue",
             AutoSubway18Inch.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         
-        autoChooser.addOption(
-            "Auto Subway 18 Inch Right Red",
-            AutoSubway18InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        // autoChooser.addOption(
+        //     "Auto Subway 18 Inch Right Red",
+        //     AutoSubway18InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         autoChooser.addOption(
             "Auto Subway 18 Inch left Blue",
             AutoSubway18InchLeftBlue.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
-        autoChooser.addOption(
-            "Auto Subway 18 Inch Left Red",
-            AutoSubway18InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+        // autoChooser.addOption(
+        //     "Auto Subway 18 Inch Left Red",
+        //     AutoSubway18InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Subway Around Hub",
