@@ -26,7 +26,7 @@ public class AutoSubway18Inch {
             .parallel(
                 seq -> seq.driveTo(Nodes.Midfield.RIGHT_RUSH_SUBWAY),
                 seq -> seq.intakeDeploy())
-        .moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0..2.2)
+        .moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.2)
             .withSpeed(MaxSpeed * 0.67).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2) //made beeger
             .intakeRetract()
             .intakeLow()
