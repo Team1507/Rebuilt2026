@@ -166,6 +166,7 @@ public class Constants {
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .withVoltageLimits(8, -8)
                     .withStatorCurrentLimit(Amps.of(100.0))
+                    .withBrake()
                     .build();
 
             public static final class kStall {
