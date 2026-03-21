@@ -5,7 +5,6 @@
 //  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
 //   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 //                           TEAM 1507 WARLOCKS
-//                         Programmed by Andrew :)
 
 package frc.robot.commands.auto.routines;
 
@@ -15,45 +14,34 @@ import frc.robot.framework.CoordinatorRecord;
 import frc.robot.framework.SubsystemsRecord;
 import frc.robot.localization.nodes.Nodes;
 
-public class AutoSubway18InchLeftBlue {
+public class AutoRushToSubway {
     public static Command build(SubsystemsRecord record, CoordinatorRecord coordinator, double MaxSpeed, double MaxAngularRate) {
 
-
         return new AutoSequence(record, coordinator, MaxSpeed, MaxAngularRate)
+
+            .resetPose(Nodes.Start.RIGHT)
             .startTimer()
-            .resetPose(Nodes.Start.LEFT)
-            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
+            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            .moveThrough(Nodes.Midfield.MIDDLE_PICKUP_SUBWAY, 0.2)
+            .moveThrough(Nodes.Midfield.RUSH_MIDFIELD_BUMP, 0.2)
+            .driveTo(Nodes.Midfield.LEFT_RUSH_SUBWAY)
             .intakeHigh()
             .parallel(
                 seq -> seq.moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY, 0.1),
                 seq -> seq.intakeDeploy())
-            .moveThrough(Nodes.Midfield.RIGHT_LEFT_SUBWAY, 0.5)
-            .intakeHigh()
-            .parallel(
-                seq -> seq.moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.5))  
+            .withSpeed(MaxSpeed *0.5).moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY_RUSH, 0.2)
             .intakeRetract()
             .intakeLow()
-            .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            .moveThrough(Nodes.Start.LEFT, 0.2)
-            .driveTo(Nodes.Start.SHOOTING_SPOT_LEFT)
+            .moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5)
+            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            .driveTo(Nodes.Start.SHOOTING_SPOT_RIGHT)
             .pointToTarget(Nodes.Hub.CENTER)
-            .shootUntil(19.5)
-            // .intakeShoot()
-            // .shootUntil(12.5)
-            // .moveThrough(Nodes.Start.LEFT, 0.1)
-            // .pointToTarget(Nodes.Midfield.LEFT_TURN)
-            // .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            // .moveThrough(Nodes.Midfield.LEFT_LEFT_SUBWAY_2,0.2)
-            // .intakeHigh()
-            // .parallel(
-            //     seq -> seq.moveThrough(Nodes.Midfield.MIDDLE_18INCH_SUBWAY_LEFT, 0.1),
-            //     seq -> seq.intakeDeploy())
-            //     //.moveThrough(Nodes.Midfield.LEFT_BEFORE_BUMP, 0.2)
-            // .moveThrough(Nodes.Midfield.LEFT_OVER_BUMP, 0.2)
-            // .moveThrough(Nodes.Start.LEFT, 0.2)
-            // .driveTo(Nodes.Start.SHOOTING_SPOT_LEFT)
-            // .pointToTarget(Nodes.Hub.CENTER)
-            // .shootUntil(19.99)
+            .shootUntil(10.25)
+            .intakeShoot()
+            .shootUntil(14.0)
+
+            
+
             .build();
     }
 }

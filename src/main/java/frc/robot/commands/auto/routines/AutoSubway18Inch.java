@@ -24,36 +24,31 @@ public class AutoSubway18Inch {
             .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
             .intakeHigh()
             .parallel(
-                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0.1),
+                seq -> seq.driveTo(Nodes.Midfield.RIGHT_RUSH_SUBWAY),
                 seq -> seq.intakeDeploy())
-            .withSpeed(MaxSpeed * 0.8).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
-            .intakeHigh()
-            .parallel(
-                seq -> seq.intakeRetract(),
-                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5))
-                .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)  
-            .moveThrough(Nodes.Start.RIGHT, 0.2)
-            .waitSeconds(0.5)
-            .moveThrough(Nodes.Start.RIGHT, 0.2)
-            .withSpeed( MaxSpeed * 0.7).driveTo(Nodes.Start.SHOOTING_SPOT_RIGHT)
+        .moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY, 0..2.2)
+            .withSpeed(MaxSpeed * 0.67).moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2) //made beeger
+            .intakeRetract()
+            .intakeLow()
+            .moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5)
+            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            .driveTo(Nodes.Start.SHOOTING_SPOT_RIGHT)
             .pointToTarget(Nodes.Hub.CENTER)
-            .shootUntil(10)
-            .moveThrough(Nodes.Start.RIGHT, 0.1)
-            .changeHeading(Nodes.Midfield.RIGHT_TURN)
-            .moveThrough(Nodes.Midfield.RIGHT_TURN, 0.2)
-            .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP2, 0.2)
-            .moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY,0.2)
-            .intakeHigh()
-            .parallel(
-                seq -> seq.withSpeed(MaxSpeed *0.8).moveThrough(Nodes.Midfield.MIDDLE_18INCH_SUBWAY, 0.1),
-                seq -> seq.intakeDeploy())            .moveThrough(Nodes.Midfield.LEFT_RIGHT_SUBWAY, 0.2)
-                .moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2)
-                .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
-                .driveTo(Nodes.Start.RIGHT)
-            .waitSeconds(0.5)
-            .withSpeed( MaxSpeed * 0.5).driveTo(Nodes.Start.SHOOTING_SPOT_RIGHT)
-            .pointToTarget(Nodes.Hub.CENTER)
-            .shootUntil(19.99)
+            .shootUntil(19.9)
+            // .moveThrough(Nodes.Start.RIGHT, 0.1)
+            // .changeHeading(Nodes.Midfield.RIGHT_TURN)
+            // .moveThrough(Nodes.Midfield.RIGHT_TURN, 0.2)
+            // .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP2, 0.2)
+            // .moveThrough(Nodes.Midfield.RIGHT_RIGHT_SUBWAY_2,0.2)
+            // .intakeHigh()
+            // .parallel(
+            //     seq -> seq.withSpeed(MaxSpeed *0.8).moveThrough(Nodes.Midfield.MIDDLE_PICKUP_SUBWAY, 0.1),
+            //     seq -> seq.intakeDeploy())
+            // .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)
+            // .moveThrough(Nodes.Start.RIGHT, 0.2)
+            // .withSpeed( MaxSpeed * 0.5).driveTo(Nodes.Start.SHOOTING_SPOT_RIGHT)
+            // .pointToTarget(Nodes.Hub.CENTER)
+            // .shootUntil(19.99)
             .build();
     }
 }

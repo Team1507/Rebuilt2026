@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
-
+import edu.wpi.first.wpilibj.RobotController;
 // Commands
 import frc.robot.commands.atomic.*;
 import frc.robot.commands.auto.routines.*;
@@ -294,8 +294,13 @@ public class RobotContainer {
 
         // Initialize dashboard layout.
         dashboardManager.initDashboard();
+
+
+        //if hes tired 
+        RobotController.setBrownoutVoltage(6.3);
     }
 
+    
     // ==========================================================
     // Default commands
     // ==========================================================
@@ -420,53 +425,53 @@ public class RobotContainer {
         autoChooser.setDefaultOption("Do Nothing", Commands.print("Doing nothing"));
 
         autoChooser.addOption(
-            "Auto Subway 6 inch Right",
+            "Auto Subway 6 Inch Right",
             AutoSubway6inchRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
-        // autoChooser.addOption(
-        //     "Auto Subway 6 inch Right red",
-        //     AutoSubway6InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
-
-        // autoChooser.addOption(
-        //     "Auto Subway 6 inch Left Red",
-        //     AutoSubway6InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
-
         autoChooser.addOption(
-            "Auto Subway 6 inch Left",
+            "Auto Subway 6 Inch Left",
             AutoSubway6inchLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Subway Footlong Right",
             AutoSubwayFootlongRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 1.0, kSwerve.MAX_ANGULAR_RATE));
         
+         autoChooser.addOption(
+            "Auto Rush To Subway",
+            AutoRushToSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.67, kSwerve.MAX_ANGULAR_RATE));
+        
         autoChooser.addOption(
             "Autoah Raymond",
             AutoahRaymond.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Human Player Q",
+            "Auto Human Player",
             AutoHumanPlayerQuest.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.5, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Double Subway",
+            "Auto Double Subway Right",
             AutoDoubleSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Subway 18 Inch Right Blue",
-            AutoSubway18Inch.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Double Subway Left",
+            AutoDoubleSubwayLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.6, kSwerve.MAX_ANGULAR_RATE));
+
+        autoChooser.addOption(
+            "Auto Subway 18 Inch Right",
+            AutoSubway18Inch.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.6, kSwerve.MAX_ANGULAR_RATE));
         
         // autoChooser.addOption(
         //     "Auto Subway 18 Inch Right Red",
         //     AutoSubway18InchRightRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
         autoChooser.addOption(
-            "Auto Subway 18 Inch left Blue",
-            AutoSubway18InchLeftBlue.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
+            "Auto Subway 18 Inch Left",
+            AutoSubway18InchLeftBlue.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.6, kSwerve.MAX_ANGULAR_RATE));
         // autoChooser.addOption(
         //     "Auto Subway 18 Inch Left Red",
         //     AutoSubway18InchLeftRed.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
-            "Auto Subway Around Hub",
+            "Auto Subway Around Hub (Nuclear Option)",
             AutoSubwayAroundTheHub.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
     }
 

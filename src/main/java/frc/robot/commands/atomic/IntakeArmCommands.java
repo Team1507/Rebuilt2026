@@ -47,6 +47,32 @@ public final class IntakeArmCommands {
             });
     }
 
+    public static Command upper(IntakeArmSubsystem arm) {
+        return new CommandBuilder(arm)
+            .named("IntakeArmUpper")
+            .onExecute(() -> arm.setAngle(UPPER_ANGLE_DEGREES))
+
+            // Normal completion
+            .isFinished(() -> arm.isAtPosition(UPPER_ANGLE_DEGREES, 2))
+
+            // Stall detection
+            .stallFinish(arm::isStalled)
+
+            // Hard timeout fallback
+            .timeout(2.0)
+
+            // Unified end handler
+            .onEnd((interrupted, timedOut, stalled) -> {
+                arm.stop();
+
+                if (stalled || timedOut) {
+                    // Mechanical fault → back off to deployed
+                    arm.setAngle(RETRACTED_ANGLE_DEGREES);
+                }
+                // Driver release → do nothing (stow command will take over)
+            });
+    }
+
     /** Move arm to the DEPLOYED angle. */
     public static Command down(IntakeArmSubsystem arm) {
         return new CommandBuilder(arm)

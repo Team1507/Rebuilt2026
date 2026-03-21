@@ -214,11 +214,20 @@ public class AutoSequence {
         return this;
     }
 
+    public AutoSequence intakeShoot() {
+        steps.add(IntakeSequences.shoot(
+            record.intakeArm(), record.intakeRoller()
+        ));
+        return this;
+    }
+
     /** Runs intake roller at low speed. */
     public AutoSequence intakeLow() {
         steps.add(IntakeRollerCommands.lowRollerSpeed(record.intakeRoller()));
         return this;
     }
+
+    
 
     /** Runs intake roller at auto speed. */
     public AutoSequence intakeHigh() {

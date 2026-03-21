@@ -48,6 +48,14 @@ public final class IntakeSequences {
         return IntakeArmCommands.up(arm)
             .alongWith(IntakeRollerCommands.stop(roller));
     }
+
+    public static Command shoot(
+        IntakeArmSubsystem arm,
+        IntakeRollerSubsystem roller
+    ) {
+        return IntakeArmCommands.upper(arm)
+            .alongWith(IntakeRollerCommands.stop(roller));
+    }
 }
 
 

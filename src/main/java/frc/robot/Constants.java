@@ -46,7 +46,7 @@ public class Constants {
         public static final MotorConfig CONFIG =
             MotorConfig.builder()
                 .inverted(true)
-                .withVoltageLimits(3.5, -3.5)
+                .withVoltageLimits(4.0, -4.0)
                 .withStatorCurrentLimit(Amps.of(100))
                 .build();
 
@@ -140,6 +140,7 @@ public class Constants {
             public static final double MIN_ANGLE_DEGREES = 0.0;
             public static final double DEPLOYED_ANGLE_DEGREES = 138.0;
             public static final double RETRACTED_ANGLE_DEGREES = 82.0;
+            public static final double UPPER_ANGLE_DEGREES = 67.0;
 
             public static final double MANUAL_POSITIVE_POWER = 0.4;
             public static final double MANUAL_NEGATIVE_POWER = -0.4;

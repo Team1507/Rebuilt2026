@@ -31,7 +31,7 @@ public class AutoSubway6inchRight {
             .intakeHigh()
             .parallel(
                 seq -> seq.intakeRetract(),
-                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.5))
+                seq -> seq.moveThrough(Nodes.Midfield.RIGHT_BEFORE_BUMP, 0.2))
                 .moveThrough(Nodes.Midfield.RIGHT_OVER_BUMP, 0.2)  
             .driveTo(Nodes.Start.RIGHT)
             .waitSeconds(0.5)
