@@ -37,7 +37,7 @@ public final class IntakeArmCommands {
 
             // Unified end handler
             .onEnd((interrupted, timedOut, stalled) -> {
-                arm.stop();
+                //arm.stop();
 
                 if (stalled || timedOut) {
                     // Mechanical fault → back off to deployed
@@ -63,7 +63,7 @@ public final class IntakeArmCommands {
 
             // Unified end handler
             .onEnd((interrupted, timedOut, stalled) -> {
-                arm.stop();
+                //arm.stop();
 
                 if (stalled || timedOut) {
                     // Mechanical fault → back off to deployed
@@ -89,7 +89,7 @@ public final class IntakeArmCommands {
             .timeout(2.0)
 
             .onEnd((interrupted, timedOut, stalled) -> {
-                arm.stop();
+                //arm.stop();
 
                 if (stalled || timedOut) {
                     // Mechanical fault → back off to retracted
@@ -111,7 +111,7 @@ public final class IntakeArmCommands {
             .stallFinish(arm::isStalled)
 
             .onEnd((interrupted, timedOut, stalled) -> {
-                arm.stop();
+                //arm.stop();
                 // For generic moves, we do NOT auto‑recover.
                 // Caller decides what to do.
             });
