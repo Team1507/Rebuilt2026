@@ -436,9 +436,9 @@ public class RobotContainer {
             "Auto Subway Footlong Right",
             AutoSubwayFootlongRight.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 1.0, kSwerve.MAX_ANGULAR_RATE));
         
-         autoChooser.addOption(
-            "Auto Rush To Subway",
-            AutoRushToSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.67, kSwerve.MAX_ANGULAR_RATE));
+        //  autoChooser.addOption(
+        //     "Auto Rush To Subway",
+        //     AutoRushToSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.67, kSwerve.MAX_ANGULAR_RATE));
         
         autoChooser.addOption(
             "Autoah Raymond",
@@ -452,9 +452,9 @@ public class RobotContainer {
             "Auto Double Subway Right",
             AutoDoubleSubway.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.8, kSwerve.MAX_ANGULAR_RATE));
 
-        autoChooser.addOption(
-            "Auto Double Subway Left",
-            AutoDoubleSubwayLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.6, kSwerve.MAX_ANGULAR_RATE));
+        // autoChooser.addOption(
+        //     "Auto Double Subway Left",
+        //     AutoDoubleSubwayLeft.build(subsystemsRecord, coordinatorRecord, kSwerve.MAX_SPEED * 0.6, kSwerve.MAX_ANGULAR_RATE));
 
         autoChooser.addOption(
             "Auto Subway 18 Inch Right",

@@ -46,7 +46,7 @@ public class Constants {
         public static final MotorConfig CONFIG =
             MotorConfig.builder()
                 .inverted(true)
-                .withVoltageLimits(4.0, -4.0)
+                .withVoltageLimits(6.0, -4.0)
                 .withStatorCurrentLimit(Amps.of(100))
                 .build();
 
